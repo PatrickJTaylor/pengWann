@@ -391,6 +391,10 @@ class DOS:
 
         return interaction.pair_id, interaction_descriptors
 
+    @property
+    def energies(self) -> np.ndarray:
+        return self._energies
+
     @classmethod
     def from_eigenvalues(
         cls,
