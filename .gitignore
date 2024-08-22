@@ -1,1 +1,3 @@
 .python-version
+__pycache__
+/pengwann.egg-info
