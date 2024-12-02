@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Optional
 
 
 def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
@@ -55,7 +56,7 @@ def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
 
 
 def read_eigenvalues(
-    path: str, num_bands: int, num_kpoints: int
+    path: str, num_bands: int, num_kpoints: int, num_wann: Optional[int]=None
 ) -> np.ndarray:
     """
     Read in the Kohn-Sham eigenvalues.
@@ -64,6 +65,8 @@ def read_eigenvalues(
         path (str): The filepath to seedname.eig.
         num_bands (int): The number of bands.
         num_kpoints (int): The number of k-points.
+        num_wann (Optional[int]): The number of Wannier functions (only required with
+        disentanglement).
 
     Returns:
         eigenvalues (np.ndarray): The Kohn-Sham eigenvalues.
@@ -73,12 +76,15 @@ def read_eigenvalues(
     """
     eigenvalues_list = []
 
+    if num_wann is None:
+        num_wann = num_bands
+
     with open(path, 'r') as stream:
         lines = stream.readlines()
 
     block_indices = [idx * num_bands for idx in range(num_kpoints)]
 
-    for column_idx in range(num_bands):
+    for column_idx in range(num_wann):
         row = []
 
         for block_idx in block_indices:
