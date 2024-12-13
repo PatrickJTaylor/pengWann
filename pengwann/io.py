@@ -2,7 +2,7 @@ import os
 import numpy as np
 from typing import Optional
 
-def read(seedname: str, path: str='.') -> tuple[np.ndarray, np.ndarray, dict[tuple[int, ...], np.ndarray]]:
+def read(seedname: str, path: str='.') -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[tuple[int, ...], np.ndarray]]:
     """
     Wrapper function for reading in the main Wannier90 output files.
 
@@ -18,7 +18,7 @@ def read(seedname: str, path: str='.') -> tuple[np.ndarray, np.ndarray, dict[tup
     H = read_Hamiltonian(f'{path}/{seedname}_hr.dat')
     eigenvalues = read_eigenvalues(f'{path}/{seedname}.eig', U.shape[1], U.shape[0])
 
-    return eigenvalues, U, H
+    return kpoints, eigenvalues, U, H
 
 
 def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
