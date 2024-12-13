@@ -8,7 +8,7 @@ def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
     functions w_nR from the Kohn-Sham states psi_mk.
 
     Args:
-        path (str): The filepath to seedname_u.mat.
+        path (str): The filepath to seedname_u.mat or seedname_u_dis.mat.
 
     Returns:
         U (np.ndarray): The unitary matrices U^k.
@@ -23,10 +23,10 @@ def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
     with open(path, 'r') as stream:
         lines = stream.readlines()
 
-    num_kpoints, num_wann = [int(string) for string in lines[1].split()[:-1]]
+    num_kpoints, num_wann, num_bands = [int(string) for string in lines[1].split()]
 
-    block_indices = [idx * (num_wann**2 + 2) + 4 for idx in range(num_kpoints)]
-    column_indices = [idx * num_wann for idx in range(num_wann)]
+    block_indices = [idx * (num_wann * num_bands + 2) + 4 for idx in range(num_kpoints)]
+    column_indices = [idx * num_bands for idx in range(num_wann)]
 
     for block_idx in block_indices:
         U_k = []
@@ -34,7 +34,7 @@ def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
         kpoint = [float(string) for string in lines[block_idx - 1].split()]
         kpoints_list.append(kpoint)
 
-        for row_idx in range(num_wann):
+        for row_idx in range(num_bands):
             row = []
 
             for column_idx in column_indices:
@@ -56,7 +56,7 @@ def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
 
 
 def read_eigenvalues(
-    path: str, num_bands: int, num_kpoints: int, num_wann: Optional[int]=None
+    path: str, num_bands: int, num_kpoints: int,
 ) -> np.ndarray:
     """
     Read in the Kohn-Sham eigenvalues.
@@ -65,8 +65,6 @@ def read_eigenvalues(
         path (str): The filepath to seedname.eig.
         num_bands (int): The number of bands.
         num_kpoints (int): The number of k-points.
-        num_wann (Optional[int]): The number of Wannier functions (only required with
-        disentanglement).
 
     Returns:
         eigenvalues (np.ndarray): The Kohn-Sham eigenvalues.
@@ -76,15 +74,12 @@ def read_eigenvalues(
     """
     eigenvalues_list = []
 
-    if num_wann is None:
-        num_wann = num_bands
-
     with open(path, 'r') as stream:
         lines = stream.readlines()
 
     block_indices = [idx * num_bands for idx in range(num_kpoints)]
 
-    for column_idx in range(num_wann):
+    for column_idx in range(num_bands):
         row = []
 
         for block_idx in block_indices:
