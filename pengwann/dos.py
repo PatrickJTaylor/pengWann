@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 from multiprocessing import Pool
-from pengwann.geometry import Interaction
+from pengwann.geometry import AtomicInteraction
 from pengwann.utils import get_atom_indices, get_occupation_matrix
 from pymatgen.core import Structure
 from scipy.integrate import trapezoid  # type: ignore
@@ -138,6 +138,7 @@ class DOS:
 
         R = tuple((R_2 - R_1).tolist())
 
+        print(self._H[R][i, j].real)
         if dos_matrix is None:
             return -self._H[R][i, j].real * self.get_dos_matrix(i, j, R_1, R_2)
 
@@ -255,7 +256,7 @@ class DOS:
 
     def get_descriptors(
         self,
-        interactions: tuple[Interaction, ...],
+        interactions: tuple[AtomicInteraction, ...],
         calculate_wohp: bool = True,
         calculate_wobi: bool = True,
     ) -> dict[tuple[str, str], dict[str, np.ndarray]]:
@@ -266,7 +267,7 @@ class DOS:
         InteractionFinder class.
 
         Args:
-            interactions (tuple[Interaction, ...]): The interactions
+            interactions (tuple[AtomicInteraction, ...]): The interactions
                 for which descriptors are to be computed. In general,
                 this should come from the get_interactions method of an
                 InteractionFinder object.
@@ -350,14 +351,14 @@ class DOS:
         return integrated_descriptors
 
     def process_interaction(
-        self, interaction_and_labels: tuple[Interaction, tuple[str, ...]]
+        self, interaction_and_labels: tuple[AtomicInteraction, tuple[str, ...]]
     ) -> tuple[tuple[str, str], dict[str, np.ndarray]]:
         """
         Calculate the WOHP and/or WOBI associated with a given
         interaction (i.e. a pair of atoms).
 
         Args:
-            interaction_and_labels (tuple[Interaction, tuple[str, ...]]):
+            interaction_and_labels (tuple[AtomicInteraction, tuple[str, ...]]):
                 The interaction and a set of labels specifying which
                 descriptors should be computed.
 
@@ -371,23 +372,24 @@ class DOS:
         for label in labels:
             interaction_descriptors[label] = np.zeros((len(self._energies)))
 
-        for i in interaction.i_indices:
-            for j in interaction.j_indices:
-                dos_matrix = self.get_dos_matrix(
-                    i, j, self._R_1, interaction.R_2
+        for w_interaction in interaction.wannier_interactions:
+            i, j, R_2 = w_interaction.i, w_interaction.j, w_interaction.R_2
+
+            dos_matrix = self.get_dos_matrix(
+                i, j, self._R_1, R_2
+            )
+
+            if 'WOHP' in labels:
+                wohp = self.get_WOHP(
+                    i, j, self._R_1, R_2, dos_matrix
                 )
+                interaction_descriptors['WOHP'] += wohp
 
-                if 'WOHP' in labels:
-                    wohp = self.get_WOHP(
-                        i, j, self._R_1, interaction.R_2, dos_matrix
-                    )
-                    interaction_descriptors['WOHP'] += wohp
-
-                if 'WOBI' in labels:
-                    wobi = self.get_WOBI(
-                        i, j, self._R_1, interaction.R_2, dos_matrix
-                    )
-                    interaction_descriptors['WOBI'] += wobi
+            if 'WOBI' in labels:
+                wobi = self.get_WOBI(
+                    i, j, self._R_1, R_2, dos_matrix
+                )
+                interaction_descriptors['WOBI'] += wobi
 
         return interaction.pair_id, interaction_descriptors
 
