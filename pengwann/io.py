@@ -138,26 +138,16 @@ def read_Hamiltonian(path: str) -> dict[tuple[int, ...], np.ndarray]:
 
     H = {}
 
-    base_list = [0, 0, 0]
-    base_R = tuple(base_list)
-    H[base_R] = np.zeros((num_wann, num_wann), dtype=complex)
-
-    for idx in range(3):
-        for element in (1, -1):
-            R_list = base_list.copy()
-            R_list[idx] = element
-
-            R = tuple(R_list)
-            H[R] = np.zeros((num_wann, num_wann), dtype=complex)
-
     for line in lines[start_idx:]:
         data = line.split()
         R = tuple([int(string) for string in data[:3]])
 
-        if R in H.keys():
-            m, n = [int(string) - 1 for string in data[3:5]]
-            real, imaginary = [float(string) for string in data[5:]]
+        if R not in H.keys():
+            H[R] = np.zeros((num_wann, num_wann), dtype=complex)
 
-            H[R][m, n] = complex(real, imaginary)
+        m, n = [int(string) - 1 for string in data[3:5]]
+        real, imaginary = [float(string) for string in data[5:]]
+
+        H[R][m, n] = complex(real, imaginary)
 
     return H
