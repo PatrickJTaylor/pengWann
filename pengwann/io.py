@@ -1,5 +1,24 @@
+import os
 import numpy as np
 from typing import Optional
+
+def read(seedname: str, path: str='.') -> tuple[np.ndarray, np.ndarray, dict[tuple[int, ...], np.ndarray]]:
+    """
+    Wrapper function for reading in the main Wannier90 output files.
+
+    Args:
+        seedname (str): Wannier90 seedname (prefix for all output files).
+        path: (str): Filepath to main Wannier90 output files. Defaults to '.'.
+    """
+    U, kpoints = read_U(f'{path}/{seedname}_u.mat')
+    if os.path.isfile(f'{path}/{seedname}_u_dis.mat'):
+        U_dis, _ = read_U(f'{path}/{seedname}_u_dis.mat')
+        U = U_dis @ U
+
+    H = read_Hamiltonian(f'{path}/{seedname}_hr.dat')
+    eigenvalues = read_eigenvalues(f'{path}/{seedname}.eig', U.shape[1], U.shape[0])
+
+    return eigenvalues, U, H
 
 
 def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
@@ -94,7 +113,7 @@ def read_eigenvalues(
     return eigenvalues
 
 
-def read_hamiltonian(path: str) -> dict[tuple[int, ...], np.ndarray]:
+def read_Hamiltonian(path: str) -> dict[tuple[int, ...], np.ndarray]:
     """
     Read in the Wannier Hamiltonian.
 
