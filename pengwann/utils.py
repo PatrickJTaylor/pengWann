@@ -1,5 +1,7 @@
 import numpy as np
+from pengwann.occupation_functions import fixed
 from pymatgen.core import Structure
+from typing import Any, Callable, Optional
 
 
 def assign_wannier_centres(geometry: Structure) -> None:
@@ -82,27 +84,41 @@ def get_atom_indices(
 
 
 def get_occupation_matrix(
-    fermi_level: float, eigenvalues: np.ndarray, electrons_per_state: int
+    mu: float, eigenvalues: np.ndarray, electrons_per_state: int,
+        occupation_function: Optional[Callable]=None,
+        **function_kwargs
 ) -> np.ndarray:
     """
     Calculate the occupation matrix.
 
     Args:
-        fermi_level (float): The Fermi level.
+        mu (float): The Fermi level.
         eigenvalues (np.ndarray): The Kohn-Sham eigenvalues.
         electrons_per_state (int): The number of electrons per occupied
             Kohn-Sham state.
+        occupation_function (Optional[Callable]): The occupation function to
+            be used to calculate the occupation matrix. Defaults to None (which
+            means fixed occupations will be assumed).
+        **function_kwargs: Additional keyword arguments to be passed to the
+            occupation function in addition to the eigenvalues and the Fermi
+            level.
 
     Returns:
-        f (np.ndarray): The occupation matrix.
+        (np.ndarray): The occupation matrix.
+
+    Notes:
+        Several pre-defined occupation functions may be imported from the
+        occupation_functions module (Gaussian, Marzari-Vanderbilt etc).
+        Alternatively, one may choose to use a custom occupation function, in
+        which case it must take the eigenvalues and the Fermi level as the
+        first two positional arguments.
     """
-    f_n = np.array(
-        [
-            0 if True in row else electrons_per_state
-            for row in eigenvalues > fermi_level
-        ]
-    )
+    if occupation_function is not None:
+        occupation_matrix = occupation_function(eigenvalues, mu, **function_kwargs)
 
-    f = np.broadcast_to(f_n, (eigenvalues.shape[1], eigenvalues.shape[0]))
+    else:
+        occupation_matrix = fixed(eigenvalues, mu)
 
-    return f
+    occupation_matrix *= electrons_per_state
+
+    return occupation_matrix.T
