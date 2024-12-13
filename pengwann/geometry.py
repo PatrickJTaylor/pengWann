@@ -7,7 +7,7 @@ from pymatgen.core import Lattice, Molecule, Structure
 from typing import NamedTuple
 
 
-class Interaction(NamedTuple):
+class AtomicInteraction(NamedTuple):
     """
     A class representing the interaction between atoms i and j in terms
     of their Wannier functions.
@@ -15,18 +15,24 @@ class Interaction(NamedTuple):
     Attributes:
         pair_id (tuple[str, str]): A pair of strings identifying atoms
             i and j.
-        R_2 (np.ndarray): The Bravais lattice vector specifying the cell
-            in which atom j resides. Atom i is always in the home cell.
-        i_indices (tuple[int, ...]): The indices of the Wannier
-            functions associated with atom i.
-        j_indices (tuple[int, ...]): The indices of the Wannier
-            functions associated with atom j.
+        wannier_interactions (tuple[WannierInteraction, ...]): The individual
+            WannierInteractions that together comprise the total interaction
+            between atoms i and j.
     """
 
     pair_id: tuple[str, str]
+    wannier_interactions: tuple[WannierInteraction, ...]
+
+
+class WannierInteraction(NamedTuple):
+    """
+    A class representing the interaction between Wannier function i and the
+        closest image of Wannier function j.
+    """
+
+    i: int
+    j: int
     R_2: np.ndarray
-    i_indices: tuple[int, ...]
-    j_indices: tuple[int, ...]
 
 
 class InteractionFinder:
@@ -64,7 +70,7 @@ class InteractionFinder:
 
     def get_interactions(
         self, radial_cutoffs: dict[tuple[str, str], float]
-    ) -> tuple[Interaction, ...]:
+    ) -> tuple[AtomicInteraction, ...]:
         """
         Identify interatomic interactions according to a chosen
         criterion.
@@ -77,7 +83,7 @@ class InteractionFinder:
                      ('Si', 'O') : 2.0}
 
         Returns:
-            tuple[Interaction]: The interactions identified by the
+            tuple[AtomicInteraction, ...]: The interactions identified by the
                 chosen criteria.
         """
         symbols_list: list[str] = []
@@ -107,17 +113,24 @@ class InteractionFinder:
                         possible_interactions.append((i, j))
 
             for i, j in possible_interactions:
-                distance, R_2 = self._geometry[i].distance_and_image(
-                    self._geometry[j]
-                )
+                distance = self._geometry.get_distance(i, j)
 
                 if distance < cutoff:
                     pair_id = (
                         symbol_i + str(i - self._num_wann + 1),
                         symbol_j + str(j - self._num_wann + 1),
                     )
-                    interaction = Interaction(
-                        pair_id, R_2, wannier_centres[i], wannier_centres[j]
+                    wannier_interactions_list = []
+                    for k in wannier_centres[i]:
+                        for l in wannier_centres[j]:
+                            dist, image = self._geometry[k].distance_and_image(self._geometry[l])
+
+                            wannier_interaction = WannierInteraction(k, l, image)
+                            wannier_interactions_list.append(wannier_interaction)
+
+                    wannier_interactions = tuple(wannier_interactions_list)
+                    interaction = AtomicInteraction(
+                        pair_id, wannier_interactions
                     )
                     interactions.append(interaction)
 
