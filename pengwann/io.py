@@ -1,6 +1,5 @@
 import os
 import numpy as np
-from typing import Optional
 
 def read(seedname: str, path: str='.') -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[tuple[int, ...], np.ndarray]]:
     """
