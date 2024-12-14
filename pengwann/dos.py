@@ -25,8 +25,8 @@ class DOS:
         nspin: int,
         kpoints: np.ndarray,
         U: np.ndarray,
-        f: np.ndarray,
         H: Optional[dict[tuple[int, ...], np.ndarray]] = None,
+        occupation_matrix: Optional[np.ndarray] = None,
     ) -> None:
         """
         Initialise a DOS object.
@@ -46,6 +46,8 @@ class DOS:
             H (np.ndarray, optional): The Hamiltonian in the Wannier
                 basis. Required for the computation of WOHPs. Defaults
                 to None.
+            occupation_matrix (np.ndarray, optional): The occupation matrix.
+                Required for the computation of WOBIs. Defaults to None.
 
         Returns:
             None
@@ -59,7 +61,7 @@ class DOS:
         self._dos_array = dos_array
         self._kpoints = kpoints
         self._U = U
-        self._f = f
+        self._occupation_matrix = occupation_matrix
         self._H = H
         self._nspin = nspin
 
@@ -133,7 +135,7 @@ class DOS:
         """
         if self._H is None:
             raise RuntimeError(
-                'Please provide the Wannier Hamiltonian to calculate WOHPs.'
+                'The Wannier Hamiltonian is required to calculate WOHPs.'
             )
 
         R = tuple((R_2 - R_1).tolist())
@@ -170,6 +172,11 @@ class DOS:
         Returns:
             np.ndarray: The WOBI arising from w_iR_1 and w_jR_2.
         """
+        if self._occupation_matrix is None:
+            raise RuntimeError(
+                'The occupation matrix is required to calculate WOBIs.'
+            )
+
         if dos_matrix is None:
             return self.P_ij(i, j, R_1, R_2).real * self.get_dos_matrix(
                 i, j, R_1, R_2
@@ -202,7 +209,7 @@ class DOS:
             :, np.newaxis
         ] * np.conj(self._U[:, :, j])
 
-        P_nk = self._f * C_dagger * C
+        P_nk = self._occupation_matrix * C_dagger * C
 
         return np.sum(P_nk, axis=(0, 1)) / len(self._kpoints)
 
@@ -409,6 +416,7 @@ class DOS:
         U: np.ndarray,
         mu: float,
         H: Optional[dict[tuple[int, ...], np.ndarray]] = None,
+        occupation_matrix: Optional[np.ndarray] = None,
     ) -> DOS:
         """
         Initialise a DOS object from the Kohn-Sham eigenvalues.
@@ -430,9 +438,14 @@ class DOS:
             H (np.ndarray, optional): The Hamiltonian in the Wannier
                 basis. Required for the computation of WOHPs. Defaults
                 to None.
+            occupation_matrix (np.ndarray, optional): The occupation matrix.
+                Required for the computation of WOBIs. Defaults to None.
 
         Returns:
             DOS: The initialised DOS object.
+
+        Notes:
+            See the utils module for computing the occupation matrix.
         """
         emin, emax = energy_range
         energies = np.arange(emin, emax + resolution, resolution)
@@ -445,6 +458,4 @@ class DOS:
             / eigenvalues.shape[1]
         )
 
-        f = get_occupation_matrix(mu, eigenvalues, nspin)
-
-        return cls(energies, dos_array, nspin, kpoints, U, f, H)
+        return cls(energies, dos_array, nspin, kpoints, U, H, occupation_matrix)
