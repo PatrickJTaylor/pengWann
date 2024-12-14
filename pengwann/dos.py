@@ -21,7 +21,7 @@ class DOS:
     def __init__(
         self,
         energies: np.ndarray,
-        dos_tensor: np.ndarray,
+        dos_array: np.ndarray,
         nspin: int,
         kpoints: np.ndarray,
         U: np.ndarray,
@@ -34,7 +34,7 @@ class DOS:
         Args:
             energies (np.ndarray): The energies at which the DOS has
                 been evaluated.
-            dos_tensor (np.ndarray): The DOS at each energy, band and
+            dos_array (np.ndarray): The DOS at each energy, band and
                 k-point.
             nspin (int): The number of electrons per Kohn-Sham state.
                 For spin-polarised calculations, set to 1.
@@ -56,7 +56,7 @@ class DOS:
             classmethod.
         """
         self._energies = energies
-        self._dos_tensor = dos_tensor
+        self._dos_array = dos_array
         self._kpoints = kpoints
         self._U = U
         self._f = f
@@ -97,7 +97,7 @@ class DOS:
         C_dagger_C = (C_dagger * C).T
 
         dos_matrix = (
-            self._nspin * C_dagger_C[np.newaxis, :, :].real * self._dos_tensor
+            self._nspin * C_dagger_C[np.newaxis, :, :].real * self._dos_array
         )
 
         if sum_matrix:
@@ -438,7 +438,7 @@ class DOS:
         energies = np.arange(emin, emax + resolution, resolution)
 
         x_mu = energies[:, np.newaxis, np.newaxis] - eigenvalues
-        dos_tensor = (
+        dos_array = (
             1
             / np.sqrt(np.pi * sigma)
             * np.exp(-(x_mu**2) / sigma)
@@ -447,4 +447,4 @@ class DOS:
 
         f = get_occupation_matrix(mu, eigenvalues, nspin)
 
-        return cls(energies, dos_tensor, nspin, kpoints, U, f, H)
+        return cls(energies, dos_array, nspin, kpoints, U, f, H)
