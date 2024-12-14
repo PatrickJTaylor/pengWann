@@ -414,7 +414,6 @@ class DOS:
         sigma: float,
         kpoints: np.ndarray,
         U: np.ndarray,
-        mu: float,
         H: Optional[dict[tuple[int, ...], np.ndarray]] = None,
         occupation_matrix: Optional[np.ndarray] = None,
     ) -> DOS:
@@ -433,8 +432,6 @@ class DOS:
             kpoints (np.ndarray): The full k-point mesh.
             U (np.ndarray): The U matrices used to define Wannier
                 functions from the Kohn-Sham states.
-            mu (float): The Fermi level. Used to calculate an occupation
-                matrix (needed for the Wannier density matrix).
             H (np.ndarray, optional): The Hamiltonian in the Wannier
                 basis. Required for the computation of WOHPs. Defaults
                 to None.
