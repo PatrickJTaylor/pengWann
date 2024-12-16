@@ -424,7 +424,7 @@ class DOS:
             eigenvalues (np.ndarray): The Kohn-Sham eigenvalues.
             nspin (int): The number of electrons per Kohn-Sham state.
                 For spin-polarised calculations, set to 1.
-            energy_range(np.ndarray): The energy ranage over which the
+            energy_range(tuple[float, float]): The energy ranage over which the
                 DOS is to be evaluated.
             resolution (float): The desired energy resolution of the
                 DOS.

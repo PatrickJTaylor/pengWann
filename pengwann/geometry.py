@@ -10,7 +10,7 @@ from typing import NamedTuple
 class AtomicInteraction(NamedTuple):
     """
     A class representing the interaction between atoms i and j in terms
-    of their Wannier functions.
+    of their respective Wannier functions.
 
     Attributes:
         pair_id (tuple[str, str]): A pair of strings identifying atoms
@@ -28,6 +28,13 @@ class WannierInteraction(NamedTuple):
     """
     A class representing the interaction between Wannier function i and the
         closest image of Wannier function j.
+
+    Attributes:
+        i (int): The index for Wannier function i.
+        j (int): The index for Wannier function j.
+        R_2 (np.ndarray): The Bravais lattice vector specifying the translation
+            of Wannier function j that brings it as close as possible to
+            Wannier function i.
     """
 
     i: int
@@ -121,11 +128,11 @@ class InteractionFinder:
                         symbol_j + str(j - self._num_wann + 1),
                     )
                     wannier_interactions_list = []
-                    for k in wannier_centres[i]:
-                        for l in wannier_centres[j]:
-                            dist, image = self._geometry[k].distance_and_image(self._geometry[l])
+                    for m in wannier_centres[i]:
+                        for n in wannier_centres[j]:
+                            dist, image = self._geometry[m].distance_and_image(self._geometry[n])
 
-                            wannier_interaction = WannierInteraction(k, l, image)
+                            wannier_interaction = WannierInteraction(m, n, image)
                             wannier_interactions_list.append(wannier_interaction)
 
                     wannier_interactions = tuple(wannier_interactions_list)

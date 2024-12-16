@@ -7,7 +7,8 @@ def read(seedname: str, path: str='.') -> tuple[np.ndarray, np.ndarray, np.ndarr
 
     Args:
         seedname (str): Wannier90 seedname (prefix for all output files).
-        path: (str): Filepath to main Wannier90 output files. Defaults to '.'.
+        path: (str): Filepath to main Wannier90 output files. Defaults to '.'
+            i.e. the current working directory.
     """
     U, kpoints = read_U(f'{path}/{seedname}_u.mat')
     if os.path.isfile(f'{path}/{seedname}_u_dis.mat'):
@@ -135,7 +136,7 @@ def read_Hamiltonian(path: str) -> dict[tuple[int, ...], np.ndarray]:
 
     start_idx = int(np.ceil(num_Rpoints / 15)) + 3
 
-    H = {}
+    H = {} # type: dict[tuple[int, ...], np.ndarray]
 
     for line in lines[start_idx:]:
         data = line.split()
