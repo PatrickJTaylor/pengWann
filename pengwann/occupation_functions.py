@@ -1,6 +1,6 @@
 import numpy as np
 from math import factorial
-from scipy.special import erf # type: ignore
+from scipy.special import erf
 
 def fixed(eigenvalues: np.ndarray, mu: float) -> np.ndarray:
     """
