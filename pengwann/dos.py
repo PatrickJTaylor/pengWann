@@ -140,7 +140,6 @@ class DOS:
 
         R = tuple((R_2 - R_1).tolist())
 
-        print(self._H[R][i, j].real)
         if dos_matrix is None:
             return -self._H[R][i, j].real * self.get_dos_matrix(i, j, R_1, R_2)
 
