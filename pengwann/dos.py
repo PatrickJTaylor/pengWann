@@ -134,7 +134,7 @@ class DOS:
             np.ndarray: The WOHP arising from w_iR_1 and w_jR_2.
         """
         if self._H is None:
-            raise RuntimeError(
+            raise ValueError(
                 'The Wannier Hamiltonian is required to calculate WOHPs.'
             )
 
@@ -173,7 +173,7 @@ class DOS:
             np.ndarray: The WOBI arising from w_iR_1 and w_jR_2.
         """
         if self._occupation_matrix is None:
-            raise RuntimeError(
+            raise ValueError(
                 'The occupation matrix is required to calculate WOBIs.'
             )
 
