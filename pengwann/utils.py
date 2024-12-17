@@ -1,3 +1,8 @@
+"""
+This module contains some miscellaneous utility functions required elsewhere
+in the codebase.
+"""
+
 import numpy as np
 from pengwann.occupation_functions import fixed
 from pymatgen.core import Structure
@@ -65,7 +70,7 @@ def get_atom_indices(
 
     Returns:
         dict[str, tuple[int, ...]]: The site indices categorised by
-            atomic species (as dictionary keys).
+        atomic species (as dictionary keys).
     """
     atom_indices_list: dict[str, list[int]] = {}
     for symbol in symbols:
@@ -104,11 +109,13 @@ def get_occupation_matrix(
             level.
 
     Returns:
-        (np.ndarray): The occupation matrix.
+        np.ndarray: The occupation matrix.
 
     Notes:
         Several pre-defined occupation functions may be imported from the
-        occupation_functions module (Gaussian, Marzari-Vanderbilt etc).
+        :py:mod:`~pengwann.occupation_functions` module (Gaussian,
+        Marzari-Vanderbilt etc).
+
         Alternatively, one may choose to use a custom occupation function, in
         which case it must take the eigenvalues and the Fermi level as the
         first two positional arguments.

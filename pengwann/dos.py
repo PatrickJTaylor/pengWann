@@ -1,3 +1,9 @@
+"""
+This module contains the :py:class:`~pengwann.dos.DOS` class, which implements
+the core functionality of :py:mod:`pengwann`: computing bonding descriptors
+from Wannier functions via an interface to Wannier90.
+"""
+
 from __future__ import annotations
 
 import numpy as np
@@ -14,6 +20,32 @@ class DOS:
     """
     A class for the calculation and manipulation of the density of
     states.
+
+    Args:
+        energies (np.ndarray): The energies at which the DOS has
+            been evaluated.
+        dos_array (np.ndarray): The DOS at each energy, band and
+            k-point.
+        nspin (int): The number of electrons per Kohn-Sham state.
+            For spin-polarised calculations, set to 1.
+        kpoints (np.ndarray): The full k-point mesh.
+        U (np.ndarray): The U matrices used to define Wannier
+            functions from the Kohn-Sham states.
+        f (np.ndarray): An occupation matrix of appropriate shape
+            for calculating elements of the density matrix.
+        H (np.ndarray, optional): The Hamiltonian in the Wannier
+            basis. Required for the computation of WOHPs. Defaults
+            to None.
+        occupation_matrix (np.ndarray, optional): The occupation matrix.
+            Required for the computation of WOBIs. Defaults to None.
+
+    Returns:
+        None
+
+    Notes:
+        The vast majority of the time, it will be more convenient to
+        initialise a DOS object using the from_eigenvalues
+        classmethod.
     """
 
     _R_1 = np.array([0, 0, 0])
@@ -28,35 +60,6 @@ class DOS:
         H: Optional[dict[tuple[int, ...], np.ndarray]] = None,
         occupation_matrix: Optional[np.ndarray] = None,
     ) -> None:
-        """
-        Initialise a DOS object.
-
-        Args:
-            energies (np.ndarray): The energies at which the DOS has
-                been evaluated.
-            dos_array (np.ndarray): The DOS at each energy, band and
-                k-point.
-            nspin (int): The number of electrons per Kohn-Sham state.
-                For spin-polarised calculations, set to 1.
-            kpoints (np.ndarray): The full k-point mesh.
-            U (np.ndarray): The U matrices used to define Wannier
-                functions from the Kohn-Sham states.
-            f (np.ndarray): An occupation matrix of appropriate shape
-                for calculating elements of the density matrix.
-            H (np.ndarray, optional): The Hamiltonian in the Wannier
-                basis. Required for the computation of WOHPs. Defaults
-                to None.
-            occupation_matrix (np.ndarray, optional): The occupation matrix.
-                Required for the computation of WOBIs. Defaults to None.
-
-        Returns:
-            None
-
-        Notes:
-            The vast majority of the time, it will be more convenient to
-            initialise a DOS object using the from_eigenvalues
-            classmethod.
-        """
         self._energies = energies
         self._dos_array = dos_array
         self._kpoints = kpoints
@@ -84,11 +87,11 @@ class DOS:
             R_2 (np.ndarray): The Bravais lattice vector for Wannier
                 function j.
             sum_matrix (bool): Whether or not to sum over bands and
-                k-points before returning the DOS matrix.
+                k-points before returning the DOS matrix. Defaults to True.
 
         Returns:
             np.ndarray: The DOS matrix, either fully-specified or summed
-                over bands and k-points.
+            over bands and k-points.
         """
         C_dagger = (np.exp(-1j * 2 * np.pi * self._kpoints @ R_1))[
             :, np.newaxis
@@ -116,8 +119,12 @@ class DOS:
         R_2: np.ndarray,
         dos_matrix: Optional[np.ndarray] = None,
     ) -> np.ndarray:
-        """
+        r"""
         Calculate the WOHP for a given pair of Wannier functions.
+
+        .. math:: 
+            \mathrm{WOHP}^{R_{2} - R_{1}}_{ij}(E) = -H^{R_{2} - R_{1}}_{ij}
+            \sum_{nk}C^{*}_{iR_{1}k}C_{jR_{2}k}\delta(E - \epsilon_{nk})
 
         Args:
             i (int): The index for Wannier function i.
@@ -131,7 +138,8 @@ class DOS:
                 provided explicitly.
 
         Returns:
-            np.ndarray: The WOHP arising from w_iR_1 and w_jR_2.
+            np.ndarray: The WOHP arising from :math:`\ket{iR_{1}}` and
+            :math:`\ket{jR_{2}}`.
         """
         if self._H is None:
             raise ValueError(
@@ -154,8 +162,12 @@ class DOS:
         R_2: np.ndarray,
         dos_matrix: Optional[np.ndarray] = None,
     ) -> np.ndarray:
-        """
+        r"""
         Calculate the WOBI for a given pair of Wannier functions.
+
+        .. math:: 
+            \mathrm{WOBI}^{R_{2} - R_{1}}_{ij}(E) = P^{R_{2} - R_{1}}_{ij}
+            \sum_{nk}C^{*}_{iR_{1}k}C_{jR_{2}k}\delta(E - \epsilon_{nk})
 
         Args:
             i (int): The index for Wannier function i.
@@ -169,7 +181,8 @@ class DOS:
                 provided explicitly.
 
         Returns:
-            np.ndarray: The WOBI arising from w_iR_1 and w_jR_2.
+            np.ndarray: The WOBI arising from :math:`\ket{iR_{1}}` and
+            :math:`\ket{jR_{2}}`.
         """
         if self._occupation_matrix is None:
             raise ValueError(
@@ -187,8 +200,9 @@ class DOS:
     def P_ij(
         self, i: int, j: int, R_1: np.ndarray, R_2: np.ndarray
     ) -> complex:
-        """
-        Calculate element <w_iR_1|P|w_jR_2> of the Wannier density matrix.
+        r"""
+        Calculate element :math:`P^{R_{2} - R_{1}}_{ij} = \braket{iR_{1}|P|jR_{2}}`
+        of the Wannier density matrix.
 
         Args:
             i (int): The index for Wannier function i.
@@ -227,7 +241,7 @@ class DOS:
 
         Returns:
             dict[str, np.ndarray]: The pDOS for the specified atomic
-                species.
+            species.
         """
         wannier_centres = geometry.site_properties['wannier_centres']
         atom_indices = get_atom_indices(geometry, symbols)
@@ -370,7 +384,7 @@ class DOS:
 
         Returns:
             dict[str, np.ndarray]: The WOHP and/or WOBI associated with
-                the given interaction.
+            the given interaction.
         """
         interaction, labels = interaction_and_labels
 
@@ -401,6 +415,10 @@ class DOS:
 
     @property
     def energies(self) -> np.ndarray:
+        """
+        The array of energies over which the DOS (and all derived quantities
+        such as WOHPs and WOBIs) has been evaluated.
+        """
         return self._energies
 
     @classmethod

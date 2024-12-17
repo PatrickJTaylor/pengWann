@@ -1,3 +1,10 @@
+"""
+This module implements several parsing functions for reading Wannier90 output
+files. The :py:func:`~pengwann.io.read` function is a convenient wrapper for
+automatically parsing all the data required to construct an instance of the
+:py:class:`pengwann.dos.DOS` class.
+"""
+
 import os
 import numpy as np
 
@@ -9,6 +16,17 @@ def read(seedname: str, path: str='.') -> tuple[np.ndarray, np.ndarray, np.ndarr
         seedname (str): Wannier90 seedname (prefix for all output files).
         path: (str): Filepath to main Wannier90 output files. Defaults to '.'
             i.e. the current working directory.
+
+    Returns:
+        tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+
+        np.ndarray: The k-points used in the prior DFT calculation.
+
+        np.ndarray: The Kohn-Sham eigenvalues.
+        
+        np.ndarray: The unitary matrices :math:`U^{k}`.
+
+        np.ndarray: The Hamiltonian in the Wannier basis.
     """
     U, kpoints = read_U(f'{path}/{seedname}_u.mat')
     if os.path.isfile(f'{path}/{seedname}_u_dis.mat'):
@@ -22,20 +40,24 @@ def read(seedname: str, path: str='.') -> tuple[np.ndarray, np.ndarray, np.ndarr
 
 
 def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
-    """
-    Read in the unitary matrices U^k_mn that define the Wannier
-    functions w_nR from the Kohn-Sham states psi_mk.
+    r"""
+    Read in the unitary matrices :math:`U^{k}` that define the Wannier
+    functions :math:`\ket{w_{nR}}` from the Kohn-Sham states
+    :math:`\ket{\psi_{mk}}`.
 
     Args:
         path (str): The filepath to seedname_u.mat or seedname_u_dis.mat.
 
     Returns:
-        U (np.ndarray): The unitary matrices U^k.
-        kpoints (np.ndarray): The k-points corresponding to each U^k.
+        tuple[np.ndarray, np.ndarray]:
+
+        np.ndarray: The unitary matrices :math:`U^{k}`.
+
+        np.ndarray: The k-points corresponding to each :math:`U^{k}`.
 
     Notes:
         The output array is a num_kpoints x num_bands x num_wann tensor,
-        each num_bands x num_wann block is a matrix U^k.
+        each num_bands x num_wann block is a matrix :math:`U^{k}`.
     """
     U_list, kpoints_list = [], []
 
@@ -86,7 +108,7 @@ def read_eigenvalues(
         num_kpoints (int): The number of k-points.
 
     Returns:
-        eigenvalues (np.ndarray): The Kohn-Sham eigenvalues.
+        np.ndarray: The Kohn-Sham eigenvalues.
 
     Notes:
         The output array is a num_bands x num_kpoints matrix.
@@ -121,7 +143,7 @@ def read_Hamiltonian(path: str) -> dict[tuple[int, ...], np.ndarray]:
         path (str): The filepath to seedname_hr.dat.
 
     Returns:
-        H (np.ndarray): The Wannier Hamiltonian.
+        np.ndarray: The Wannier Hamiltonian.
 
     Notes:
         H is a dictionary with keys corresponding to Bravais lattice

@@ -1,3 +1,9 @@
+"""
+This module contains the :py:class:`~pengwann.geometry.InteractionFinder`
+class, which allows for the identification of bonds between pairs of atoms
+(and their associated Wannier functions) according to a distance criterion.
+"""
+
 from __future__ import annotations
 
 import numpy as np
@@ -47,25 +53,22 @@ class InteractionFinder:
     A class for identifying interatomic interactions according to a
     chosen criterion, providing the indices necessary to calculate the
     relevant WOHPS and WOBIs.
+
+    Args:
+        geometry (Structure): A Pymatgen Structure object with a
+            'wannier_centres' site_property.
+
+    Returns:
+        None
+
+    Notes:
+        This class is not really designed to be initialised
+        manually. If you do wish to do this, the 'wannier_centres'
+        site_property should associate each atom with a list containing
+        the indices of its Wannier centres.
     """
 
     def __init__(self, geometry: Structure) -> None:
-        """
-        Initialise an InteractionFinder object.
-
-        Args:
-            geometry (Structure): A Pymatgen Structure object with a
-                'wannier_centres' site_property.
-
-        Returns:
-            None
-
-        Notes:
-            This class is not really designed to be initialised
-            manually. If you do wish to do this, the 'wannier_centres'
-            site_property should associate each atom with a list containing
-            the indices of its Wannier centres.
-        """
         self._geometry = geometry
         self._num_wann = len(
             [
@@ -85,13 +88,14 @@ class InteractionFinder:
         Args:
             radial_cutoffs (dict[tuple[str, str], float]): A dictionary
                 defining a radial cutoff for pairs of atomic species.
+
                 For example:
-                    {('Fe', 'O') : 1.8,
-                     ('Si', 'O') : 2.0}
+
+                {('Fe', 'O') : 1.8, ('Si', 'O') : 2.0}
 
         Returns:
             tuple[AtomicInteraction, ...]: The interactions identified by the
-                chosen criteria.
+            chosen criteria.
         """
         symbols_list: list[str] = []
         for pair in radial_cutoffs.keys():
@@ -145,6 +149,11 @@ class InteractionFinder:
 
     @property
     def geometry(self) -> Structure:
+        """
+        A Pymatgen Structure object with a 'wannier_indices' site property
+        that allows it to be used in conjunction with the project method of
+        the DOS class.
+        """
         return self._geometry
 
     @classmethod
