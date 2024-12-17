@@ -96,14 +96,12 @@ class DOS:
         C_dagger = (np.exp(-1j * 2 * np.pi * self._kpoints @ R_1))[
             :, np.newaxis
         ] * self._U[:, :, i]
-        C = (np.exp(1j * 2 * np.pi * self._kpoints @ R_2))[
-            :, np.newaxis
-        ] * np.conj(self._U[:, :, j])
+        C = (np.exp(1j * 2 * np.pi * self._kpoints @ R_2))[:, np.newaxis] * np.conj(
+            self._U[:, :, j]
+        )
         C_dagger_C = (C_dagger * C).T
 
-        dos_matrix = (
-            self._nspin * C_dagger_C[np.newaxis, :, :].real * self._dos_array
-        )
+        dos_matrix = self._nspin * C_dagger_C[np.newaxis, :, :].real * self._dos_array
 
         if sum_matrix:
             return np.sum(dos_matrix, axis=(1, 2))
@@ -122,7 +120,7 @@ class DOS:
         r"""
         Calculate the WOHP for a given pair of Wannier functions.
 
-        .. math:: 
+        .. math::
             \mathrm{WOHP}^{R_{2} - R_{1}}_{ij}(E) = -H^{R_{2} - R_{1}}_{ij}
             \sum_{nk}C^{*}_{iR_{1}k}C_{jR_{2}k}\delta(E - \epsilon_{nk})
 
@@ -142,9 +140,7 @@ class DOS:
             :math:`\ket{jR_{2}}`.
         """
         if self._H is None:
-            raise ValueError(
-                'The Wannier Hamiltonian is required to calculate WOHPs.'
-            )
+            raise ValueError("The Wannier Hamiltonian is required to calculate WOHPs.")
 
         R = tuple((R_2 - R_1).tolist())
 
@@ -165,7 +161,7 @@ class DOS:
         r"""
         Calculate the WOBI for a given pair of Wannier functions.
 
-        .. math:: 
+        .. math::
             \mathrm{WOBI}^{R_{2} - R_{1}}_{ij}(E) = P^{R_{2} - R_{1}}_{ij}
             \sum_{nk}C^{*}_{iR_{1}k}C_{jR_{2}k}\delta(E - \epsilon_{nk})
 
@@ -185,21 +181,15 @@ class DOS:
             :math:`\ket{jR_{2}}`.
         """
         if self._occupation_matrix is None:
-            raise ValueError(
-                'The occupation matrix is required to calculate WOBIs.'
-            )
+            raise ValueError("The occupation matrix is required to calculate WOBIs.")
 
         if dos_matrix is None:
-            return self.P_ij(i, j, R_1, R_2).real * self.get_dos_matrix(
-                i, j, R_1, R_2
-            )
+            return self.P_ij(i, j, R_1, R_2).real * self.get_dos_matrix(i, j, R_1, R_2)
 
         else:
             return self.P_ij(i, j, R_1, R_2).real * dos_matrix
 
-    def P_ij(
-        self, i: int, j: int, R_1: np.ndarray, R_2: np.ndarray
-    ) -> complex:
+    def P_ij(self, i: int, j: int, R_1: np.ndarray, R_2: np.ndarray) -> complex:
         r"""
         Calculate element :math:`P^{R_{2} - R_{1}}_{ij} = \braket{iR_{1}|P|jR_{2}}`
         of the Wannier density matrix.
@@ -218,9 +208,9 @@ class DOS:
         C_dagger = (np.exp(-1j * 2 * np.pi * self._kpoints @ R_1))[
             :, np.newaxis
         ] * self._U[:, :, i]
-        C = (np.exp(1j * 2 * np.pi * self._kpoints @ R_2))[
-            :, np.newaxis
-        ] * np.conj(self._U[:, :, j])
+        C = (np.exp(1j * 2 * np.pi * self._kpoints @ R_2))[:, np.newaxis] * np.conj(
+            self._U[:, :, j]
+        )
 
         P_nk = self._occupation_matrix * C_dagger * C
 
@@ -243,7 +233,7 @@ class DOS:
             dict[str, np.ndarray]: The pDOS for the specified atomic
             species.
         """
-        wannier_centres = geometry.site_properties['wannier_centres']
+        wannier_centres = geometry.site_properties["wannier_centres"]
         atom_indices = get_atom_indices(geometry, symbols)
 
         wannier_indices = {}
@@ -266,9 +256,7 @@ class DOS:
             for i in indices:
                 args.append((i, i, self._R_1, self._R_1))
 
-            pdos[symbol] = np.sum(
-                pool.starmap(self.get_dos_matrix, args), axis=0
-            )
+            pdos[symbol] = np.sum(pool.starmap(self.get_dos_matrix, args), axis=0)
 
         pool.close()
 
@@ -304,10 +292,10 @@ class DOS:
 
         labels_list = []
         if calculate_wohp:
-            labels_list.append('WOHP')
+            labels_list.append("WOHP")
 
         if calculate_wobi:
-            labels_list.append('WOBI')
+            labels_list.append("WOBI")
 
         labels = tuple(labels_list)
 
@@ -364,7 +352,7 @@ class DOS:
                 x = self._energies[:fermi_idx]
                 y = descriptor[:fermi_idx]
 
-                integrals['I' + label] = trapezoid(y, x)
+                integrals["I" + label] = trapezoid(y, x)
 
             integrated_descriptors[interaction] = integrals
 
@@ -395,21 +383,15 @@ class DOS:
         for w_interaction in interaction.wannier_interactions:
             i, j, R_2 = w_interaction.i, w_interaction.j, w_interaction.R_2
 
-            dos_matrix = self.get_dos_matrix(
-                i, j, self._R_1, R_2
-            )
+            dos_matrix = self.get_dos_matrix(i, j, self._R_1, R_2)
 
-            if 'WOHP' in labels:
-                wohp = self.get_WOHP(
-                    i, j, self._R_1, R_2, dos_matrix
-                )
-                interaction_descriptors['WOHP'] += wohp
+            if "WOHP" in labels:
+                wohp = self.get_WOHP(i, j, self._R_1, R_2, dos_matrix)
+                interaction_descriptors["WOHP"] += wohp
 
-            if 'WOBI' in labels:
-                wobi = self.get_WOBI(
-                    i, j, self._R_1, R_2, dos_matrix
-                )
-                interaction_descriptors['WOBI'] += wobi
+            if "WOBI" in labels:
+                wobi = self.get_WOBI(i, j, self._R_1, R_2, dos_matrix)
+                interaction_descriptors["WOBI"] += wobi
 
         return interaction.pair_id, interaction_descriptors
 

@@ -7,6 +7,7 @@ import numpy as np
 from math import factorial
 from scipy.special import erf
 
+
 def fixed(eigenvalues: np.ndarray, mu: float) -> np.ndarray:
     r"""
     A simple heaviside occupation function.
@@ -25,6 +26,7 @@ def fixed(eigenvalues: np.ndarray, mu: float) -> np.ndarray:
         np.ndarray: The occupation numbers.
     """
     return np.heaviside(-1 * (eigenvalues - mu), 1)
+
 
 def fermi_dirac(eigenvalues: np.ndarray, mu: float, sigma: float) -> np.ndarray:
     r"""
@@ -46,6 +48,7 @@ def fermi_dirac(eigenvalues: np.ndarray, mu: float, sigma: float) -> np.ndarray:
 
     return 1 / (np.exp(x) + 1)
 
+
 def gaussian(eigenvalues: np.ndarray, mu: float, sigma: float) -> np.ndarray:
     r"""
     A Gaussian occupation function.
@@ -65,6 +68,7 @@ def gaussian(eigenvalues: np.ndarray, mu: float, sigma: float) -> np.ndarray:
     x = (eigenvalues - mu) / sigma
 
     return 0.5 * (1 - erf(x))
+
 
 def cold(eigenvalues: np.ndarray, mu: float, sigma: float) -> np.ndarray:
     r"""
@@ -87,4 +91,6 @@ def cold(eigenvalues: np.ndarray, mu: float, sigma: float) -> np.ndarray:
     """
     x = (eigenvalues - mu) / sigma
 
-    return 0.5 * (np.sqrt(2 / np.pi) * np.exp(-x ** 2 - np.sqrt(2) * x - 0.5) + 1 - erf(x + 0.5))
+    return 0.5 * (
+        np.sqrt(2 / np.pi) * np.exp(-(x**2) - np.sqrt(2) * x - 0.5) + 1 - erf(x + 0.5)
+    )

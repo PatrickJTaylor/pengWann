@@ -8,7 +8,10 @@ automatically parsing all the data required to construct an instance of the
 import os
 import numpy as np
 
-def read(seedname: str, path: str='.') -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[tuple[int, ...], np.ndarray]]:
+
+def read(
+    seedname: str, path: str = "."
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[tuple[int, ...], np.ndarray]]:
     """
     Wrapper function for reading in the main Wannier90 output files.
 
@@ -23,18 +26,18 @@ def read(seedname: str, path: str='.') -> tuple[np.ndarray, np.ndarray, np.ndarr
         np.ndarray: The k-points used in the prior DFT calculation.
 
         np.ndarray: The Kohn-Sham eigenvalues.
-        
+
         np.ndarray: The unitary matrices :math:`U^{k}`.
 
         np.ndarray: The Hamiltonian in the Wannier basis.
     """
-    U, kpoints = read_U(f'{path}/{seedname}_u.mat')
-    if os.path.isfile(f'{path}/{seedname}_u_dis.mat'):
-        U_dis, _ = read_U(f'{path}/{seedname}_u_dis.mat')
+    U, kpoints = read_U(f"{path}/{seedname}_u.mat")
+    if os.path.isfile(f"{path}/{seedname}_u_dis.mat"):
+        U_dis, _ = read_U(f"{path}/{seedname}_u_dis.mat")
         U = U_dis @ U
 
-    H = read_Hamiltonian(f'{path}/{seedname}_hr.dat')
-    eigenvalues = read_eigenvalues(f'{path}/{seedname}.eig', U.shape[1], U.shape[0])
+    H = read_Hamiltonian(f"{path}/{seedname}_hr.dat")
+    eigenvalues = read_eigenvalues(f"{path}/{seedname}.eig", U.shape[1], U.shape[0])
 
     return kpoints, eigenvalues, U, H
 
@@ -61,7 +64,7 @@ def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
     """
     U_list, kpoints_list = [], []
 
-    with open(path, 'r') as stream:
+    with open(path, "r") as stream:
         lines = stream.readlines()
 
     num_kpoints, num_wann, num_bands = [int(string) for string in lines[1].split()]
@@ -97,7 +100,9 @@ def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
 
 
 def read_eigenvalues(
-    path: str, num_bands: int, num_kpoints: int,
+    path: str,
+    num_bands: int,
+    num_kpoints: int,
 ) -> np.ndarray:
     """
     Read in the Kohn-Sham eigenvalues.
@@ -115,7 +120,7 @@ def read_eigenvalues(
     """
     eigenvalues_list = []
 
-    with open(path, 'r') as stream:
+    with open(path, "r") as stream:
         lines = stream.readlines()
 
     block_indices = [idx * num_bands for idx in range(num_kpoints)]
@@ -150,7 +155,7 @@ def read_Hamiltonian(path: str) -> dict[tuple[int, ...], np.ndarray]:
         vectors (in tuple form). Each value is a num_wann x num_wann
         matrix.
     """
-    with open(path, 'r') as stream:
+    with open(path, "r") as stream:
         lines = stream.readlines()
 
     num_wann = int(lines[1])
@@ -158,7 +163,7 @@ def read_Hamiltonian(path: str) -> dict[tuple[int, ...], np.ndarray]:
 
     start_idx = int(np.ceil(num_Rpoints / 15)) + 3
 
-    H = {} # type: dict[tuple[int, ...], np.ndarray]
+    H = {}  # type: dict[tuple[int, ...], np.ndarray]
 
     for line in lines[start_idx:]:
         data = line.split()

@@ -74,7 +74,7 @@ class InteractionFinder:
             [
                 idx
                 for idx in range(len(self._geometry))
-                if self._geometry[idx].species_string == 'X0+'
+                if self._geometry[idx].species_string == "X0+"
             ]
         )
 
@@ -107,7 +107,7 @@ class InteractionFinder:
 
         atom_indices = get_atom_indices(self._geometry, symbols)
 
-        wannier_centres = self._geometry.site_properties['wannier_centres']
+        wannier_centres = self._geometry.site_properties["wannier_centres"]
         interactions = []
         for pair, cutoff in radial_cutoffs.items():
             symbol_i, symbol_j = pair
@@ -134,15 +134,15 @@ class InteractionFinder:
                     wannier_interactions_list = []
                     for m in wannier_centres[i]:
                         for n in wannier_centres[j]:
-                            dist, image = self._geometry[m].distance_and_image(self._geometry[n])
+                            dist, image = self._geometry[m].distance_and_image(
+                                self._geometry[n]
+                            )
 
                             wannier_interaction = WannierInteraction(m, n, image)
                             wannier_interactions_list.append(wannier_interaction)
 
                     wannier_interactions = tuple(wannier_interactions_list)
-                    interaction = AtomicInteraction(
-                        pair_id, wannier_interactions
-                    )
+                    interaction = AtomicInteraction(pair_id, wannier_interactions)
                     interactions.append(interaction)
 
         return tuple(interactions)
@@ -177,9 +177,7 @@ class InteractionFinder:
         species = [site.species_string for site in xyz]  # type: ignore[union-attr]
         coords = [site.coords for site in xyz]  # type: ignore[union-attr]
 
-        geometry = Structure(
-            lattice, species, coords, coords_are_cartesian=True
-        )
+        geometry = Structure(lattice, species, coords, coords_are_cartesian=True)
 
         assign_wannier_centres(geometry)
 

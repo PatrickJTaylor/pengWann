@@ -26,7 +26,7 @@ def assign_wannier_centres(geometry: Structure) -> None:
     for idx in range(len(geometry)):
         symbol = geometry[idx].species_string
 
-        if symbol == 'X0+':
+        if symbol == "X0+":
             wannier_indices.append(idx)
 
         else:
@@ -34,9 +34,7 @@ def assign_wannier_centres(geometry: Structure) -> None:
 
     distance_matrix = geometry.distance_matrix
 
-    wannier_centres_list: list[list[int]] = [
-        [] for idx in range(len(geometry))
-    ]
+    wannier_centres_list: list[list[int]] = [[] for idx in range(len(geometry))]
     for i in wannier_indices:
         min_distance, min_idx = np.inf, 2 * len(geometry)
 
@@ -50,10 +48,8 @@ def assign_wannier_centres(geometry: Structure) -> None:
         wannier_centres_list[i].append(min_idx)
         wannier_centres_list[min_idx].append(i)
 
-    wannier_centres = tuple(
-        [tuple(indices) for indices in wannier_centres_list]
-    )
-    geometry.add_site_property('wannier_centres', wannier_centres)
+    wannier_centres = tuple([tuple(indices) for indices in wannier_centres_list])
+    geometry.add_site_property("wannier_centres", wannier_centres)
 
 
 def get_atom_indices(
@@ -89,9 +85,11 @@ def get_atom_indices(
 
 
 def get_occupation_matrix(
-    mu: float, eigenvalues: np.ndarray, electrons_per_state: int,
-        occupation_function: Optional[Callable]=None,
-        **function_kwargs
+    mu: float,
+    eigenvalues: np.ndarray,
+    electrons_per_state: int,
+    occupation_function: Optional[Callable] = None,
+    **function_kwargs
 ) -> np.ndarray:
     """
     Calculate the occupation matrix.
