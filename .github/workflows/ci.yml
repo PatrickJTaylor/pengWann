@@ -24,7 +24,7 @@ jobs:
         mypy pengwann
     - name: Generate test converage report
       run: |
-        pytest --cov-report xml --cov=.
+        pytest --cov-report xml --cov=pengwann tests
     - name: Publish test coverage report
       uses: paambaati/codeclimate-action@v2.7.5
       env:
