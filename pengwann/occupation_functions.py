@@ -44,6 +44,9 @@ def fermi_dirac(eigenvalues: np.ndarray, mu: float, sigma: float) -> np.ndarray:
     Returns:
         np.ndarray: The occupation numbers.
     """
+    if sigma <= 0:
+        raise ValueError('The smearing width must > 0, {sigma} is <= 0')
+
     x = (eigenvalues - mu) / sigma
 
     return 1 / (np.exp(x) + 1)
@@ -65,6 +68,9 @@ def gaussian(eigenvalues: np.ndarray, mu: float, sigma: float) -> np.ndarray:
     Returns:
         np.ndarray: The occupation numbers.
     """
+    if sigma <= 0:
+        raise ValueError('The smearing width must > 0, {sigma} is <= 0')
+
     x = (eigenvalues - mu) / sigma
 
     return 0.5 * (1 - erf(x))
@@ -89,6 +95,9 @@ def cold(eigenvalues: np.ndarray, mu: float, sigma: float) -> np.ndarray:
     Returns:
         np.ndarray: The occupation numbers.
     """
+    if sigma <= 0:
+        raise ValueError('The smearing width must > 0, {sigma} is <= 0')
+
     x = (eigenvalues - mu) / sigma
 
     return 0.5 * (
