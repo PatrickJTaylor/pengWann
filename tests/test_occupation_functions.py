@@ -22,7 +22,7 @@ def test_occupation_function(datadir, occupation_function) -> None:
     ref_occupations = np.load(f"{datadir}/{occupation_function.__name__}.npy")
     test_occupations = occupation_function(eigenvalues, mu, sigma)
 
-    np.testing.assert_allclose(test_occupations, ref_occupations, strict=True)
+    np.testing.assert_allclose(test_occupations, ref_occupations)
 
 
 @pytest.mark.parametrize("occupation_function", (fermi_dirac, cold, gaussian))

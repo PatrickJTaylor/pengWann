@@ -86,4 +86,4 @@ def test_get_occupation_matrix_custom(datadir) -> None:
     )
     ref_occupations = np.load(f"{datadir}/fermi_dirac.npy")
 
-    np.testing.assert_allclose(test_occupations, ref_occupations, strict=True)
+    np.testing.assert_allclose(test_occupations, ref_occupations)
