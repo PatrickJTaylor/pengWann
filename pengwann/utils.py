@@ -32,6 +32,11 @@ def assign_wannier_centres(geometry: Structure) -> None:
         else:
             atom_indices.append(idx)
 
+    if not wannier_indices:
+        raise ValueError(
+            'No Wannier centres ("X" atoms) found in the input Structure object.'
+        )
+
     distance_matrix = geometry.distance_matrix
 
     wannier_centres_list: list[list[int]] = [[] for idx in range(len(geometry))]
@@ -85,9 +90,9 @@ def get_atom_indices(
 
 
 def get_occupation_matrix(
-    mu: float,
     eigenvalues: np.ndarray,
-    electrons_per_state: int,
+    mu: float,
+    nspin: int,
     occupation_function: Optional[Callable] = None,
     **function_kwargs
 ) -> np.ndarray:
@@ -95,10 +100,9 @@ def get_occupation_matrix(
     Calculate the occupation matrix.
 
     Args:
-        mu (float): The Fermi level.
         eigenvalues (np.ndarray): The Kohn-Sham eigenvalues.
-        electrons_per_state (int): The number of electrons per occupied
-            Kohn-Sham state.
+        mu (float): The Fermi level.
+        nspin (int): The number of electrons per fully-occupied Kohn-Sham state.
         occupation_function (Optional[Callable]): The occupation function to
             be used to calculate the occupation matrix. Defaults to None (which
             means fixed occupations will be assumed).
@@ -124,6 +128,6 @@ def get_occupation_matrix(
     else:
         occupation_matrix = fixed(eigenvalues, mu)
 
-    occupation_matrix *= electrons_per_state
+    occupation_matrix *= nspin
 
     return occupation_matrix.T
