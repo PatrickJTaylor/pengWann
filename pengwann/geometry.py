@@ -78,6 +78,12 @@ class InteractionFinder:
             ]
         )
 
+        if self._num_wann == 0:
+            raise ValueError('Input geometry contains no Wannier centres (i.e. no "X" atoms).')
+
+        if 'wannier_centres' not in self._geometry.site_properties.keys():
+            raise ValueError('Input geometry is missing a "wannier_centres" site property.')
+
     def get_interactions(
         self, radial_cutoffs: dict[tuple[str, str], float]
     ) -> tuple[AtomicInteraction, ...]:
