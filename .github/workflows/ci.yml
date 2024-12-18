@@ -30,4 +30,4 @@ jobs:
       env:
         CC_TEST_REPORTER_ID: ${{ secrets.CODECLIMATE_REPO_TOKEN }}
       with:
-        debug: true
+        coverageCommand: coverage report
