@@ -26,7 +26,6 @@ jobs:
       run: |
         pytest --cov-report xml --cov=pengwann tests
     - name: Publish test coverage report
-      uses: codecov/codecov-action@v5
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        slug: PatrickJTaylor/pengWann
+      uses: paambaati/codeclimate-action@v9.0.0
+      env:
+        CC_TEST_REPORTER_ID: ${{ secrets.CODECLIMATE_REPO_TOKEN }}
