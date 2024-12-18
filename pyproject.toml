@@ -60,3 +60,6 @@ include = ['pengwann']
 
 [tool.hatch.version]
 path = 'pengwann/version.py'
+
+[tool.coverage.run]
+source = ['pengwann']
