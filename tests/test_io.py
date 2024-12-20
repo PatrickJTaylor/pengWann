@@ -2,8 +2,8 @@ import numpy as np
 from pengwann.io import read, read_eigenvalues, read_Hamiltonian, read_U
 
 def test_read_eigenvalues(datadir) -> None:
-    num_bands = 40
-    num_kpoints = 9261
+    num_bands = 12
+    num_kpoints = 4096
 
     test_eigenvalues = read_eigenvalues(f'{datadir}/wannier90.eig', num_bands, num_kpoints)
     ref_eigenvalues = np.load(f'{datadir}/eigenvalues.npy')
@@ -28,9 +28,8 @@ def test_read_Hamiltonian(datadir) -> None:
 
     np.testing.assert_allclose(test_H_000, ref_H_000)
 
-# TODO: less smaller U_matrices for test.
-#def test_read_wrapper(datadir) -> None:
-    #_, _, test_U, _ = read('wannier90', f'{datadir}')
-    #ref_U = np.load(f'{datadir}/U_with_dis.npy')
+def test_read_wrapper(datadir) -> None:
+    _, _, test_U, _ = read('wannier90', f'{datadir}')
+    ref_U = np.load(f'{datadir}/U_with_dis.npy')
 
-    #np.testing.assert_allclose(test_U, ref_U)
+    np.testing.assert_allclose(test_U, ref_U)
