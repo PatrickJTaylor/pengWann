@@ -22,6 +22,10 @@ jobs:
     - name: Run static type checking
       run: |
         mypy pengwann
+    - name: DEBUG - View coverage report
+      run: |
+        ls
+        pytest --cov=pengwann tests
     - name: Generate test coverage report
       run: |
         pytest --cov-report xml --cov=pengwann tests
