@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from pengwann.dos import DOS
 from pengwann.io import read_Hamiltonian
+from pymatgen.core import Structure
 
 def test_dos_init_from_eigenvalues(datadir) -> None:
     eigenvalues = np.array([[-4, -3, -2, -1, 1, 2, 3, 4],
@@ -84,6 +85,16 @@ def test_DOS_get_WOHP(instance_dos, datadir) -> None:
 
     np.testing.assert_allclose(test_WOHP, ref_WOHP)
 
+def test_DOS_get_WOHP_no_H(instance_dos) -> None:
+    instance_dos._H = None
+
+    i, j = 1, 3
+    R_1 = np.array([0, 0, 0])
+    R_2 = np.array([0, -1, 0])
+
+    with pytest.raises(ValueError):
+        instance_dos.get_WOHP(i, j, R_1, R_2)
+
 def test_DOS_get_WOBI(instance_dos, datadir) -> None:
     i, j = 1, 4
     R_1 = np.array([0, 0, 0])
@@ -95,3 +106,33 @@ def test_DOS_get_WOBI(instance_dos, datadir) -> None:
     ref_WOBI = np.load(f'{datadir}/WOBI.npy')
 
     np.testing.assert_allclose(test_WOBI, ref_WOBI)
+
+def test_DOS_get_WOBI_no_occupation_matrix(instance_dos) -> None:
+    instance_dos._occupation_matrix = None
+
+    i, j = 1, 4
+    R_1 = np.array([0, 0, 0])
+    R_2 = np.array([0, -1, 0])
+
+    with pytest.raises(ValueError):
+        instance_dos.get_WOBI(i, j, R_1, R_2)
+
+def test_DOS_project(instance_dos, datadir) -> None:
+    geometry = Structure.from_file(f'{datadir}/structure.vasp')
+    wannier_centres = ((9,),
+                       (8,), 
+                       (8,), 
+                       (9,), 
+                       (9,), 
+                       (8,), 
+                       (9,), 
+                       (8,), 
+                       (1, 2, 5, 7),
+                       (0, 3, 4, 6))
+    geometry.add_site_property('wannier_centres', wannier_centres)
+
+    pdos = instance_dos.project(geometry, ('C',))
+    test_pdos_C = pdos['C']
+    ref_pdos_C = np.load(f'{datadir}/pdos.npy')
+
+    np.testing.assert_allclose(test_pdos_C, ref_pdos_C)
