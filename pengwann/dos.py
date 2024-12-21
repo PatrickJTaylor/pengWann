@@ -121,7 +121,7 @@ class DOS:
         Calculate the WOHP for a given pair of Wannier functions.
 
         .. math::
-            \mathrm{WOHP}^{R_{2} - R_{1}}_{ij}(E) = -H^{R_{2} - R_{1}}_{ij}
+            \mathrm{WOHP}^{R}_{ij}(E) = -H^{R}_{ij}
             \sum_{nk}C^{*}_{iR_{1}k}C_{jR_{2}k}\delta(E - \epsilon_{nk})
 
         Args:
@@ -162,7 +162,7 @@ class DOS:
         Calculate the WOBI for a given pair of Wannier functions.
 
         .. math::
-            \mathrm{WOBI}^{R_{2} - R_{1}}_{ij}(E) = P^{R_{2} - R_{1}}_{ij}
+            \mathrm{WOBI}^{R}_{ij}(E) = P^{R}_{ij}
             \sum_{nk}C^{*}_{iR_{1}k}C_{jR_{2}k}\delta(E - \epsilon_{nk})
 
         Args:
@@ -191,7 +191,7 @@ class DOS:
 
     def P_ij(self, i: int, j: int, R_1: np.ndarray, R_2: np.ndarray) -> complex:
         r"""
-        Calculate element :math:`P^{R_{2} - R_{1}}_{ij} = \braket{iR_{1}|P|jR_{2}}`
+        Calculate element :math:`P^{R}_{ij} = \braket{iR_{1}|P|jR_{2}}`
         of the Wannier density matrix.
 
         Args:
