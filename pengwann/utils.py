@@ -94,7 +94,7 @@ def get_occupation_matrix(
     mu: float,
     nspin: int,
     occupation_function: Optional[Callable] = None,
-    **function_kwargs
+    **function_kwargs,
 ) -> np.ndarray:
     """
     Calculate the occupation matrix.
