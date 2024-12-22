@@ -19,7 +19,5 @@ pip install pengwann
 Alternatively, to install the current development build:
 
 ```
-git clone https://github.com/PatrickJTaylor/pengWann.git
-cd pengWann
-pip install .
+pip install git+https://github.com/PatrickJTaylor/pengwann.git
 ```
