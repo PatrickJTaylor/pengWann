@@ -122,7 +122,7 @@ class DOS:
 
         .. math::
             \mathrm{WOHP}^{R}_{ij}(E) = -H^{R}_{ij}
-            \sum_{nk}C^{*}_{iR_{1}k}C_{jR_{2}k}\delta(E - \epsilon_{nk})
+            \sum_{nk}\mathrm{Re}(C^{*}_{iR_{1}k}C_{jR_{2}k})\delta(E - \epsilon_{nk})
 
         Args:
             i (int): The index for Wannier function i.
@@ -163,7 +163,7 @@ class DOS:
 
         .. math::
             \mathrm{WOBI}^{R}_{ij}(E) = P^{R}_{ij}
-            \sum_{nk}C^{*}_{iR_{1}k}C_{jR_{2}k}\delta(E - \epsilon_{nk})
+            \sum_{nk}\mathrm{Re}(C^{*}_{iR_{1}k}C_{jR_{2}k})\delta(E - \epsilon_{nk})
 
         Args:
             i (int): The index for Wannier function i.
