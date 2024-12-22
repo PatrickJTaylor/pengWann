@@ -17,6 +17,7 @@ Besides the [API reference](./api), a detailed use case of how `pengwann` can be
 hidden: True
 ---
 
+installation
 methodology
 examples
 api
