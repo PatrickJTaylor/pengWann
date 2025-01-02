@@ -381,16 +381,16 @@ class DOS:
             interaction_descriptors[label] = np.zeros((len(self._energies)))
 
         for w_interaction in interaction.wannier_interactions:
-            i, j, R_2 = w_interaction.i, w_interaction.j, w_interaction.R_2
+            i, j, R_1, R_2 = w_interaction.i, w_interaction.j, w_interaction.R_1, w_interaction.R_2
 
-            dos_matrix = self.get_dos_matrix(i, j, self._R_1, R_2)
+            dos_matrix = self.get_dos_matrix(i, j, R_1, R_2)
 
             if "WOHP" in labels:
-                wohp = self.get_WOHP(i, j, self._R_1, R_2, dos_matrix)
+                wohp = self.get_WOHP(i, j, R_1, R_2, dos_matrix)
                 interaction_descriptors["WOHP"] += wohp
 
             if "WOBI" in labels:
-                wobi = self.get_WOBI(i, j, self._R_1, R_2, dos_matrix)
+                wobi = self.get_WOBI(i, j, R_1, R_2, dos_matrix)
                 interaction_descriptors["WOBI"] += wobi
 
         return interaction.pair_id, interaction_descriptors
