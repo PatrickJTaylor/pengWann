@@ -24,7 +24,7 @@ jobs:
         mypy pengwann
     - name: Generate test coverage report
       run: |
-        pytest --cov-report xml --cov=pengwann tests
+        pytest -W ignore::DeprecationWarning --cov-report xml --cov=pengwann tests
     - name: Publish test coverage report
       uses: paambaati/codeclimate-action@v9.0.0
       env:
