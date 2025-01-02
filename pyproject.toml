@@ -62,4 +62,6 @@ include = ['pengwann']
 path = 'pengwann/version.py'
 
 [tool.pytest.ini_options]
-filterwarnings = 'ignore::DeprecationWarning:pymatgen.*:'
+filterwarnings = [
+  'ignore::DeprecationWarning:pymatgen.*:'
+]
