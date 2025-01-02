@@ -38,13 +38,15 @@ class WannierInteraction(NamedTuple):
     Attributes:
         i (int): The index for Wannier function i.
         j (int): The index for Wannier function j.
+        R_1 (np.ndarray): The Bravais lattice vector specifying the translation
+            of Wannier function i.
         R_2 (np.ndarray): The Bravais lattice vector specifying the translation
-            of Wannier function j that brings it as close as possible to
-            Wannier function i.
+            of Wannier function j.
     """
 
     i: int
     j: int
+    R_1: np.ndarray
     R_2: np.ndarray
 
 
@@ -144,11 +146,10 @@ class InteractionFinder:
                     wannier_interactions_list = []
                     for m in wannier_centres[i]:
                         for n in wannier_centres[j]:
-                            dist, image = self._geometry[m].distance_and_image(
-                                self._geometry[n]
-                            )
+                            _, R_1 = self._geometry[i].distance_and_image(self._geometry[m])
+                            _, R_2 = self._geometry[j].distance_and_image(self._geometry[n])
 
-                            wannier_interaction = WannierInteraction(m, n, image)
+                            wannier_interaction = WannierInteraction(m, n, R_1, R_2)
                             wannier_interactions_list.append(wannier_interaction)
 
                     wannier_interactions = tuple(wannier_interactions_list)
