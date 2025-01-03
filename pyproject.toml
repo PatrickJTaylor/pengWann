@@ -60,8 +60,3 @@ include = ['pengwann']
 
 [tool.hatch.version]
 path = 'pengwann/version.py'
-
-[tool.pytest.ini_options]
-filterwarnings = [
-  "ignore::DeprecationWarning",
-]
