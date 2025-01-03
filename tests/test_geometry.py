@@ -48,8 +48,10 @@ def test_InteractionFinder_get_interactions(datadir) -> None:
     test_atomic_interaction = interactions[0]
     test_wannier_interaction = test_atomic_interaction.wannier_interactions[0]
 
-    ref_R_2 = np.array([1, -1, 0])
+    ref_R_1 = np.array([0, 1, 0])
+    ref_R_2 = np.array([0, 0, 0])
 
     assert test_atomic_interaction.pair_id == ("C1", "C2")
     assert test_wannier_interaction.i == 1 and test_wannier_interaction.j == 0
+    np.testing.assert_array_equal(test_wannier_interaction.R_1, ref_R_1, strict=True)
     np.testing.assert_array_equal(test_wannier_interaction.R_2, ref_R_2, strict=True)
