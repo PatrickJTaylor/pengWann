@@ -93,15 +93,15 @@ class DOS:
             np.ndarray: The DOS matrix, either fully-specified or summed
             over bands and k-points.
         """
-        C_dagger = (np.exp(-1j * 2 * np.pi * self._kpoints @ R_1))[
+        C_star = (np.exp(-1j * 2 * np.pi * self._kpoints @ R_1))[
             :, np.newaxis
         ] * self._U[:, :, i]
         C = (np.exp(1j * 2 * np.pi * self._kpoints @ R_2))[:, np.newaxis] * np.conj(
             self._U[:, :, j]
         )
-        C_dagger_C = (C_dagger * C).T
+        C_star_C = (C_star * C).T
 
-        dos_matrix = self._nspin * C_dagger_C[np.newaxis, :, :].real * self._dos_array
+        dos_matrix = self._nspin * C_star_C[np.newaxis, :, :].real * self._dos_array
 
         if sum_matrix:
             return np.sum(dos_matrix, axis=(1, 2))
@@ -205,14 +205,14 @@ class DOS:
         Returns:
             complex: The desired element of the density matrix.
         """
-        C_dagger = (np.exp(-1j * 2 * np.pi * self._kpoints @ R_1))[
+        C_star = (np.exp(-1j * 2 * np.pi * self._kpoints @ R_1))[
             :, np.newaxis
         ] * self._U[:, :, i]
         C = (np.exp(1j * 2 * np.pi * self._kpoints @ R_2))[:, np.newaxis] * np.conj(
             self._U[:, :, j]
         )
 
-        P_nk = self._occupation_matrix * C_dagger * C
+        P_nk = self._occupation_matrix * C_star * C
 
         return np.sum(P_nk, axis=(0, 1)) / len(self._kpoints)
 
