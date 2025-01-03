@@ -22,6 +22,10 @@ jobs:
     - name: Run static type checking
       run: |
         mypy pengwann
+    - name: Enforce black formatting
+      run: |
+        black --check pengwann
+        black --check tests
     - name: Generate test coverage report
       run: |
         pytest --cov-report xml --cov=pengwann tests
