@@ -381,7 +381,12 @@ class DOS:
             interaction_descriptors[label] = np.zeros((len(self._energies)))
 
         for w_interaction in interaction.wannier_interactions:
-            i, j, R_1, R_2 = w_interaction.i, w_interaction.j, w_interaction.R_1, w_interaction.R_2
+            i, j, R_1, R_2 = (
+                w_interaction.i,
+                w_interaction.j,
+                w_interaction.R_1,
+                w_interaction.R_2,
+            )
 
             dos_matrix = self.get_dos_matrix(i, j, R_1, R_2)
 
