@@ -145,8 +145,12 @@ def test_DOS_project(load_dos, datadir) -> None:
 
 
 def test_DOS_get_descriptors(load_dos, datadir) -> None:
-    wannier_interaction_1 = WannierInteraction(i=1, j=0, R_2=np.array([-1, 1, 0]))
-    wannier_interaction_2 = WannierInteraction(i=1, j=7, R_2=np.array([-1, 0, 0]))
+    wannier_interaction_1 = WannierInteraction(
+        i=1, j=0, R_1=np.array([0, 1, 0]), R_2=np.array([0, 0, 0])
+    )
+    wannier_interaction_2 = WannierInteraction(
+        i=5, j=6, R_1=np.array([0, 1, 1]), R_2=np.array([0, 0, 0])
+    )
     interactions = (
         AtomicInteraction(
             pair_id=("C1", "C2"),
