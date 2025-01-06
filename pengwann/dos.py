@@ -358,7 +358,7 @@ class DOS:
                 x = self._energies[:fermi_idx]
                 y = descriptor[:fermi_idx]
 
-                integrals["I" + label] = trapezoid(y, x)
+                integrals["I" + label] = trapezoid(y, x, axis=0)
 
             integrated_descriptors[interaction] = integrals
 
