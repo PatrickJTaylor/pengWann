@@ -276,7 +276,7 @@ class DOS:
         pdos: dict[str, np.ndarray],
         mu: float,
         valence: Optional[dict[str, int]] = None,
-    ) -> dict[str, float]:
+    ) -> dict[str, dict[str, float]]:
         """
         Calculate the Wannier populations (and optionally charges) from the pDOS for a
         chosen set of atoms.
@@ -289,8 +289,8 @@ class DOS:
                 Defaults to None.
 
         Returns:
-            dict[str, float]: The Wannier populations (and optionally charges)
-            associated with each atom.
+            dict[str, dict[str, float]]: The Wannier populations (and optionally
+            charges) associated with each atom.
         """
         for idx, energy in enumerate(self._energies):
             if energy > mu:
