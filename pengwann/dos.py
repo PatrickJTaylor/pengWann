@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 from multiprocessing import Pool
 from pengwann.geometry import AtomicInteraction
-from pengwann.utils import get_atom_indices, get_occupation_matrix
+from pengwann.utils import get_occupation_matrix
 from pymatgen.core import Structure
 from scipy.integrate import trapezoid  # type: ignore
 from tqdm.auto import tqdm
@@ -230,33 +230,41 @@ class DOS:
                 for.
 
         Returns:
-            dict[str, np.ndarray]: The pDOS for the specified atomic
-            species.
+            dict[str, np.ndarray]: The pDOS for each atom that is labelled by an
+            appropriate symbol.
         """
+        num_wann = len(
+            [
+                idx
+                for idx in range(len(geometry))
+                if geometry[idx].species_string == "X0+"
+            ]
+        )
         wannier_centres = geometry.site_properties["wannier_centres"]
-        atom_indices = get_atom_indices(geometry, symbols)
 
         wannier_indices = {}
-        for symbol, indices in atom_indices.items():
-            nested_wannier_indices = [wannier_centres[idx] for idx in indices]
-            wannier_indices[symbol] = tuple(
-                [
-                    idx
-                    for wannier_tuple in nested_wannier_indices
-                    for idx in wannier_tuple
-                ]
-            )
+        for idx in range(len(geometry)):
+            symbol = geometry[idx].species_string
+            if symbol in symbols:
+                wannier_indices[symbol + str(idx - num_wann + 1)] = wannier_centres[idx]
 
         pool = Pool()
 
-        pdos = {}
-        for symbol, indices in tqdm(wannier_indices.items()):
-            args = []
-
+        args = []
+        for indices in wannier_indices.values():
             for i in indices:
                 args.append((i, i, self._R_1, self._R_1))
 
-            pdos[symbol] = np.sum(pool.starmap(self.get_dos_matrix, args), axis=0)
+        pdos = {}
+        ordered_pdos = tuple(
+            pool.starmap(self.get_dos_matrix, tqdm(args, total=len(args)))
+        )
+
+        running_count = 0
+        for label, indices in wannier_indices.items():
+            pdos[label] = np.sum(
+                ordered_pdos[running_count : running_count + len(indices)], axis=0
+            )
 
         pool.close()
 
