@@ -270,6 +270,21 @@ class DOS:
 
         return pdos
 
+    def get_populations(self, pdos: dict[str, np.ndarray], mu: float, valence: Optional[tuple[int, ...]] = None) -> dict[str, float]:
+        for idx, energy in enumerate(self._energies):
+            if energy > mu:
+                fermi_idx = idx
+                break
+
+        populations = {}
+        for label, dos in pdos.items():
+            x = self._energies[:fermi_idx]
+            y = dos[:fermi_idx]
+
+            populations[label] = trapezoid(y, x, axis=0)
+
+        return populations
+
     def get_descriptors(
         self,
         interactions: tuple[AtomicInteraction, ...],
