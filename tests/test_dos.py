@@ -138,7 +138,7 @@ def test_DOS_project(load_dos, datadir) -> None:
     geometry.add_site_property("wannier_centres", wannier_centres)
 
     pdos = load_dos.project(geometry, ("C",))
-    test_pdos_C = pdos["C"]
+    test_pdos_C = pdos["C1"] + pdos["C2"]
     ref_pdos_C = np.load(f"{datadir}/pdos.npy")
 
     np.testing.assert_allclose(test_pdos_C, ref_pdos_C)
