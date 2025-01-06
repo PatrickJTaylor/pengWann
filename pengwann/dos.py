@@ -299,10 +299,22 @@ class DOS:
 
         populations = {}
         for label, dos in pdos.items():
+            integrals = {}
+
             x = self._energies[:fermi_idx]
             y = dos[:fermi_idx]
 
-            populations[label] = trapezoid(y, x, axis=0)
+            integrals["population"] = trapezoid(y, x, axis=0)
+
+            if valence is not None:
+                for idx, character in enumerate(label):
+                    if character.isdigit():
+                        symbol = label[:idx]
+                        break
+
+                integrals["charge"] = valence[symbol] - integrals["population"]
+
+            populations[label] = integrals
 
         return populations
 
