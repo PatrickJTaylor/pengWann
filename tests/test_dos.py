@@ -168,6 +168,30 @@ def test_DOS_get_descriptors(load_dos, datadir) -> None:
     np.testing.assert_allclose(test_WOBI, ref_WOBI)
 
 
+def test_DOS_get_descriptors_k_resolved(load_dos, datadir) -> None:
+    wannier_interaction_1 = WannierInteraction(
+        i=5, j=4, R_1=np.array([0, 1, 1]), R_2=np.array([0, 0, 0])
+    )
+    wannier_interaction_2 = WannierInteraction(
+        i=7, j=6, R_1=np.array([1, 0, 0]), R_2=np.array([0, 0, 0])
+    )
+    interactions = (
+        AtomicInteraction(
+            pair_id=("C1", "C2"),
+            wannier_interactions=(wannier_interaction_1, wannier_interaction_2),
+        ),
+    )
+
+    test_descriptors = load_dos.get_descriptors(interactions, sum_k=False)
+    test_WOHP = test_descriptors[("C1", "C2")]["WOHP"]
+    test_WOBI = test_descriptors[("C1", "C2")]["WOBI"]
+    ref_WOHP = np.load(f"{datadir}/total_WOHP_k_resolved.npy")
+    ref_WOBI = np.load(f"{datadir}/total_WOBI_k_resolved.npy")
+
+    np.testing.assert_allclose(test_WOHP, ref_WOHP)
+    np.testing.assert_allclose(test_WOBI, ref_WOBI)
+
+
 def test_DOS_integrate_descriptors(load_dos, datadir) -> None:
     wohp = np.load(f"{datadir}/total_WOHP.npy")
     wobi = np.load(f"{datadir}/total_WOBI.npy")
@@ -178,6 +202,21 @@ def test_DOS_integrate_descriptors(load_dos, datadir) -> None:
     test_integrals = load_dos.integrate_descriptors(descriptors, mu)
     ref_IWOHP = np.load(f"{datadir}/IWOHP.npy")
     ref_IWOBI = np.load(f"{datadir}/IWOBI.npy")
+
+    np.testing.assert_allclose(test_integrals[("C1", "C2")]["IWOHP"], ref_IWOHP)
+    np.testing.assert_allclose(test_integrals[("C1", "C2")]["IWOBI"], ref_IWOBI)
+
+
+def test_DOS_integrate_descriptors_k_resolved(load_dos, datadir) -> None:
+    wohp = np.load(f"{datadir}/total_WOHP_k_resolved.npy")
+    wobi = np.load(f"{datadir}/total_WOBI_k_resolved.npy")
+
+    mu = 9.8675
+    descriptors = {("C1", "C2"): {"WOHP": wohp, "WOBI": wobi}}
+
+    test_integrals = load_dos.integrate_descriptors(descriptors, mu)
+    ref_IWOHP = np.load(f"{datadir}/IWOHP_k_resolved.npy")
+    ref_IWOBI = np.load(f"{datadir}/IWOBI_k_resolved.npy")
 
     np.testing.assert_allclose(test_integrals[("C1", "C2")]["IWOHP"], ref_IWOHP)
     np.testing.assert_allclose(test_integrals[("C1", "C2")]["IWOBI"], ref_IWOBI)
