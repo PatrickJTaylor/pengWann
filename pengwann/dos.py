@@ -267,6 +267,7 @@ class DOS:
         interactions: tuple[AtomicInteraction, ...],
         calculate_wohp: bool = True,
         calculate_wobi: bool = True,
+        sum_k: bool = True,
     ) -> dict[tuple[str, str], dict[str, np.ndarray]]:
         """
         Calculate a series of bonding descriptors. This function is
@@ -283,6 +284,8 @@ class DOS:
                 interaction. Defaults to True.
             calculate_wobi (bool): Whether to calculate WOBIs for each
                 interaction. Defaults to True.
+            sum_k (bool): Whether to sum over k-points when computing
+                WOHPs and/or WOBIs. Defaults to True.
 
         Returns:
             dict[tuple[str, str], dict[str, np.ndarray]]: the WOHPs and
@@ -296,6 +299,9 @@ class DOS:
 
         if calculate_wobi:
             labels_list.append("WOBI")
+
+        if sum_k:
+            labels_list.append("sum_k")
 
         labels = tuple(labels_list)
 
@@ -377,8 +383,13 @@ class DOS:
         interaction, labels = interaction_and_labels
 
         interaction_descriptors = {}
-        for label in labels:
-            interaction_descriptors[label] = np.zeros((len(self._energies)))
+        if "sum_k" in labels:
+            for label in labels[:-1]:
+                interaction_descriptors[label] = np.zeros((len(self._energies)))
+
+        else:
+            for label in labels:
+                interaction_descriptors[label] = np.zeros((len(self._energies), len(self._kpoints)))
 
         for w_interaction in interaction.wannier_interactions:
             i, j, R_1, R_2 = (
@@ -388,7 +399,13 @@ class DOS:
                 w_interaction.R_2,
             )
 
-            dos_matrix = self.get_dos_matrix(i, j, R_1, R_2)
+            if "sum_k" in labels:
+                dos_matrix = self.get_dos_matrix(i, j, R_1, R_2)
+
+            else:
+                full_dos_matrix = self.get_dos_matrix(i, j, R_1, R_2, sum_matrix=False)
+                # Sum over bands only
+                dos_matrix = np.sum(full_dos_matrix, axis=1)
 
             if "WOHP" in labels:
                 wohp = self.get_WOHP(i, j, R_1, R_2, dos_matrix)
