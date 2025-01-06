@@ -312,6 +312,9 @@ class DOS:
                         symbol = label[:idx]
                         break
 
+                if symbol not in valence.keys():
+                    raise ValueError(f"Valence for {symbol} not found in input.")
+
                 integrals["charge"] = valence[symbol] - integrals["population"]
 
             populations[label] = integrals
