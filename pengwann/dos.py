@@ -265,12 +265,33 @@ class DOS:
             pdos[label] = np.sum(
                 ordered_pdos[running_count : running_count + len(indices)], axis=0
             )
+            running_count += len(indices)
 
         pool.close()
 
         return pdos
 
-    def get_populations(self, pdos: dict[str, np.ndarray], mu: float, valence: Optional[tuple[int, ...]] = None) -> dict[str, float]:
+    def get_populations(
+        self,
+        pdos: dict[str, np.ndarray],
+        mu: float,
+        valence: Optional[dict[str, int]] = None,
+    ) -> dict[str, float]:
+        """
+        Calculate the Wannier populations (and optionally charges) from the pDOS for a
+        chosen set of atoms.
+
+        Args:
+            pdos (dict[str, np.ndarray]): The pDOS for each atom.
+            mu (float): The Fermi level.
+            valence (dict[str, int], optional): The number of valence electrons for
+                each atomic species, needed for the calculation of Wannier charges.
+                Defaults to None.
+
+        Returns:
+            dict[str, float]: The Wannier populations (and optionally charges)
+            associated with each atom.
+        """
         for idx, energy in enumerate(self._energies):
             if energy > mu:
                 fermi_idx = idx
