@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import numpy as np
 from multiprocessing import Pool
-from pengwann.geometry import AtomicInteraction
+from pengwann.geometry import AtomicInteraction, WannierInteraction
 from pengwann.utils import get_occupation_matrix
 from pymatgen.core import Structure
 from scipy.integrate import trapezoid  # type: ignore
@@ -320,6 +320,41 @@ class DOS:
             populations[label] = integrals
 
         return populations
+
+    def get_density_of_energy(
+        self, interactions: tuple[AtomicInteraction, ...]
+    ) -> np.ndarray:
+        """
+        Calculate the density of energy (DOE).
+
+        Args:
+            interactions (tuple[AtomicInteraction, ...]): The interactions from which
+                to calculate the DOE (not including diagonal/onsite terms). In general,
+                this should come from the get_interactions method of an
+                InteractionFinder object.
+
+        Returns:
+            np.ndarray: The DOE.
+        """
+        wannier_indices_list = []
+        for interaction in interactions:
+            for wannier_interaction in interaction.wannier_interactions:
+                wannier_indices_list.extend(
+                    [wannier_interaction.i, wannier_interaction.j]
+                )
+
+        wannier_indices = set(wannier_indices_list)
+
+        diagonal_terms = tuple(
+            WannierInteraction(i, i, self._R_1, self._R_1) for i in wannier_indices
+        )
+        diagonal_interaction = (AtomicInteraction(("D1", "D1"), diagonal_terms),)
+
+        all_interactions = diagonal_interaction + interactions
+
+        descriptors = self.get_descriptors(all_interactions, calculate_wobi=False)
+
+        return np.sum((descriptor["WOHP"] for descriptor in descriptors.values()))
 
     def get_descriptors(
         self,
