@@ -389,7 +389,9 @@ class DOS:
 
         else:
             for label in labels:
-                interaction_descriptors[label] = np.zeros((len(self._energies), len(self._kpoints)))
+                interaction_descriptors[label] = np.zeros(
+                    (len(self._energies), len(self._kpoints))
+                )
 
         for w_interaction in interaction.wannier_interactions:
             i, j, R_1, R_2 = (
