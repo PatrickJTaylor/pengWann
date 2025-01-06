@@ -348,7 +348,7 @@ class DOS:
 
         descriptors = self.get_descriptors(all_interactions, calculate_wobi=False)
 
-        return np.sum((descriptor["WOHP"] for descriptor in descriptors.values()), axis=0)
+        return np.sum([descriptor["WOHP"] for descriptor in descriptors.values()], axis=0)
 
     def get_descriptors(
         self,
