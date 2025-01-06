@@ -382,7 +382,7 @@ class DOS:
         """
         interaction, labels = interaction_and_labels
 
-        interaction_descriptors = {} # type: dict[str, np.ndarray]
+        interaction_descriptors = {}  # type: dict[str, np.ndarray]
         if "sum_k" in labels:
             for label in labels[:-1]:
                 interaction_descriptors[label] = np.zeros((len(self._energies)))
