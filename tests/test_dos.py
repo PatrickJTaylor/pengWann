@@ -144,6 +144,83 @@ def test_DOS_project(load_dos, datadir) -> None:
     np.testing.assert_allclose(test_pdos_C, ref_pdos_C)
 
 
+def test_DOS_get_populations(load_dos, datadir) -> None:
+    geometry = Structure.from_file(f"{datadir}/structure.vasp")
+    wannier_centres = (
+        (9,),
+        (8,),
+        (8,),
+        (9,),
+        (9,),
+        (8,),
+        (8,),
+        (9,),
+        (1, 2, 5, 6),
+        (0, 3, 4, 7),
+    )
+    geometry.add_site_property("wannier_centres", wannier_centres)
+
+    mu = 9.8675
+    pdos = load_dos.project(geometry, ("C",))
+    populations = load_dos.get_populations(pdos, mu)
+    test_populations = np.array(
+        (populations["C1"]["population"], populations["C2"]["population"])
+    )
+    ref_populations = np.load(f"{datadir}/populations.npy")
+
+    np.testing.assert_allclose(test_populations, ref_populations)
+
+
+def test_DOS_get_populations_charges(load_dos, datadir) -> None:
+    geometry = Structure.from_file(f"{datadir}/structure.vasp")
+    wannier_centres = (
+        (9,),
+        (8,),
+        (8,),
+        (9,),
+        (9,),
+        (8,),
+        (8,),
+        (9,),
+        (1, 2, 5, 6),
+        (0, 3, 4, 7),
+    )
+    geometry.add_site_property("wannier_centres", wannier_centres)
+
+    mu = 9.8675
+    valence = {"C": 4}
+    pdos = load_dos.project(geometry, ("C",))
+    populations = load_dos.get_populations(pdos, mu, valence=valence)
+    test_charges = np.array((populations["C1"]["charge"], populations["C2"]["charge"]))
+    ref_charges = np.load(f"{datadir}/charges.npy")
+
+    np.testing.assert_allclose(test_charges, ref_charges)
+
+
+def test_DOS_get_populations_wrong_valence(load_dos, datadir) -> None:
+    geometry = Structure.from_file(f"{datadir}/structure.vasp")
+    wannier_centres = (
+        (9,),
+        (8,),
+        (8,),
+        (9,),
+        (9,),
+        (8,),
+        (8,),
+        (9,),
+        (1, 2, 5, 6),
+        (0, 3, 4, 7),
+    )
+    geometry.add_site_property("wannier_centres", wannier_centres)
+
+    mu = 9.8675
+    valence = {"N": 4}
+    pdos = load_dos.project(geometry, ("C",))
+
+    with pytest.raises(ValueError):
+        populations = load_dos.get_populations(pdos, mu, valence=valence)
+
+
 def test_DOS_get_descriptors(load_dos, datadir) -> None:
     wannier_interaction_1 = WannierInteraction(
         i=1, j=0, R_1=np.array([0, 1, 0]), R_2=np.array([0, 0, 0])
