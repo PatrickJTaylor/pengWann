@@ -281,7 +281,7 @@ class DOS:
 
         Args:
             integrated_descriptors (dict[tuple[str, str], dict[str, float]]): The
-                IWOHPs necessary to weight the RDF.
+                IWOHPs necessary to weight the RDFs.
             geometry (Structure): The Pymatgen Structure object from which to extract
                 bond lengths.
 
