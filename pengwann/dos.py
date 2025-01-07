@@ -9,9 +9,8 @@ from __future__ import annotations
 import numpy as np
 from multiprocessing import Pool
 from pengwann.geometry import AtomicInteraction, WannierInteraction
-from pengwann.utils import get_occupation_matrix, parse_id
+from pengwann.utils import get_occupation_matrix, integrate, parse_id
 from pymatgen.core import Structure
-from scipy.integrate import trapezoid  # type: ignore
 from tqdm.auto import tqdm
 from typing import Optional
 
@@ -301,10 +300,7 @@ class DOS:
         for label, dos in pdos.items():
             integrals = {}
 
-            x = self._energies[:fermi_idx]
-            y = dos[:fermi_idx]
-
-            integrals["population"] = trapezoid(y, x, axis=0)
+            integrals["population"] = integrate(self._energies, dos, mu)
 
             if valence is not None:
                 symbol, _ = parse_id(label)
@@ -442,10 +438,7 @@ class DOS:
             integrals = {}
 
             for label, descriptor in interaction_descriptors.items():
-                x = self._energies[:fermi_idx]
-                y = descriptor[:fermi_idx]
-
-                integrals["I" + label] = trapezoid(y, x, axis=0)
+                integrals["I" + label] = integrate(self._energies, descriptor, mu)
 
             integrated_descriptors[interaction] = integrals
 
