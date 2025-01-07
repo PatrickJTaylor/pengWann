@@ -153,8 +153,9 @@ def parse_id(identifier: str) -> tuple[str, int]:
         if character.isdigit():
             symbol = identifier[:i]
             idx = int(identifier[i:])
+            break
 
-            return symbol, idx
+    return symbol, idx
 
 
 def integrate(energies: np.ndarray, descriptor: np.ndarray, mu: float) -> float:
