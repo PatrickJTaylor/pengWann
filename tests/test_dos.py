@@ -283,8 +283,10 @@ def test_DOS_get_density_of_energy(load_dos, datadir) -> None:
         ),
     )
 
+    descriptors = load_dos.get_descriptors(interactions)
+
     num_wann = 7
-    test_doe = load_dos.get_density_of_energy(interactions, num_wann)
+    test_doe = load_dos.get_density_of_energy(descriptors, num_wann)
     ref_doe = np.load(f"{datadir}/doe.npy")
 
     np.testing.assert_allclose(test_doe, ref_doe)
