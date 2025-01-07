@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 from multiprocessing import Pool
 from pengwann.geometry import AtomicInteraction, WannierInteraction
-from pengwann.utils import get_occupation_matrix
+from pengwann.utils import get_occupation_matrix, parse_id
 from pymatgen.core import Structure
 from scipy.integrate import trapezoid  # type: ignore
 from tqdm.auto import tqdm
@@ -307,10 +307,7 @@ class DOS:
             integrals["population"] = trapezoid(y, x, axis=0)
 
             if valence is not None:
-                for idx, character in enumerate(label):
-                    if character.isdigit():
-                        symbol = label[:idx]
-                        break
+                symbol, _ = parse_id(label)
 
                 if symbol not in valence.keys():
                     raise ValueError(f"Valence for {symbol} not found in input.")
