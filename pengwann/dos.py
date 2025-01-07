@@ -270,6 +270,58 @@ class DOS:
 
         return pdos
 
+    def get_BWDF(
+        self,
+        integrated_descriptors: dict[tuple[str, str], dict[str, float]],
+        geometry: Structure,
+    ) -> dict[tuple[str, str], tuple[list[float], list[float]]]:
+        """
+        Return the necessary data to plot one or more Bond-Weighted Distribution
+        Functions (BWDFs).
+
+        Args:
+            integrated_descriptors (dict[tuple[str, str], dict[str, float]]): The
+                IWOHPs necessary to weight the RDF.
+            geometry (Structure): The Pymatgen Structure object from which to extract
+                bond lengths.
+
+        Returns:
+            dict[tuple[str, str], tuple[list[float], list[float]]]: A dictionary
+            containing the necessary inputs to plot the BWDFs. Each key identifies the
+            type of bond, whilst the values contain the bond lengths and IWOHPs
+            respectively.
+        """
+        num_wann = len(
+            [
+                idx
+                for idx in range(len(geometry))
+                if geometry[idx].species_string == "X0+"
+            ]
+        )
+        distance_matrix = geometry.distance_matrix
+
+        bonds = []
+        bwdf = {}
+        for pair_id, integrals in integrated_descriptors.items():
+            id_i, id_j = pair_id
+            symbol_i, i = parse_id(id_i)
+            symbol_j, j = parse_id(id_j)
+            idx_i = i + num_wann - 1
+            idx_j = j + num_wann - 1
+            r = distance_matrix[idx_i, idx_j]
+
+            bond = (symbol_i, symbol_j)
+            if bond not in bonds:
+                bonds.append(bond)
+
+                bwdf[bond] = ([r], [integrals["IWOHP"]])
+
+            else:
+                bwdf[bond][0].append(r)
+                bwdf[bond][1].append(integrals["IWOHP"])
+
+        return bwdf
+
     def get_populations(
         self,
         pdos: dict[str, np.ndarray],
