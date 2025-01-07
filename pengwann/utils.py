@@ -131,3 +131,26 @@ def get_occupation_matrix(
     occupation_matrix *= nspin
 
     return occupation_matrix.T
+
+
+def parse_id(identifier: str) -> tuple[str, int]:
+    """
+    Parse an atom identifer (e.g. "Ga1") and return individually the elemental symbol
+    and the index.
+
+    Args:
+        identifier (str): The atom indentifier to be parsed.
+
+    Returns:
+        tuple[str, int]:
+
+        str: The elemental symbol for the atom.
+
+        int: The identifying index for the atom.
+    """
+    for i, character in enumerate(identifier):
+        if character.isdigit():
+            symbol = identifier[:i]
+            idx = int(identifier[i:])
+
+            return symbol, idx
