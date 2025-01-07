@@ -291,11 +291,6 @@ class DOS:
             dict[str, dict[str, float]]: The Wannier populations (and optionally
             charges) associated with each atom.
         """
-        for idx, energy in enumerate(self._energies):
-            if energy > mu:
-                fermi_idx = idx
-                break
-
         populations = {}
         for label, dos in pdos.items():
             integrals = {}
@@ -428,11 +423,6 @@ class DOS:
         Returns:
             dict[str, float]: The integrated descriptors.
         """
-        for idx, energy in enumerate(self._energies):
-            if energy > mu:
-                fermi_idx = idx
-                break
-
         integrated_descriptors = {}
         for interaction, interaction_descriptors in descriptors.items():
             integrals = {}
