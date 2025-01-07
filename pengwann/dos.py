@@ -274,7 +274,7 @@ class DOS:
         self,
         integrated_descriptors: dict[tuple[str, str], dict[str, float]],
         geometry: Structure,
-    ) -> dict[tuple[str, str], tuple[list[float], list[float]]]:
+    ) -> dict[tuple[str, str], tuple[np.ndarray, np.ndarray]]:
         """
         Return the necessary data to plot one or more Bond-Weighted Distribution
         Functions (BWDFs).
@@ -286,7 +286,7 @@ class DOS:
                 bond lengths.
 
         Returns:
-            dict[tuple[str, str], tuple[np.ndarray, np.ndarray]: A dictionary
+            dict[tuple[str, str], tuple[np.ndarray, np.ndarray]]: A dictionary
             containing the necessary inputs to plot the BWDFs. Each key identifies the
             type of bond, whilst the values contain the bond lengths and IWOHPs
             respectively.
