@@ -48,7 +48,7 @@ class DOS:
         classmethod.
     """
 
-    _R_1 = np.array([0, 0, 0])
+    _R_0 = np.array([0, 0, 0])
 
     def __init__(
         self,
@@ -253,7 +253,7 @@ class DOS:
         args = []
         for indices in wannier_indices.values():
             for i in indices:
-                args.append((i, i, self._R_1, self._R_1))
+                args.append((i, i, self._R_0, self._R_0))
 
         pdos = {}
         ordered_pdos = tuple(
@@ -337,7 +337,7 @@ class DOS:
         wannier_indices = range(num_wann)
 
         diagonal_terms = tuple(
-            WannierInteraction(i, i, self._R_1, self._R_1) for i in wannier_indices
+            WannierInteraction(i, i, self._R_0, self._R_0) for i in wannier_indices
         )
         diagonal_interaction = (AtomicInteraction(("D1", "D1"), diagonal_terms),)
 
