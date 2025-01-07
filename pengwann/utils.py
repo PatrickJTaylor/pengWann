@@ -6,6 +6,7 @@ in the codebase.
 import numpy as np
 from pengwann.occupation_functions import fixed
 from pymatgen.core import Structure
+from scipy.integrate import trapezoid  # type: ignore
 from typing import Any, Callable, Optional
 
 
@@ -154,3 +155,23 @@ def parse_id(identifier: str) -> tuple[str, int]:
             idx = int(identifier[i:])
 
             return symbol, idx
+
+
+def integrate(energies: np.ndarray, descriptor: np.ndarray, mu: float) -> float:
+    """
+    Integrate a given descriptor up to the Fermi level.
+
+    Args:
+        energies (np.ndarray): The energies at which the descriptor has been evaluated.
+        descriptor (np.ndarray): The descriptor to be integrated.
+        mu (float): The Fermi level.
+
+    Returns:
+        float: The resulting integral.
+    """
+    for idx, energy in enumerate(energies):
+        if energy > mu:
+            fermi_idx = idx
+            break
+
+    return trapezoid(descriptor[:fermi_idx], energies[:fermi_idx], axis=0)
