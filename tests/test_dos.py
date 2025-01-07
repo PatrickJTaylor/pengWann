@@ -269,6 +269,24 @@ def test_DOS_get_descriptors_k_resolved(load_dos, datadir) -> None:
     np.testing.assert_allclose(test_WOBI, ref_WOBI)
 
 
+def test_DOS_get_BWDF(load_dos, datadir) -> None:
+    integrated_descriptors = {("C1", "C2"): {"IWOHP": 5}, ("C3", "C4"): {"IWOHP": 3}}
+    geometry = Structure(
+        ((3, 0, 0), (0, 3, 0), (0, 0, 3)),
+        ("C", "C", "C", "C"),
+        ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 2)),
+        coords_are_cartesian=True,
+    )
+
+    bwdf = load_dos.get_BWDF(integrated_descriptors, geometry)
+    test_r, test_weights = bwdf[("C", "C")]
+    ref_r = np.load(f"{datadir}/r.npy")
+    ref_weights = np.load(f"{datadir}/weights.npy")
+
+    np.testing.assert_allclose(test_r, ref_r)
+    np.testing.assert_allclose(test_weights, ref_weights)
+
+
 def test_DOS_get_density_of_energy(load_dos, datadir) -> None:
     wannier_interaction_1 = WannierInteraction(
         i=1, j=0, R_1=np.array([0, 1, 0]), R_2=np.array([0, 0, 0])
