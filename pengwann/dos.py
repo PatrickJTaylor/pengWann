@@ -310,16 +310,15 @@ class DOS:
         return populations
 
     def get_density_of_energy(
-        self, interactions: tuple[AtomicInteraction, ...], num_wann: int
+        self, descriptors: dict[tuple[str, str], dict[str, np.ndarray]], num_wann: int
     ) -> np.ndarray:
         """
         Calculate the density of energy (DOE).
 
         Args:
-            interactions (tuple[AtomicInteraction, ...]): The interactions from which
-                to calculate the DOE (not including diagonal/onsite terms). In general,
-                this should come from the get_interactions method of an
-                InteractionFinder object.
+            descriptors (dict[tuple[str, str], dict[str, np.ndarray]]): The WOHPs
+                arising from interatomic (off-diagonal) interactions. In general, this
+                should come from the get_descriptors method.
             num_wann (int): The total number of Wannier functions.
 
         Returns:
@@ -331,13 +330,14 @@ class DOS:
             WannierInteraction(i, i, self._R_0, self._R_0) for i in wannier_indices
         )
         diagonal_interaction = (AtomicInteraction(("D1", "D1"), diagonal_terms),)
+        diagonal_descriptors = self.get_descriptors(
+            diagonal_interaction, calculate_wobi=False
+        )
 
-        all_interactions = diagonal_interaction + interactions
-
-        descriptors = self.get_descriptors(all_interactions, calculate_wobi=False)
+        all_descriptors = descriptors | diagonal_descriptors
 
         return np.sum(
-            [descriptor["WOHP"] for descriptor in descriptors.values()], axis=0
+            [descriptor["WOHP"] for descriptor in all_descriptors.values()], axis=0
         )
 
     def get_descriptors(
