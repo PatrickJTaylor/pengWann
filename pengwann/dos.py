@@ -286,7 +286,7 @@ class DOS:
                 bond lengths.
 
         Returns:
-            dict[tuple[str, str], tuple[list[float], list[float]]]: A dictionary
+            dict[tuple[str, str], tuple[np.ndarray, np.ndarray]: A dictionary
             containing the necessary inputs to plot the BWDFs. Each key identifies the
             type of bond, whilst the values contain the bond lengths and IWOHPs
             respectively.
@@ -301,7 +301,7 @@ class DOS:
         distance_matrix = geometry.distance_matrix
 
         bonds = []
-        bwdf = {}
+        cumulative_bwdf = {}
         for pair_id, integrals in integrated_descriptors.items():
             id_i, id_j = pair_id
             symbol_i, i = parse_id(id_i)
@@ -314,11 +314,17 @@ class DOS:
             if bond not in bonds:
                 bonds.append(bond)
 
-                bwdf[bond] = ([r], [integrals["IWOHP"]])
+                cumulative_bwdf[bond] = ([r], [integrals["IWOHP"]])
 
             else:
-                bwdf[bond][0].append(r)
-                bwdf[bond][1].append(integrals["IWOHP"])
+                cumulative_bwdf[bond][0].append(r)
+                cumulative_bwdf[bond][1].append(integrals["IWOHP"])
+
+        bwdf = {}
+        for bond, data in cumulative_bwdf.items():
+            r, weights = data
+
+            bwdf[bond] = (np.array(r), np.array(weights))
 
         return bwdf
 
