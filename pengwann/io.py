@@ -42,6 +42,47 @@ def read(
     return kpoints, eigenvalues, U, H
 
 
+def read_eigenvalues(
+    path: str,
+    num_bands: int,
+    num_kpoints: int,
+) -> np.ndarray:
+    """
+    Read in the Kohn-Sham eigenvalues.
+
+    Args:
+        path (str): The filepath to seedname.eig.
+        num_bands (int): The number of bands.
+        num_kpoints (int): The number of k-points.
+
+    Returns:
+        np.ndarray: The Kohn-Sham eigenvalues.
+
+    Notes:
+        The output array is a num_bands x num_kpoints matrix.
+    """
+    eigenvalues_list = []
+
+    with open(path, "r") as stream:
+        lines = stream.readlines()
+
+    block_indices = [idx * num_bands for idx in range(num_kpoints)]
+
+    for column_idx in range(num_bands):
+        row = []
+
+        for block_idx in block_indices:
+            eigenvalue = float(lines[column_idx + block_idx].split()[-1])
+
+            row.append(eigenvalue)
+
+        eigenvalues_list.append(row)
+
+    eigenvalues = np.array(eigenvalues_list)
+
+    return eigenvalues
+
+
 def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
     r"""
     Read in the unitary matrices :math:`U^{k}` that define the Wannier
@@ -97,47 +138,6 @@ def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
     kpoints = np.array(kpoints_list)
 
     return U, kpoints
-
-
-def read_eigenvalues(
-    path: str,
-    num_bands: int,
-    num_kpoints: int,
-) -> np.ndarray:
-    """
-    Read in the Kohn-Sham eigenvalues.
-
-    Args:
-        path (str): The filepath to seedname.eig.
-        num_bands (int): The number of bands.
-        num_kpoints (int): The number of k-points.
-
-    Returns:
-        np.ndarray: The Kohn-Sham eigenvalues.
-
-    Notes:
-        The output array is a num_bands x num_kpoints matrix.
-    """
-    eigenvalues_list = []
-
-    with open(path, "r") as stream:
-        lines = stream.readlines()
-
-    block_indices = [idx * num_bands for idx in range(num_kpoints)]
-
-    for column_idx in range(num_bands):
-        row = []
-
-        for block_idx in block_indices:
-            eigenvalue = float(lines[column_idx + block_idx].split()[-1])
-
-            row.append(eigenvalue)
-
-        eigenvalues_list.append(row)
-
-    eigenvalues = np.array(eigenvalues_list)
-
-    return eigenvalues
 
 
 def read_Hamiltonian(path: str) -> dict[tuple[int, ...], np.ndarray]:
