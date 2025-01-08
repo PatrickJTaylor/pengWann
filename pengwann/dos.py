@@ -67,6 +67,67 @@ class DOS:
         self._H = H
         self._nspin = nspin
 
+    @classmethod
+    def from_eigenvalues(
+        cls,
+        eigenvalues: np.ndarray,
+        nspin: int,
+        energy_range: tuple[float, float],
+        resolution: float,
+        sigma: float,
+        kpoints: np.ndarray,
+        U: np.ndarray,
+        H: Optional[dict[tuple[int, ...], np.ndarray]] = None,
+        occupation_matrix: Optional[np.ndarray] = None,
+    ) -> DOS:
+        """
+        Initialise a DOS object from the Kohn-Sham eigenvalues.
+
+        Args:
+            eigenvalues (np.ndarray): The Kohn-Sham eigenvalues.
+            nspin (int): The number of electrons per Kohn-Sham state.
+                For spin-polarised calculations, set to 1.
+            energy_range(tuple[float, float]): The energy ranage over which the
+                DOS is to be evaluated.
+            resolution (float): The desired energy resolution of the
+                DOS.
+            sigma (float): A Gaussian smearing parameter.
+            kpoints (np.ndarray): The full k-point mesh.
+            U (np.ndarray): The U matrices used to define Wannier
+                functions from the Kohn-Sham states.
+            H (np.ndarray, optional): The Hamiltonian in the Wannier
+                basis. Required for the computation of WOHPs. Defaults
+                to None.
+            occupation_matrix (np.ndarray, optional): The occupation matrix.
+                Required for the computation of WOBIs. Defaults to None.
+
+        Returns:
+            DOS: The initialised DOS object.
+
+        Notes:
+            See the utils module for computing the occupation matrix.
+        """
+        emin, emax = energy_range
+        energies = np.arange(emin, emax + resolution, resolution)
+
+        x_mu = energies[:, np.newaxis, np.newaxis] - eigenvalues
+        dos_array = (
+            1
+            / np.sqrt(np.pi * sigma)
+            * np.exp(-(x_mu**2) / sigma)
+            / eigenvalues.shape[1]
+        )
+
+        return cls(energies, dos_array, nspin, kpoints, U, H, occupation_matrix)
+
+    @property
+    def energies(self) -> np.ndarray:
+        """
+        The array of energies over which the DOS (and all derived quantities
+        such as WOHPs and WOBIs) has been evaluated.
+        """
+        return self._energies
+
     def get_dos_matrix(
         self,
         i: int,
@@ -270,64 +331,6 @@ class DOS:
 
         return pdos
 
-    def get_BWDF(
-        self,
-        integrated_descriptors: dict[tuple[str, str], dict[str, float]],
-        geometry: Structure,
-    ) -> dict[tuple[str, str], tuple[np.ndarray, np.ndarray]]:
-        """
-        Return the necessary data to plot one or more Bond-Weighted Distribution
-        Functions (BWDFs).
-
-        Args:
-            integrated_descriptors (dict[tuple[str, str], dict[str, float]]): The
-                IWOHPs necessary to weight the RDFs.
-            geometry (Structure): The Pymatgen Structure object from which to extract
-                bond lengths.
-
-        Returns:
-            dict[tuple[str, str], tuple[np.ndarray, np.ndarray]]: A dictionary
-            containing the necessary inputs to plot the BWDFs. Each key identifies the
-            type of bond, whilst the values contain the bond lengths and IWOHPs
-            respectively.
-        """
-        num_wann = len(
-            [
-                idx
-                for idx in range(len(geometry))
-                if geometry[idx].species_string == "X0+"
-            ]
-        )
-        distance_matrix = geometry.distance_matrix
-
-        bonds = []
-        cumulative_bwdf = {}
-        for pair_id, integrals in integrated_descriptors.items():
-            id_i, id_j = pair_id
-            symbol_i, i = parse_id(id_i)
-            symbol_j, j = parse_id(id_j)
-            idx_i = i + num_wann - 1
-            idx_j = j + num_wann - 1
-            r = distance_matrix[idx_i, idx_j]
-
-            bond = (symbol_i, symbol_j)
-            if bond not in bonds:
-                bonds.append(bond)
-
-                cumulative_bwdf[bond] = ([r], [integrals["IWOHP"]])
-
-            else:
-                cumulative_bwdf[bond][0].append(r)
-                cumulative_bwdf[bond][1].append(integrals["IWOHP"])
-
-        bwdf = {}
-        for bond, data in cumulative_bwdf.items():
-            r, weights = data
-
-            bwdf[bond] = (np.array(r), np.array(weights))
-
-        return bwdf
-
     def get_populations(
         self,
         pdos: dict[str, np.ndarray],
@@ -366,37 +369,6 @@ class DOS:
             populations[label] = integrals
 
         return populations
-
-    def get_density_of_energy(
-        self, descriptors: dict[tuple[str, str], dict[str, np.ndarray]], num_wann: int
-    ) -> np.ndarray:
-        """
-        Calculate the density of energy (DOE).
-
-        Args:
-            descriptors (dict[tuple[str, str], dict[str, np.ndarray]]): The WOHPs
-                arising from interatomic (off-diagonal) interactions. In general, this
-                should come from the get_descriptors method.
-            num_wann (int): The total number of Wannier functions.
-
-        Returns:
-            np.ndarray: The DOE.
-        """
-        wannier_indices = range(num_wann)
-
-        diagonal_terms = tuple(
-            WannierInteraction(i, i, self._R_0, self._R_0) for i in wannier_indices
-        )
-        diagonal_interaction = (AtomicInteraction(("D1", "D1"), diagonal_terms),)
-        diagonal_descriptors = self.get_descriptors(
-            diagonal_interaction, calculate_wobi=False
-        )
-
-        all_descriptors = descriptors | diagonal_descriptors
-
-        return np.sum(
-            [descriptor["WOHP"] for descriptor in all_descriptors.values()], axis=0
-        )
 
     def get_descriptors(
         self,
@@ -547,63 +519,91 @@ class DOS:
 
         return interaction.pair_id, interaction_descriptors
 
-    @property
-    def energies(self) -> np.ndarray:
+    def get_density_of_energy(
+        self, descriptors: dict[tuple[str, str], dict[str, np.ndarray]], num_wann: int
+    ) -> np.ndarray:
         """
-        The array of energies over which the DOS (and all derived quantities
-        such as WOHPs and WOBIs) has been evaluated.
-        """
-        return self._energies
-
-    @classmethod
-    def from_eigenvalues(
-        cls,
-        eigenvalues: np.ndarray,
-        nspin: int,
-        energy_range: tuple[float, float],
-        resolution: float,
-        sigma: float,
-        kpoints: np.ndarray,
-        U: np.ndarray,
-        H: Optional[dict[tuple[int, ...], np.ndarray]] = None,
-        occupation_matrix: Optional[np.ndarray] = None,
-    ) -> DOS:
-        """
-        Initialise a DOS object from the Kohn-Sham eigenvalues.
+        Calculate the density of energy (DOE).
 
         Args:
-            eigenvalues (np.ndarray): The Kohn-Sham eigenvalues.
-            nspin (int): The number of electrons per Kohn-Sham state.
-                For spin-polarised calculations, set to 1.
-            energy_range(tuple[float, float]): The energy ranage over which the
-                DOS is to be evaluated.
-            resolution (float): The desired energy resolution of the
-                DOS.
-            sigma (float): A Gaussian smearing parameter.
-            kpoints (np.ndarray): The full k-point mesh.
-            U (np.ndarray): The U matrices used to define Wannier
-                functions from the Kohn-Sham states.
-            H (np.ndarray, optional): The Hamiltonian in the Wannier
-                basis. Required for the computation of WOHPs. Defaults
-                to None.
-            occupation_matrix (np.ndarray, optional): The occupation matrix.
-                Required for the computation of WOBIs. Defaults to None.
+            descriptors (dict[tuple[str, str], dict[str, np.ndarray]]): The WOHPs
+                arising from interatomic (off-diagonal) interactions. In general, this
+                should come from the get_descriptors method.
+            num_wann (int): The total number of Wannier functions.
 
         Returns:
-            DOS: The initialised DOS object.
-
-        Notes:
-            See the utils module for computing the occupation matrix.
+            np.ndarray: The DOE.
         """
-        emin, emax = energy_range
-        energies = np.arange(emin, emax + resolution, resolution)
+        wannier_indices = range(num_wann)
 
-        x_mu = energies[:, np.newaxis, np.newaxis] - eigenvalues
-        dos_array = (
-            1
-            / np.sqrt(np.pi * sigma)
-            * np.exp(-(x_mu**2) / sigma)
-            / eigenvalues.shape[1]
+        diagonal_terms = tuple(
+            WannierInteraction(i, i, self._R_0, self._R_0) for i in wannier_indices
+        )
+        diagonal_interaction = (AtomicInteraction(("D1", "D1"), diagonal_terms),)
+        diagonal_descriptors = self.get_descriptors(
+            diagonal_interaction, calculate_wobi=False
         )
 
-        return cls(energies, dos_array, nspin, kpoints, U, H, occupation_matrix)
+        all_descriptors = descriptors | diagonal_descriptors
+
+        return np.sum(
+            [descriptor["WOHP"] for descriptor in all_descriptors.values()], axis=0
+        )
+
+    def get_BWDF(
+        self,
+        integrated_descriptors: dict[tuple[str, str], dict[str, float]],
+        geometry: Structure,
+    ) -> dict[tuple[str, str], tuple[np.ndarray, np.ndarray]]:
+        """
+        Return the necessary data to plot one or more Bond-Weighted Distribution
+        Functions (BWDFs).
+
+        Args:
+            integrated_descriptors (dict[tuple[str, str], dict[str, float]]): The
+                IWOHPs necessary to weight the RDFs.
+            geometry (Structure): The Pymatgen Structure object from which to extract
+                bond lengths.
+
+        Returns:
+            dict[tuple[str, str], tuple[np.ndarray, np.ndarray]]: A dictionary
+            containing the necessary inputs to plot the BWDFs. Each key identifies the
+            type of bond, whilst the values contain the bond lengths and IWOHPs
+            respectively.
+        """
+        num_wann = len(
+            [
+                idx
+                for idx in range(len(geometry))
+                if geometry[idx].species_string == "X0+"
+            ]
+        )
+        distance_matrix = geometry.distance_matrix
+
+        bonds = []
+        cumulative_bwdf = {}
+        for pair_id, integrals in integrated_descriptors.items():
+            id_i, id_j = pair_id
+            symbol_i, i = parse_id(id_i)
+            symbol_j, j = parse_id(id_j)
+            idx_i = i + num_wann - 1
+            idx_j = j + num_wann - 1
+            r = distance_matrix[idx_i, idx_j]
+
+            bond = (symbol_i, symbol_j)
+            if bond not in bonds:
+                bonds.append(bond)
+
+                cumulative_bwdf[bond] = ([r], [integrals["IWOHP"]])
+
+            else:
+                cumulative_bwdf[bond][0].append(r)
+                cumulative_bwdf[bond][1].append(integrals["IWOHP"])
+
+        bwdf = {}
+        for bond, data in cumulative_bwdf.items():
+            r, weights = data
+
+            bwdf[bond] = (np.array(r), np.array(weights))
+
+        return bwdf

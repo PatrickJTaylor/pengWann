@@ -90,6 +90,42 @@ class InteractionFinder:
                 'Input geometry is missing a "wannier_centres" site property.'
             )
 
+    @classmethod
+    def from_xyz(cls, path: str, cell: ArrayLike) -> InteractionFinder:
+        """
+        Initialise an InteractionFinder object from an xyz file output
+        by Wannier90.
+
+        Args:
+            path (str): Filepath to the xyz file containing the
+                coordinates of the Wannier centres.
+            cell (ArrayLike): The cell vectors associated with the
+                structure.
+
+        Returns:
+            InteractionFinder: The initialised InteractionFinder object.
+        """
+        lattice = Lattice(cell)
+
+        xyz = Molecule.from_file(path)
+        species = [site.species_string for site in xyz]  # type: ignore[union-attr]
+        coords = [site.coords for site in xyz]  # type: ignore[union-attr]
+
+        geometry = Structure(lattice, species, coords, coords_are_cartesian=True)
+
+        assign_wannier_centres(geometry)
+
+        return InteractionFinder(geometry)
+
+    @property
+    def geometry(self) -> Structure:
+        """
+        A Pymatgen Structure object with a 'wannier_indices' site property
+        that allows it to be used in conjunction with the project method of
+        the DOS class.
+        """
+        return self._geometry
+
     def get_interactions(
         self, radial_cutoffs: dict[tuple[str, str], float]
     ) -> tuple[AtomicInteraction, ...]:
@@ -161,39 +197,3 @@ class InteractionFinder:
                     interactions.append(interaction)
 
         return tuple(interactions)
-
-    @property
-    def geometry(self) -> Structure:
-        """
-        A Pymatgen Structure object with a 'wannier_indices' site property
-        that allows it to be used in conjunction with the project method of
-        the DOS class.
-        """
-        return self._geometry
-
-    @classmethod
-    def from_xyz(cls, path: str, cell: ArrayLike) -> InteractionFinder:
-        """
-        Initialise an InteractionFinder object from an xyz file output
-        by Wannier90.
-
-        Args:
-            path (str): Filepath to the xyz file containing the
-                coordinates of the Wannier centres.
-            cell (ArrayLike): The cell vectors associated with the
-                structure.
-
-        Returns:
-            InteractionFinder: The initialised InteractionFinder object.
-        """
-        lattice = Lattice(cell)
-
-        xyz = Molecule.from_file(path)
-        species = [site.species_string for site in xyz]  # type: ignore[union-attr]
-        coords = [site.coords for site in xyz]  # type: ignore[union-attr]
-
-        geometry = Structure(lattice, species, coords, coords_are_cartesian=True)
-
-        assign_wannier_centres(geometry)
-
-        return InteractionFinder(geometry)
