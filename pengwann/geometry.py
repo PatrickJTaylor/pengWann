@@ -50,150 +50,114 @@ class WannierInteraction(NamedTuple):
     R_2: np.ndarray
 
 
-class InteractionFinder:
+def build_geometry(path: str, cell: ArrayLike) -> Structure:
     """
-    A class for identifying interatomic interactions according to a
-    chosen criterion, providing the indices necessary to calculate the
-    relevant WOHPS and WOBIs.
+    Construct a Pymatgen Structure containing all of the necessary information to
+    identify interatomic interactions and the Wannier functions involved.
+
+    More specifically, the final Structure object has a "wannier_centres" site property
+    which associates each atom with the indices of its Wannier functions and each
+    Wannier centre with the index of its associated atom.
 
     Args:
-        geometry (Structure): A Pymatgen Structure object with a
-            'wannier_centres' site_property.
+        path (str): Filepath to the xyz file containing the coordinates of the Wannier
+            centres.
+        cell (ArrayLike): The cell vectors associated with the structure.
 
     Returns:
-        None
-
-    Notes:
-        This class is not really designed to be initialised
-        manually. If you do wish to do this, the 'wannier_centres'
-        site_property should associate each atom with a list containing
-        the indices of its Wannier centres.
+        Structure: The Pymatgen Structure containing the relevant atoms and Wannier
+        centres.
     """
+    lattice = Lattice(cell)
 
-    def __init__(self, geometry: Structure) -> None:
-        self._geometry = geometry
-        self._num_wann = len(
-            [
-                idx
-                for idx in range(len(self._geometry))
-                if self._geometry[idx].species_string == "X0+"
-            ]
+    xyz = Molecule.from_file(path)
+    species, coords = [], []
+    for site in xyz:
+        symbol = site.species_string.capitalize()
+        species.append(symbol)
+        coords.append(site.coords)
+
+    geometry = Structure(lattice, species, coords, coords_are_cartesian=True)
+
+    assign_wannier_centres(geometry)
+
+    return geometry
+
+
+def find_interactions(
+    geometry: Structure, radial_cutoffs: dict[tuple[str, str], float]
+) -> tuple[AtomicInteraction, ...]:
+    """
+    Identify interatomic interactions according to a radial distance cutoff.
+
+    Args:
+        radial_cutoffs (dict[tuple[str, str], float]): A dictionary defining a radial
+            cutoff for pairs of atomic species.
+
+            For example:
+
+            {('Fe', 'O') : 1.8, ('Si', 'O') : 2.0}
+
+    Returns:
+        tuple[AtomicInteraction, ...]: The interactions identified by the radial
+        cutoffs.
+    """
+    if "wannier_centres" not in geometry.site_properties.keys():
+        raise ValueError('Input geometry is missing a "wannier_centres" site property.')
+
+    num_wann = len([site for site in geometry if site.species_string == "X0+"])
+
+    if num_wann == 0:
+        raise ValueError(
+            'Input geometry contains no Wannier centres (i.e. no "X" atoms).'
         )
 
-        if self._num_wann == 0:
-            raise ValueError(
-                'Input geometry contains no Wannier centres (i.e. no "X" atoms).'
-            )
+    symbols_list: list[str] = []
+    for pair in radial_cutoffs.keys():
+        for symbol in pair:
+            if symbol not in symbols_list:
+                symbols_list.append(symbol)
 
-        if "wannier_centres" not in self._geometry.site_properties.keys():
-            raise ValueError(
-                'Input geometry is missing a "wannier_centres" site property.'
-            )
+    symbols = tuple(symbols_list)
 
-    @classmethod
-    def from_xyz(cls, path: str, cell: ArrayLike) -> InteractionFinder:
-        """
-        Initialise an InteractionFinder object from an xyz file output
-        by Wannier90.
+    atom_indices = get_atom_indices(geometry, symbols)
 
-        Args:
-            path (str): Filepath to the xyz file containing the
-                coordinates of the Wannier centres.
-            cell (ArrayLike): The cell vectors associated with the
-                structure.
+    wannier_centres = geometry.site_properties["wannier_centres"]
+    interactions = []
+    for pair, cutoff in radial_cutoffs.items():
+        symbol_i, symbol_j = pair
 
-        Returns:
-            InteractionFinder: The initialised InteractionFinder object.
-        """
-        lattice = Lattice(cell)
+        possible_interactions = []
+        if symbol_i != symbol_j:
+            for i in atom_indices[symbol_i]:
+                for j in atom_indices[symbol_j]:
+                    possible_interactions.append((i, j))
 
-        xyz = Molecule.from_file(path)
-        species = [site.species_string for site in xyz]  # type: ignore[union-attr]
-        coords = [site.coords for site in xyz]  # type: ignore[union-attr]
+        # Exclude self-interactions
+        else:
+            for idx, i in enumerate(atom_indices[symbol_i]):
+                for j in atom_indices[symbol_j][idx + 1 :]:
+                    possible_interactions.append((i, j))
 
-        geometry = Structure(lattice, species, coords, coords_are_cartesian=True)
+        for i, j in possible_interactions:
+            distance = geometry.get_distance(i, j)
 
-        assign_wannier_centres(geometry)
+            if distance < cutoff:
+                pair_id = (
+                    symbol_i + str(i - num_wann + 1),
+                    symbol_j + str(j - num_wann + 1),
+                )
+                wannier_interactions_list = []
+                for m in wannier_centres[i]:
+                    for n in wannier_centres[j]:
+                        _, R_1 = geometry[i].distance_and_image(geometry[m])
+                        _, R_2 = geometry[j].distance_and_image(geometry[n])
 
-        return InteractionFinder(geometry)
+                        wannier_interaction = WannierInteraction(m, n, R_1, R_2)
+                        wannier_interactions_list.append(wannier_interaction)
 
-    @property
-    def geometry(self) -> Structure:
-        """
-        A Pymatgen Structure object with a 'wannier_indices' site property
-        that allows it to be used in conjunction with the project method of
-        the DOS class.
-        """
-        return self._geometry
+                wannier_interactions = tuple(wannier_interactions_list)
+                interaction = AtomicInteraction(pair_id, wannier_interactions)
+                interactions.append(interaction)
 
-    def get_interactions(
-        self, radial_cutoffs: dict[tuple[str, str], float]
-    ) -> tuple[AtomicInteraction, ...]:
-        """
-        Identify interatomic interactions according to a chosen
-        criterion.
-
-        Args:
-            radial_cutoffs (dict[tuple[str, str], float]): A dictionary
-                defining a radial cutoff for pairs of atomic species.
-
-                For example:
-
-                {('Fe', 'O') : 1.8, ('Si', 'O') : 2.0}
-
-        Returns:
-            tuple[AtomicInteraction, ...]: The interactions identified by the
-            chosen criteria.
-        """
-        symbols_list: list[str] = []
-        for pair in radial_cutoffs.keys():
-            for symbol in pair:
-                if symbol not in symbols_list:
-                    symbols_list.append(symbol)
-
-        symbols = tuple(symbols_list)
-
-        atom_indices = get_atom_indices(self._geometry, symbols)
-
-        wannier_centres = self._geometry.site_properties["wannier_centres"]
-        interactions = []
-        for pair, cutoff in radial_cutoffs.items():
-            symbol_i, symbol_j = pair
-
-            possible_interactions = []
-            if symbol_i != symbol_j:
-                for i in atom_indices[symbol_i]:
-                    for j in atom_indices[symbol_j]:
-                        possible_interactions.append((i, j))
-
-            else:
-                for idx, i in enumerate(atom_indices[symbol_i]):
-                    for j in atom_indices[symbol_j][idx + 1 :]:
-                        possible_interactions.append((i, j))
-
-            for i, j in possible_interactions:
-                distance = self._geometry.get_distance(i, j)
-
-                if distance < cutoff:
-                    pair_id = (
-                        symbol_i + str(i - self._num_wann + 1),
-                        symbol_j + str(j - self._num_wann + 1),
-                    )
-                    wannier_interactions_list = []
-                    for m in wannier_centres[i]:
-                        for n in wannier_centres[j]:
-                            _, R_1 = self._geometry[i].distance_and_image(
-                                self._geometry[m]
-                            )
-                            _, R_2 = self._geometry[j].distance_and_image(
-                                self._geometry[n]
-                            )
-
-                            wannier_interaction = WannierInteraction(m, n, R_1, R_2)
-                            wannier_interactions_list.append(wannier_interaction)
-
-                    wannier_interactions = tuple(wannier_interactions_list)
-                    interaction = AtomicInteraction(pair_id, wannier_interactions)
-                    interactions.append(interaction)
-
-        return tuple(interactions)
+    return tuple(interactions)
