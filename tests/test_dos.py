@@ -140,7 +140,9 @@ def test_DOS_project(dos, ref_geometry, shared_datadir, ndarrays_regression) -> 
     ndarrays_regression.check(pdos, default_tolerance={"atol": 0, "rtol": 1e-07})
 
 
-def test_DOS_get_populations(dos, ref_geometry, shared_datadir, ndarrays_regression) -> None:
+def test_DOS_get_populations(
+    dos, ref_geometry, shared_datadir, ndarrays_regression
+) -> None:
     mu = 9.8675
     pdos = dos.project(ref_geometry, ("C",))
     populations = dos.get_populations(pdos, mu)
@@ -153,7 +155,9 @@ def test_DOS_get_populations(dos, ref_geometry, shared_datadir, ndarrays_regress
     )
 
 
-def test_DOS_get_populations_charges(dos, ref_geometry, shared_datadir, ndarrays_regression) -> None:
+def test_DOS_get_populations_charges(
+    dos, ref_geometry, shared_datadir, ndarrays_regression
+) -> None:
     mu = 9.8675
     valence = {"C": 4}
     pdos = dos.project(ref_geometry, ("C",))
