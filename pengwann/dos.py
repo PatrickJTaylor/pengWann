@@ -293,13 +293,7 @@ class DOS:
             dict[str, np.ndarray]: The pDOS for each atom that is labelled by an
             appropriate symbol.
         """
-        num_wann = len(
-            [
-                idx
-                for idx in range(len(geometry))
-                if geometry[idx].species_string == "X0+"
-            ]
-        )
+        num_wann = len([site for site in geometry if site.species_string == "X0+"])
         wannier_centres = geometry.site_properties["wannier_centres"]
 
         wannier_indices = {}
@@ -571,13 +565,7 @@ class DOS:
             type of bond, whilst the values contain the bond lengths and IWOHPs
             respectively.
         """
-        num_wann = len(
-            [
-                idx
-                for idx in range(len(geometry))
-                if geometry[idx].species_string == "X0+"
-            ]
-        )
+        num_wann = len([site for site in geometry if site.species_string == "X0+"])
         distance_matrix = geometry.distance_matrix
 
         bonds = []
