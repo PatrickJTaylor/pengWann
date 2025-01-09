@@ -14,7 +14,11 @@ def test_fixed_occupation_function(ndarrays_regression) -> None:
     )
 
 
-@pytest.mark.parametrize("occupation_function", (fermi_dirac, gaussian, cold), ids=("fermi_dirac", "gaussian", "cold"))
+@pytest.mark.parametrize(
+    "occupation_function",
+    (fermi_dirac, gaussian, cold),
+    ids=("fermi_dirac", "gaussian", "cold"),
+)
 def test_occupation_function(occupation_function, ndarrays_regression) -> None:
     eigenvalues = np.array([-1, -0.75, -0.5, -0.25, 0.25, 0.5, 0.75, 1])
     mu = 0
@@ -27,7 +31,11 @@ def test_occupation_function(occupation_function, ndarrays_regression) -> None:
     )
 
 
-@pytest.mark.parametrize("occupation_function", (fermi_dirac, gaussian, cold), ids=("fermi_dirac", "gaussian", "cold"))
+@pytest.mark.parametrize(
+    "occupation_function",
+    (fermi_dirac, gaussian, cold),
+    ids=("fermi_dirac", "gaussian", "cold"),
+)
 def test_occupation_function_invalid_sigma(datadir, occupation_function) -> None:
     eigenvalues = np.array([-1, -0.75, -0.5, -0.25, 0.25, 0.5, 0.75, 1])
     mu = 0
