@@ -1,41 +1,39 @@
-import numpy as np
 from pengwann.io import read, read_eigenvalues, read_Hamiltonian, read_U
 
 
-def test_read_eigenvalues(datadir) -> None:
+def test_read_eigenvalues(datadir, ndarrays_regression) -> None:
     num_bands = 12
     num_kpoints = 4096
 
-    test_eigenvalues = read_eigenvalues(
-        f"{datadir}/wannier90.eig", num_bands, num_kpoints
+    eigenvalues = read_eigenvalues(f"{datadir}/wannier90.eig", num_bands, num_kpoints)
+
+    ndarrays_regression.check(
+        {"eigenvalues": eigenvalues}, default_tolerance={"atol": 0, "rtol": 1e-07}
     )
-    ref_eigenvalues = np.load(f"{datadir}/eigenvalues.npy")
-
-    np.testing.assert_allclose(test_eigenvalues, ref_eigenvalues)
 
 
-def test_read_U(datadir) -> None:
-    test_U, test_kpoints = read_U(f"{datadir}/wannier90_u.mat")
-    ref_U, ref_kpoints = np.load(f"{datadir}/U.npy"), np.load(f"{datadir}/kpoints.npy")
+def test_read_U(datadir, ndarrays_regression) -> None:
+    U, kpoints = read_U(f"{datadir}/wannier90_u.mat")
 
-    np.testing.assert_allclose(test_U, ref_U)
-    np.testing.assert_allclose(test_kpoints, ref_kpoints)
+    ndarrays_regression.check(
+        {"U": U, "kpoints": kpoints}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
 
 
-def test_read_Hamiltonian(datadir) -> None:
+def test_read_Hamiltonian(datadir, ndarrays_regression) -> None:
     test_H = read_Hamiltonian(f"{datadir}/wannier90_hr.dat")
 
     for R, matrix in test_H.items():
         assert matrix.shape == (8, 8)
 
-    test_H_000 = test_H[(0, 0, 0)]
-    ref_H_000 = np.load(f"{datadir}/H.npy")
+    H_000 = test_H[(0, 0, 0)]
 
-    np.testing.assert_allclose(test_H_000, ref_H_000)
+    ndarrays_regression.check(
+        {"H_000": H_000}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
 
 
-def test_read_wrapper(datadir) -> None:
-    _, _, test_U, _ = read("wannier90", f"{datadir}")
-    ref_U = np.load(f"{datadir}/U_with_dis.npy")
+def test_read_U_dis(datadir, ndarrays_regression) -> None:
+    _, _, U, _ = read("wannier90", f"{datadir}")
 
-    np.testing.assert_allclose(test_U, ref_U)
+    ndarrays_regression.check({"U": U}, default_tolerance={"atol": 0, "rtol": 1e-07})

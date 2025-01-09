@@ -9,7 +9,7 @@ from pengwann.utils import (
 from pymatgen.core import Structure
 
 
-def test_assign_wannier_centres(datadir) -> None:
+def test_assign_wannier_centres(datadir, data_regression) -> None:
     geometry = Structure.from_file(f"{datadir}/structure.vasp")
 
     ref_wannier_centres = [
@@ -27,7 +27,9 @@ def test_assign_wannier_centres(datadir) -> None:
 
     assign_wannier_centres(geometry)
 
-    assert geometry.site_properties["wannier_centres"] == ref_wannier_centres
+    data_regression.check(
+        {"wannier_centres": geometry.site_properties["wannier_centres"]}
+    )
 
 
 def test_assign_wannier_centres_invalid_structure(datadir) -> None:
@@ -37,13 +39,12 @@ def test_assign_wannier_centres_invalid_structure(datadir) -> None:
         assign_wannier_centres(geometry)
 
 
-def test_get_atom_indices(datadir) -> None:
+def test_get_atom_indices(datadir, data_regression) -> None:
     geometry = Structure.from_file(f"{datadir}/structure.vasp")
 
-    test_indices = get_atom_indices(geometry, ("C", "X0+"))
-    ref_indices = {"C": (8, 9), "X0+": (0, 1, 2, 3, 4, 5, 6, 7)}
+    indices = get_atom_indices(geometry, ("C", "X0+"))
 
-    assert test_indices == ref_indices
+    data_regression.check(indices)
 
 
 def test_get_atom_indices_uniqueness(datadir) -> None:
@@ -56,34 +57,36 @@ def test_get_atom_indices_uniqueness(datadir) -> None:
     assert len(total_indices_set) == len(total_indices)
 
 
-def test_get_atom_indices_all_assigned(datadir) -> None:
+def test_get_atom_indices_all_assigned(datadir, data_regression) -> None:
     geometry = Structure.from_file(f"{datadir}/structure.vasp")
 
-    test_indices = get_atom_indices(geometry, ("C", "X0+"))
+    indices = get_atom_indices(geometry, ("C", "X0+"))
 
-    assert len(test_indices["C"]) == 2 and len(test_indices["X0+"]) == 8
+    data_regression.check({"num_C": len(indices["C"]), "num_X": len(indices["X0+"])})
 
 
-def test_get_occupation_matrix_default() -> None:
+def test_get_occupation_matrix_default(ndarrays_regression) -> None:
     eigenvalues = np.array([-4, -3, -2, -1, 1, 2, 3, 4])
     mu = 0
     nspin = 2
 
-    test_occupations = get_occupation_matrix(eigenvalues, mu, nspin)
-    ref_occupations = np.array([2, 2, 2, 2, 0, 0, 0, 0], dtype=float)
+    occupations = get_occupation_matrix(eigenvalues, mu, nspin)
 
-    np.testing.assert_array_equal(test_occupations, ref_occupations, strict=True)
+    ndarrays_regression.check(
+        {"occupations": occupations}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
 
 
-def test_get_occupation_matrix_custom(datadir) -> None:
+def test_get_occupation_matrix_custom(ndarrays_regression) -> None:
     eigenvalues = np.array([-1, -0.75, -0.5, -0.25, 0.25, 0.5, 0.75, 1])
     mu = 0
     nspin = 2
     sigma = 0.2
 
-    test_occupations = get_occupation_matrix(
+    occupations = get_occupation_matrix(
         eigenvalues, mu, nspin, occupation_function=fermi_dirac, sigma=sigma
     )
-    ref_occupations = np.load(f"{datadir}/fermi_dirac.npy")
 
-    np.testing.assert_allclose(test_occupations, ref_occupations)
+    ndarrays_regression.check(
+        {"occupations": occupations}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )

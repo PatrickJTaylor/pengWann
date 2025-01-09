@@ -6,7 +6,7 @@ from pengwann.geometry import AtomicInteraction, WannierInteraction
 from pymatgen.core import Structure
 
 
-def test_dos_init_from_eigenvalues(datadir) -> None:
+def test_DOS_from_eigenvalues(ndarrays_regression) -> None:
     eigenvalues = np.array([[-4, -3, -2, -1, 1, 2, 3, 4], [-5, -4, -3, -2, 2, 3, 4, 5]])
     nspin = 2
     energy_range = (-6, 6)
@@ -19,15 +19,16 @@ def test_dos_init_from_eigenvalues(datadir) -> None:
         eigenvalues, nspin, energy_range, resolution, sigma, kpoints, U
     )
 
-    test_dos_array = dos._dos_array
-    ref_dos_array = np.load(f"{datadir}/dos_array.npy")
+    dos_array = dos._dos_array
 
-    np.testing.assert_allclose(test_dos_array, ref_dos_array)
+    ndarrays_regression.check(
+        {"dos_array": dos_array}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
 
 
 @pytest.fixture
-def load_dos(datadir) -> None:
-    dos_array = np.load(f"{datadir}/reduced_dos_array.npy")
+def dos(datadir) -> None:
+    dos_array = np.load(f"{datadir}/dos_array.npy")
     kpoints = np.load(f"{datadir}/kpoints.npy")
     U = np.load(f"{datadir}/U.npy")
     occupation_matrix = np.load(f"{datadir}/occupation_matrix.npy")
@@ -41,87 +42,88 @@ def load_dos(datadir) -> None:
     return dos
 
 
-def test_DOS_get_dos_matrix(load_dos, datadir) -> None:
+@pytest.mark.parametrize("sum_matrix", (True, False), ids=("sum_nk", "resolve_nk"))
+def test_DOS_get_dos_matrix(dos, sum_matrix, ndarrays_regression) -> None:
     i, j = 1, 0
     R_1 = np.array([0, 0, 0])
     R_2 = np.array([-1, 1, 0])
 
-    test_dos_matrix = load_dos.get_dos_matrix(i, j, R_1, R_2)
-    ref_dos_matrix = np.load(f"{datadir}/dos_matrix.npy")
+    dos_matrix = dos.get_dos_matrix(i, j, R_1, R_2, sum_matrix=sum_matrix)
 
-    np.testing.assert_allclose(test_dos_matrix, ref_dos_matrix)
-
-
-def test_DOS_get_dos_matrix_nk_resolved(load_dos, datadir) -> None:
-    i, j = 1, 3
-    R_1 = np.array([0, 0, 0])
-    R_2 = np.array([-1, 1, 0])
-
-    test_dos_matrix = load_dos.get_dos_matrix(i, j, R_1, R_2, sum_matrix=False)
-    ref_dos_matrix = np.load(f"{datadir}/dos_matrix_nk.npy")
-
-    np.testing.assert_allclose(test_dos_matrix, ref_dos_matrix)
+    ndarrays_regression.check(
+        {"dos_matrix": dos_matrix}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
 
 
-def test_DOS_P_ij(load_dos, datadir) -> None:
-    i, j = 1, 4
-    R_1 = np.array([0, 0, 0])
-    R_2 = np.array([-1, 0, 0])
-
-    test_P_ij = load_dos.P_ij(i, j, R_1, R_2)
-    ref_P_ij = np.load(f"{datadir}/P_ij.npy")
-
-    np.testing.assert_allclose(test_P_ij, ref_P_ij)
-
-
-def test_DOS_get_WOHP(load_dos, datadir) -> None:
+@pytest.mark.parametrize(
+    "dos_matrix",
+    (None, np.ones_like((5))),
+    ids=("without_dos_matrix", "with_dos_matrix"),
+)
+def test_DOS_get_WOHP(dos, dos_matrix, ndarrays_regression) -> None:
     i, j = 1, 0
     R_1 = np.array([0, 0, 0])
     R_2 = np.array([-1, 1, 0])
-    dos_matrix = np.load(f"{datadir}/dos_matrix.npy")
 
-    test_WOHP = load_dos.get_WOHP(i, j, R_1, R_2, dos_matrix)
-    ref_WOHP = np.load(f"{datadir}/WOHP.npy")
+    WOHP = dos.get_WOHP(i, j, R_1, R_2, dos_matrix=dos_matrix)
 
-    np.testing.assert_allclose(test_WOHP, ref_WOHP)
+    ndarrays_regression.check(
+        {"WOHP": WOHP}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
 
 
-def test_DOS_get_WOHP_no_H(load_dos) -> None:
-    load_dos._H = None
+def test_DOS_get_WOHP_no_H(dos) -> None:
+    dos._H = None
 
     i, j = 1, 7
     R_1 = np.array([0, 0, 0])
     R_2 = np.array([-1, 0, 0])
 
     with pytest.raises(ValueError):
-        load_dos.get_WOHP(i, j, R_1, R_2)
+        dos.get_WOHP(i, j, R_1, R_2)
 
 
-def test_DOS_get_WOBI(load_dos, datadir) -> None:
+@pytest.mark.parametrize(
+    "dos_matrix",
+    (None, np.ones_like((5))),
+    ids=("without_dos_matrix", "with_dos_matrix"),
+)
+def test_DOS_get_WOBI(dos, dos_matrix, ndarrays_regression) -> None:
     i, j = 1, 0
     R_1 = np.array([0, 0, 0])
     R_2 = np.array([-1, 1, 0])
 
-    dos_matrix = np.load(f"{datadir}/dos_matrix.npy")
+    WOBI = dos.get_WOBI(i, j, R_1, R_2, dos_matrix=dos_matrix)
 
-    test_WOBI = load_dos.get_WOBI(i, j, R_1, R_2, dos_matrix)
-    ref_WOBI = np.load(f"{datadir}/WOBI.npy")
+    ndarrays_regression.check(
+        {"WOBI": WOBI}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
 
-    np.testing.assert_allclose(test_WOBI, ref_WOBI)
 
-
-def test_DOS_get_WOBI_no_occupation_matrix(load_dos) -> None:
-    load_dos._occupation_matrix = None
+def test_DOS_get_WOBI_no_occupation_matrix(dos) -> None:
+    dos._occupation_matrix = None
 
     i, j = 2, 0
     R_1 = np.array([0, 0, 0])
     R_2 = np.array([1, -1, -1])
 
     with pytest.raises(ValueError):
-        load_dos.get_WOBI(i, j, R_1, R_2)
+        dos.get_WOBI(i, j, R_1, R_2)
 
 
-def test_DOS_project(load_dos, datadir) -> None:
+def test_DOS_P_ij(dos, ndarrays_regression) -> None:
+    i, j = 1, 4
+    R_1 = np.array([0, 0, 0])
+    R_2 = np.array([-1, 0, 0])
+
+    P_ij = dos.P_ij(i, j, R_1, R_2)
+
+    ndarrays_regression.check(
+        {"P_ij": P_ij}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
+
+
+def test_DOS_project(dos, datadir, ndarrays_regression) -> None:
     geometry = Structure.from_file(f"{datadir}/structure.vasp")
     wannier_centres = (
         (9,),
@@ -137,14 +139,15 @@ def test_DOS_project(load_dos, datadir) -> None:
     )
     geometry.add_site_property("wannier_centres", wannier_centres)
 
-    pdos = load_dos.project(geometry, ("C",))
-    test_pdos_C = pdos["C1"] + pdos["C2"]
-    ref_pdos_C = np.load(f"{datadir}/pdos.npy")
+    full_pdos = dos.project(geometry, ("C",))
+    pdos_C = full_pdos["C1"] + full_pdos["C2"]
 
-    np.testing.assert_allclose(test_pdos_C, ref_pdos_C)
+    ndarrays_regression.check(
+        {"pdos": pdos_C}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
 
 
-def test_DOS_get_populations(load_dos, datadir) -> None:
+def test_DOS_get_populations(dos, datadir, ndarrays_regression) -> None:
     geometry = Structure.from_file(f"{datadir}/structure.vasp")
     wannier_centres = (
         (9,),
@@ -161,17 +164,18 @@ def test_DOS_get_populations(load_dos, datadir) -> None:
     geometry.add_site_property("wannier_centres", wannier_centres)
 
     mu = 9.8675
-    pdos = load_dos.project(geometry, ("C",))
-    populations = load_dos.get_populations(pdos, mu)
-    test_populations = np.array(
+    pdos = dos.project(geometry, ("C",))
+    populations = dos.get_populations(pdos, mu)
+    populations = np.array(
         (populations["C1"]["population"], populations["C2"]["population"])
     )
-    ref_populations = np.load(f"{datadir}/populations.npy")
 
-    np.testing.assert_allclose(test_populations, ref_populations)
+    ndarrays_regression.check(
+        {"populations": populations}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
 
 
-def test_DOS_get_populations_charges(load_dos, datadir) -> None:
+def test_DOS_get_populations_charges(dos, datadir, ndarrays_regression) -> None:
     geometry = Structure.from_file(f"{datadir}/structure.vasp")
     wannier_centres = (
         (9,),
@@ -189,15 +193,16 @@ def test_DOS_get_populations_charges(load_dos, datadir) -> None:
 
     mu = 9.8675
     valence = {"C": 4}
-    pdos = load_dos.project(geometry, ("C",))
-    populations = load_dos.get_populations(pdos, mu, valence=valence)
-    test_charges = np.array((populations["C1"]["charge"], populations["C2"]["charge"]))
-    ref_charges = np.load(f"{datadir}/charges.npy")
+    pdos = dos.project(geometry, ("C",))
+    populations = dos.get_populations(pdos, mu, valence=valence)
+    charges = np.array((populations["C1"]["charge"], populations["C2"]["charge"]))
 
-    np.testing.assert_allclose(test_charges, ref_charges)
+    ndarrays_regression.check(
+        {"charges": charges}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
 
 
-def test_DOS_get_populations_wrong_valence(load_dos, datadir) -> None:
+def test_DOS_get_populations_wrong_valence(dos, datadir) -> None:
     geometry = Structure.from_file(f"{datadir}/structure.vasp")
     wannier_centres = (
         (9,),
@@ -215,13 +220,14 @@ def test_DOS_get_populations_wrong_valence(load_dos, datadir) -> None:
 
     mu = 9.8675
     valence = {"N": 4}
-    pdos = load_dos.project(geometry, ("C",))
+    pdos = dos.project(geometry, ("C",))
 
     with pytest.raises(ValueError):
-        populations = load_dos.get_populations(pdos, mu, valence=valence)
+        populations = dos.get_populations(pdos, mu, valence=valence)
 
 
-def test_DOS_get_descriptors(load_dos, datadir) -> None:
+@pytest.mark.parametrize("sum_k", (True, False), ids=("sum_k", "resolve_k"))
+def test_DOS_get_descriptors(dos, sum_k, ndarrays_regression) -> None:
     wannier_interaction_1 = WannierInteraction(
         i=1, j=0, R_1=np.array([0, 1, 0]), R_2=np.array([0, 0, 0])
     )
@@ -235,41 +241,16 @@ def test_DOS_get_descriptors(load_dos, datadir) -> None:
         ),
     )
 
-    test_descriptors = load_dos.get_descriptors(interactions)
-    test_WOHP = test_descriptors[("C1", "C2")]["WOHP"]
-    test_WOBI = test_descriptors[("C1", "C2")]["WOBI"]
-    ref_WOHP = np.load(f"{datadir}/total_WOHP.npy")
-    ref_WOBI = np.load(f"{datadir}/total_WOBI.npy")
+    descriptors = dos.get_descriptors(interactions, sum_k=sum_k)
+    WOHP = descriptors[("C1", "C2")]["WOHP"]
+    WOBI = descriptors[("C1", "C2")]["WOBI"]
 
-    np.testing.assert_allclose(test_WOHP, ref_WOHP)
-    np.testing.assert_allclose(test_WOBI, ref_WOBI)
-
-
-def test_DOS_get_descriptors_k_resolved(load_dos, datadir) -> None:
-    wannier_interaction_1 = WannierInteraction(
-        i=5, j=4, R_1=np.array([0, 1, 1]), R_2=np.array([0, 0, 0])
-    )
-    wannier_interaction_2 = WannierInteraction(
-        i=7, j=6, R_1=np.array([1, 0, 0]), R_2=np.array([0, 0, 0])
-    )
-    interactions = (
-        AtomicInteraction(
-            pair_id=("C1", "C2"),
-            wannier_interactions=(wannier_interaction_1, wannier_interaction_2),
-        ),
+    ndarrays_regression.check(
+        {"WOHP": WOHP, "WOBI": WOBI}, default_tolerance={"atol": 0, "rtol": 1e-07}
     )
 
-    test_descriptors = load_dos.get_descriptors(interactions, sum_k=False)
-    test_WOHP = test_descriptors[("C1", "C2")]["WOHP"]
-    test_WOBI = test_descriptors[("C1", "C2")]["WOBI"]
-    ref_WOHP = np.load(f"{datadir}/total_WOHP_k_resolved.npy")
-    ref_WOBI = np.load(f"{datadir}/total_WOBI_k_resolved.npy")
 
-    np.testing.assert_allclose(test_WOHP, ref_WOHP)
-    np.testing.assert_allclose(test_WOBI, ref_WOBI)
-
-
-def test_DOS_get_BWDF(load_dos, datadir) -> None:
+def test_DOS_get_BWDF(dos, ndarrays_regression) -> None:
     integrated_descriptors = {("C1", "C2"): {"IWOHP": 5}, ("C3", "C4"): {"IWOHP": 3}}
     geometry = Structure(
         ((3, 0, 0), (0, 3, 0), (0, 0, 3)),
@@ -278,16 +259,15 @@ def test_DOS_get_BWDF(load_dos, datadir) -> None:
         coords_are_cartesian=True,
     )
 
-    bwdf = load_dos.get_BWDF(integrated_descriptors, geometry)
-    test_r, test_weights = bwdf[("C", "C")]
-    ref_r = np.load(f"{datadir}/r.npy")
-    ref_weights = np.load(f"{datadir}/weights.npy")
+    bwdf = dos.get_BWDF(integrated_descriptors, geometry)
+    r, weights = bwdf[("C", "C")]
 
-    np.testing.assert_allclose(test_r, ref_r)
-    np.testing.assert_allclose(test_weights, ref_weights)
+    ndarrays_regression.check(
+        {"r": r, "weights": weights}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
 
 
-def test_DOS_get_density_of_energy(load_dos, datadir) -> None:
+def test_DOS_get_density_of_energy(dos, ndarrays_regression) -> None:
     wannier_interaction_1 = WannierInteraction(
         i=1, j=0, R_1=np.array([0, 1, 0]), R_2=np.array([0, 0, 0])
     )
@@ -301,40 +281,38 @@ def test_DOS_get_density_of_energy(load_dos, datadir) -> None:
         ),
     )
 
-    descriptors = load_dos.get_descriptors(interactions)
+    descriptors = dos.get_descriptors(interactions)
 
     num_wann = 7
-    test_doe = load_dos.get_density_of_energy(descriptors, num_wann)
-    ref_doe = np.load(f"{datadir}/doe.npy")
+    doe = dos.get_density_of_energy(descriptors, num_wann)
 
-    np.testing.assert_allclose(test_doe, ref_doe)
+    ndarrays_regression.check(
+        {"DOE": doe}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
 
 
-def test_DOS_integrate_descriptors(load_dos, datadir) -> None:
-    wohp = np.load(f"{datadir}/total_WOHP.npy")
-    wobi = np.load(f"{datadir}/total_WOBI.npy")
+@pytest.mark.parametrize("sum_k", (True, False), ids=("sum_k", "resolve_k"))
+def test_DOS_integrate_descriptors(dos, sum_k, ndarrays_regression) -> None:
+    wannier_interaction_1 = WannierInteraction(
+        i=1, j=0, R_1=np.array([0, 1, 0]), R_2=np.array([0, 0, 0])
+    )
+    wannier_interaction_2 = WannierInteraction(
+        i=5, j=6, R_1=np.array([0, 1, 1]), R_2=np.array([0, 0, 0])
+    )
+    interactions = (
+        AtomicInteraction(
+            pair_id=("C1", "C2"),
+            wannier_interactions=(wannier_interaction_1, wannier_interaction_2),
+        ),
+    )
 
+    descriptors = dos.get_descriptors(interactions, sum_k=sum_k)
     mu = 9.8675
-    descriptors = {("C1", "C2"): {"WOHP": wohp, "WOBI": wobi}}
 
-    test_integrals = load_dos.integrate_descriptors(descriptors, mu)
-    ref_IWOHP = np.load(f"{datadir}/IWOHP.npy")
-    ref_IWOBI = np.load(f"{datadir}/IWOBI.npy")
+    integrals = dos.integrate_descriptors(descriptors, mu)
+    IWOHP = integrals[("C1", "C2")]["IWOHP"]
+    IWOBI = integrals[("C1", "C2")]["IWOBI"]
 
-    np.testing.assert_allclose(test_integrals[("C1", "C2")]["IWOHP"], ref_IWOHP)
-    np.testing.assert_allclose(test_integrals[("C1", "C2")]["IWOBI"], ref_IWOBI)
-
-
-def test_DOS_integrate_descriptors_k_resolved(load_dos, datadir) -> None:
-    wohp = np.load(f"{datadir}/total_WOHP_k_resolved.npy")
-    wobi = np.load(f"{datadir}/total_WOBI_k_resolved.npy")
-
-    mu = 9.8675
-    descriptors = {("C1", "C2"): {"WOHP": wohp, "WOBI": wobi}}
-
-    test_integrals = load_dos.integrate_descriptors(descriptors, mu)
-    ref_IWOHP = np.load(f"{datadir}/IWOHP_k_resolved.npy")
-    ref_IWOBI = np.load(f"{datadir}/IWOBI_k_resolved.npy")
-
-    np.testing.assert_allclose(test_integrals[("C1", "C2")]["IWOHP"], ref_IWOHP)
-    np.testing.assert_allclose(test_integrals[("C1", "C2")]["IWOBI"], ref_IWOBI)
+    ndarrays_regression.check(
+        {"IWOHP": IWOHP, "IWOBI": IWOBI}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )

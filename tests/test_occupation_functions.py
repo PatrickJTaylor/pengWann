@@ -3,29 +3,31 @@ import numpy as np
 from pengwann.occupation_functions import cold, fermi_dirac, fixed, gaussian
 
 
-def test_fixed_occupation_function() -> None:
+def test_fixed_occupation_function(ndarrays_regression) -> None:
     eigenvalues = np.array([-4, -3, -2, -1, 1, 2, 3, 4])
     mu = 0
 
-    ref_occupations = np.array([1, 1, 1, 1, 0, 0, 0, 0], dtype=float)
-    test_occupations = fixed(eigenvalues, mu)
+    occupations = fixed(eigenvalues, mu)
 
-    np.testing.assert_array_equal(test_occupations, ref_occupations, strict=True)
+    ndarrays_regression.check(
+        {"occupations": occupations}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
 
 
-@pytest.mark.parametrize("occupation_function", (fermi_dirac, cold, gaussian))
-def test_occupation_function(datadir, occupation_function) -> None:
+@pytest.mark.parametrize("occupation_function", (fermi_dirac, gaussian, cold), ids=("fermi_dirac", "gaussian", "cold"))
+def test_occupation_function(occupation_function, ndarrays_regression) -> None:
     eigenvalues = np.array([-1, -0.75, -0.5, -0.25, 0.25, 0.5, 0.75, 1])
     mu = 0
     sigma = 0.2
 
-    ref_occupations = np.load(f"{datadir}/{occupation_function.__name__}.npy")
-    test_occupations = occupation_function(eigenvalues, mu, sigma)
+    occupations = occupation_function(eigenvalues, mu, sigma)
 
-    np.testing.assert_allclose(test_occupations, ref_occupations)
+    ndarrays_regression.check(
+        {"occupations": occupations}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
 
 
-@pytest.mark.parametrize("occupation_function", (fermi_dirac, cold, gaussian))
+@pytest.mark.parametrize("occupation_function", (fermi_dirac, gaussian, cold), ids=("fermi_dirac", "gaussian", "cold"))
 def test_occupation_function_invalid_sigma(datadir, occupation_function) -> None:
     eigenvalues = np.array([-1, -0.75, -0.5, -0.25, 0.25, 0.5, 0.75, 1])
     mu = 0
