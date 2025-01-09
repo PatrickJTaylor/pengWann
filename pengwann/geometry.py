@@ -72,7 +72,7 @@ def build_geometry(path: str, cell: ArrayLike) -> Structure:
 
     xyz = Molecule.from_file(path)
     species, coords = [], []
-    for site in xyz:
+    for site in xyz:  # type: ignore[union-attr]
         symbol = site.species_string.capitalize()
         species.append(symbol)
         coords.append(site.coords)
