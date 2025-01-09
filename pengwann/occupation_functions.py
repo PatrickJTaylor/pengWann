@@ -1,6 +1,8 @@
 """
-This module contains a set of simple functions for calculating orbital
-occupations from a set of Kohn-Sham eigenvalues.
+This module contains a set of simple functions for calculating orbital occupations
+from a set of Kohn-Sham eigenvalues. Any of these functions can be used together with
+the :py:func:`~pengwann.utils.get_occupation_matrix` function to build the occupation
+matrix needed to calculate WOBIs with the :py:class:`~pengwann.dos.DOS` class.
 """
 
 import numpy as np
@@ -38,8 +40,8 @@ def fermi_dirac(eigenvalues: np.ndarray, mu: float, sigma: float) -> np.ndarray:
     Args:
         eigenvalues (np.ndarray): The Kohn-Sham eigenvalues.
         mu (float): The Fermi level.
-        sigma (float): The smearing width in eV (in this case = kT for some
-            electronic temperature T).
+        sigma (float): The smearing width in eV (in this case = kT for some electronic
+            temperature T).
 
     Returns:
         np.ndarray: The occupation numbers.

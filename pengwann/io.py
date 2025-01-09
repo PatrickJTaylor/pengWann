@@ -1,8 +1,8 @@
 """
-This module implements several parsing functions for reading Wannier90 output
-files. The :py:func:`~pengwann.io.read` function is a convenient wrapper for
-automatically parsing all the data required to construct an instance of the
-:py:class:`pengwann.dos.DOS` class.
+This module implements several parsing functions for reading Wannier90 output files.
+The :py:func:`~pengwann.io.read` function is a convenient wrapper for automatically
+parsing all the data required to construct an instance of the
+:py:class:`~pengwann.dos.DOS` class.
 """
 
 import os
@@ -17,8 +17,8 @@ def read(
 
     Args:
         seedname (str): Wannier90 seedname (prefix for all output files).
-        path: (str): Filepath to main Wannier90 output files. Defaults to '.'
-            i.e. the current working directory.
+        path: (str): Filepath to main Wannier90 output files. Defaults to '.' i.e. the
+            current working directory.
 
     Returns:
         tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -85,9 +85,8 @@ def read_eigenvalues(
 
 def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
     r"""
-    Read in the unitary matrices :math:`U^{k}` that define the Wannier
-    functions :math:`\ket{w_{nR}}` from the Kohn-Sham states
-    :math:`\ket{\psi_{mk}}`.
+    Read in the unitary matrices :math:`U^{k}` that define the Wannier functions
+    :math:`\ket{w_{nR}}` from the Kohn-Sham states :math:`\ket{\psi_{mk}}`.
 
     Args:
         path (str): The filepath to seedname_u.mat or seedname_u_dis.mat.
@@ -100,8 +99,8 @@ def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
         np.ndarray: The k-points corresponding to each :math:`U^{k}`.
 
     Notes:
-        The output array is a num_kpoints x num_bands x num_wann tensor,
-        each num_bands x num_wann block is a matrix :math:`U^{k}`.
+        The output array is a num_kpoints x num_bands x num_wann array, each
+        num_bands x num_wann block is a matrix :math:`U^{k}`.
     """
     U_list, kpoints_list = [], []
 
@@ -151,9 +150,8 @@ def read_Hamiltonian(path: str) -> dict[tuple[int, ...], np.ndarray]:
         np.ndarray: The Wannier Hamiltonian.
 
     Notes:
-        H is a dictionary with keys corresponding to Bravais lattice
-        vectors (in tuple form). Each value is a num_wann x num_wann
-        matrix.
+        H is a dictionary with keys corresponding to Bravais lattice vectors (in tuple
+        form). Each value is a num_wann x num_wann matrix.
     """
     with open(path, "r") as stream:
         lines = stream.readlines()

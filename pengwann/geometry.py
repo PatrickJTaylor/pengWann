@@ -1,7 +1,7 @@
 """
-This module contains the :py:class:`~pengwann.geometry.InteractionFinder`
-class, which allows for the identification of bonds between pairs of atoms
-(and their associated Wannier functions) according to a distance criterion.
+This module contains the functions necessary to parse the geometry of the target system
+and from this identify relevant interatomic interactions from which to compute bonding
+descriptors.
 """
 
 from __future__ import annotations
@@ -15,15 +15,14 @@ from typing import NamedTuple
 
 class AtomicInteraction(NamedTuple):
     """
-    A class representing the interaction between atoms i and j in terms
-    of their respective Wannier functions.
+    A class representing the interaction between atoms i and j in terms of their
+    respective Wannier functions.
 
     Attributes:
-        pair_id (tuple[str, str]): A pair of strings identifying atoms
-            i and j.
+        pair_id (tuple[str, str]): A pair of strings identifying atoms i and j.
         wannier_interactions (tuple[WannierInteraction, ...]): The individual
-            WannierInteractions that together comprise the total interaction
-            between atoms i and j.
+            :py:class:`~pengwann.geometry.WannierInteraction` objects that together
+            comprise the total interaction between atoms i and j.
     """
 
     pair_id: tuple[str, str]
@@ -31,17 +30,17 @@ class AtomicInteraction(NamedTuple):
 
 
 class WannierInteraction(NamedTuple):
-    """
-    A class representing the interaction between Wannier function i and the
-        closest image of Wannier function j.
+    r"""
+    A class representing the interaction between :math:`\ket{iR_{1}}` and
+    :math:`\ket{jR_{2}}`.
 
     Attributes:
         i (int): The index for Wannier function i.
         j (int): The index for Wannier function j.
-        R_1 (np.ndarray): The Bravais lattice vector specifying the translation
-            of Wannier function i.
-        R_2 (np.ndarray): The Bravais lattice vector specifying the translation
-            of Wannier function j.
+        R_1 (np.ndarray): The Bravais lattice vector specifying the translation of
+            Wannier function i.
+        R_2 (np.ndarray): The Bravais lattice vector specifying the translation of
+            Wannier function j.
     """
 
     i: int
@@ -55,9 +54,9 @@ def build_geometry(path: str, cell: ArrayLike) -> Structure:
     Construct a Pymatgen Structure containing all of the necessary information to
     identify interatomic interactions and the Wannier functions involved.
 
-    More specifically, the final Structure object has a "wannier_centres" site property
-    which associates each atom with the indices of its Wannier functions and each
-    Wannier centre with the index of its associated atom.
+    More specifically, the final Structure object has a :code:`"wannier_centres"` site
+    property which associates each atom with the indices of its Wannier functions and
+    each Wannier centre with the index of its associated atom.
 
     Args:
         path (str): Filepath to the xyz file containing the coordinates of the Wannier
@@ -67,6 +66,11 @@ def build_geometry(path: str, cell: ArrayLike) -> Structure:
     Returns:
         Structure: The Pymatgen Structure containing the relevant atoms and Wannier
         centres.
+
+    Notes:
+        The Pymatgen Structure returned by this function can be used as the
+        :code:`geometry` argument to several methods of the
+        :py:class:`~pengwann.dos.DOS` class.
     """
     lattice = Lattice(cell)
 
@@ -88,11 +92,11 @@ def find_interactions(
     geometry: Structure, radial_cutoffs: dict[tuple[str, str], float]
 ) -> tuple[AtomicInteraction, ...]:
     """
-    Identify interatomic interactions according to a radial distance cutoff.
+    Identify interatomic interactions according to a set of radial distance cutoffs.
 
     Args:
-        radial_cutoffs (dict[tuple[str, str], float]): A dictionary defining a radial
-            cutoff for pairs of atomic species.
+        radial_cutoffs (dict[tuple[str, str], float]): A dictionary defining radial
+            cutoffs for pairs of atomic species.
 
             For example:
 
@@ -101,6 +105,11 @@ def find_interactions(
     Returns:
         tuple[AtomicInteraction, ...]: The interactions identified by the radial
         cutoffs.
+
+    Notes:
+        The :py:class:`~pengwann.geometry.AtomicInteraction` objects returned by this
+        function can be supplied to the :py:meth:`pengwann.dos.DOS.get_descriptors`
+        method to automate the computation of desirable bonding descriptors.
     """
     if "wannier_centres" not in geometry.site_properties.keys():
         raise ValueError('Input geometry is missing a "wannier_centres" site property.')

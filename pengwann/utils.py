@@ -1,6 +1,6 @@
 """
-This module contains some miscellaneous utility functions required elsewhere
-in the codebase.
+This module contains some miscellaneous utility functions required elsewhere in the
+codebase.
 """
 
 import numpy as np
@@ -12,13 +12,11 @@ from typing import Any, Callable, Optional
 
 def assign_wannier_centres(geometry: Structure) -> None:
     """
-    Assign Wannier centres to atoms based on a closest distance
-    criterion.
+    Assign Wannier centres to atoms based on a closest distance criterion.
 
     Args:
-        geometry (Structure): A Pymatgen Structure object containing
-            the structure itself as well as the positions of the
-            Wannier centres (as 'X' atoms).
+        geometry (Structure): A Pymatgen Structure object containing the structure
+            itself as well as the positions of the Wannier centres (as "X" atoms).
 
     Returns:
         None
@@ -62,17 +60,16 @@ def get_atom_indices(
     geometry: Structure, symbols: tuple[str, ...]
 ) -> dict[str, tuple[int, ...]]:
     """
-    Categorise all site indices of a Pymatgen Structure object
-    according to the atomic species.
+    Categorise all site indices of a Pymatgen Structure object according to the atomic
+    species.
 
     Args:
         geometry (Structure): The Pymatgen Structure object.
-        symbols (tuple[str, ...]): The atomic species to associate
-            indices with.
+        symbols (tuple[str, ...]): The atomic species to associate indices with.
 
     Returns:
-        dict[str, tuple[int, ...]]: The site indices categorised by
-        atomic species (as dictionary keys).
+        dict[str, tuple[int, ...]]: The site indices categorised by atomic species (as
+        dictionary keys).
     """
     atom_indices_list: dict[str, list[int]] = {}
     for symbol in symbols:
@@ -104,24 +101,22 @@ def get_occupation_matrix(
         eigenvalues (np.ndarray): The Kohn-Sham eigenvalues.
         mu (float): The Fermi level.
         nspin (int): The number of electrons per fully-occupied Kohn-Sham state.
-        occupation_function (Optional[Callable]): The occupation function to
-            be used to calculate the occupation matrix. Defaults to None (which
-            means fixed occupations will be assumed).
-        **function_kwargs: Additional keyword arguments to be passed to the
-            occupation function in addition to the eigenvalues and the Fermi
-            level.
+        occupation_function (Optional[Callable]): The occupation function to be used to
+            calculate the occupation matrix. Defaults to None (which means fixed
+            occupations will be assumed).
+        **function_kwargs: Additional keyword arguments to be passed to the occupation
+            function in addition to the eigenvalues and the Fermi level.
 
     Returns:
         np.ndarray: The occupation matrix.
 
     Notes:
         Several pre-defined occupation functions may be imported from the
-        :py:mod:`~pengwann.occupation_functions` module (Gaussian,
-        Marzari-Vanderbilt etc).
+        :py:mod:`~pengwann.occupation_functions` module (Gaussian, Marzari-Vanderbilt
+        etc).
 
-        Alternatively, one may choose to use a custom occupation function, in
-        which case it must take the eigenvalues and the Fermi level as the
-        first two positional arguments.
+        Alternatively, one may choose to use a custom occupation function, in which case
+        it must take the eigenvalues and the Fermi level as the first two positional arguments.
     """
     if occupation_function is not None:
         occupation_matrix = occupation_function(eigenvalues, mu, **function_kwargs)
