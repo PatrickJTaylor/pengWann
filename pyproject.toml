@@ -43,7 +43,7 @@ dev = [
   'pytest',
   'pytest-cov',
   'pytest-datadir',
-  'pytest-regressions'
+  'pytest-regressions',
   'scipy-stubs',
   'types-tqdm'
 ]
