@@ -139,12 +139,9 @@ def test_DOS_project(dos, datadir, ndarrays_regression) -> None:
     )
     geometry.add_site_property("wannier_centres", wannier_centres)
 
-    full_pdos = dos.project(geometry, ("C",))
-    pdos_C = full_pdos["C1"] + full_pdos["C2"]
+    pdos = dos.project(geometry, ("C",))
 
-    ndarrays_regression.check(
-        {"pdos": pdos_C}, default_tolerance={"atol": 0, "rtol": 1e-07}
-    )
+    ndarrays_regression.check(pdos, default_tolerance={"atol": 0, "rtol": 1e-07})
 
 
 def test_DOS_get_populations(dos, datadir, ndarrays_regression) -> None:
@@ -246,8 +243,37 @@ def test_DOS_get_descriptors(dos, sum_k, ndarrays_regression) -> None:
     WOBI = descriptors[("C1", "C2")]["WOBI"]
 
     ndarrays_regression.check(
-        {"WOHP": WOHP, "WOBI": WOBI}, default_tolerance={"atol": 0, "rtol": 1e-07}
+        descriptors[("C1", "C2")], default_tolerance={"atol": 0, "rtol": 1e-07}
     )
+
+
+@pytest.mark.parametrize("sum_k", (True, False), ids=("sum_k", "resolve_k"))
+def test_DOS_process_interaction(
+    dos, sum_k, data_regression, ndarrays_regression
+) -> None:
+    wannier_interaction_1 = WannierInteraction(
+        i=1, j=0, R_1=np.array([0, 1, 0]), R_2=np.array([0, 0, 0])
+    )
+    wannier_interaction_2 = WannierInteraction(
+        i=5, j=6, R_1=np.array([0, 1, 1]), R_2=np.array([0, 0, 0])
+    )
+    interaction = AtomicInteraction(
+        pair_id=("C1", "C2"),
+        wannier_interactions=(wannier_interaction_1, wannier_interaction_2),
+    )
+
+    if sum_k:
+        labels = ("WOHP", "WOBI", "sum_k")
+
+    else:
+        labels = ("WOHP", "WOBI")
+
+    interaction_and_labels = (interaction, labels)
+
+    pair_id, descriptors = dos.process_interaction(interaction_and_labels)
+
+    data_regression.check({"pair_id": pair_id})
+    ndarrays_regression.check(descriptors, default_tolerance={"atol": 0, "rtol": 1e-07})
 
 
 def test_DOS_get_BWDF(dos, ndarrays_regression) -> None:
@@ -310,9 +336,7 @@ def test_DOS_integrate_descriptors(dos, sum_k, ndarrays_regression) -> None:
     mu = 9.8675
 
     integrals = dos.integrate_descriptors(descriptors, mu)
-    IWOHP = integrals[("C1", "C2")]["IWOHP"]
-    IWOBI = integrals[("C1", "C2")]["IWOBI"]
 
     ndarrays_regression.check(
-        {"IWOHP": IWOHP, "IWOBI": IWOBI}, default_tolerance={"atol": 0, "rtol": 1e-07}
+        integrals[("C1", "C2")], default_tolerance={"atol": 0, "rtol": 1e-07}
     )
