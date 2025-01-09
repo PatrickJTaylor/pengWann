@@ -9,8 +9,8 @@ from pengwann.utils import (
 from pymatgen.core import Structure
 
 
-def test_assign_wannier_centres(datadir, data_regression) -> None:
-    geometry = Structure.from_file(f"{datadir}/structure.vasp")
+def test_assign_wannier_centres(shared_datadir, data_regression) -> None:
+    geometry = Structure.from_file(f"{shared_datadir}/structure.vasp")
 
     ref_wannier_centres = [
         (9,),
@@ -32,23 +32,23 @@ def test_assign_wannier_centres(datadir, data_regression) -> None:
     )
 
 
-def test_assign_wannier_centres_invalid_structure(datadir) -> None:
-    geometry = Structure.from_file(f"{datadir}/invalid_structure.vasp")
+def test_assign_wannier_centres_invalid_structure(shared_datadir) -> None:
+    geometry = Structure.from_file(f"{shared_datadir}/invalid_structure.vasp")
 
     with pytest.raises(ValueError):
         assign_wannier_centres(geometry)
 
 
-def test_get_atom_indices(datadir, data_regression) -> None:
-    geometry = Structure.from_file(f"{datadir}/structure.vasp")
+def test_get_atom_indices(shared_datadir, data_regression) -> None:
+    geometry = Structure.from_file(f"{shared_datadir}/structure.vasp")
 
     indices = get_atom_indices(geometry, ("C", "X0+"))
 
     data_regression.check(indices)
 
 
-def test_get_atom_indices_uniqueness(datadir) -> None:
-    geometry = Structure.from_file(f"{datadir}/structure.vasp")
+def test_get_atom_indices_uniqueness(shared_datadir) -> None:
+    geometry = Structure.from_file(f"{shared_datadir}/structure.vasp")
 
     test_indices = get_atom_indices(geometry, ("C", "X0+"))
     total_indices = test_indices["C"] + test_indices["X0+"]
@@ -57,8 +57,8 @@ def test_get_atom_indices_uniqueness(datadir) -> None:
     assert len(total_indices_set) == len(total_indices)
 
 
-def test_get_atom_indices_all_assigned(datadir, data_regression) -> None:
-    geometry = Structure.from_file(f"{datadir}/structure.vasp")
+def test_get_atom_indices_all_assigned(shared_datadir, data_regression) -> None:
+    geometry = Structure.from_file(f"{shared_datadir}/structure.vasp")
 
     indices = get_atom_indices(geometry, ("C", "X0+"))
 

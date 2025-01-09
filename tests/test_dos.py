@@ -1,9 +1,36 @@
+import json
 import pytest
 import numpy as np
 from pengwann.dos import DOS
 from pengwann.io import read_Hamiltonian
 from pengwann.geometry import AtomicInteraction, WannierInteraction
 from pymatgen.core import Structure
+
+
+@pytest.fixture
+def dos(shared_datadir) -> None:
+    dos_array = np.load(f"{shared_datadir}/dos_array.npy")
+    kpoints = np.load(f"{shared_datadir}/kpoints.npy")
+    U = np.load(f"{shared_datadir}/U.npy")
+    occupation_matrix = np.load(f"{shared_datadir}/occupation_matrix.npy")
+    H = read_Hamiltonian(f"{shared_datadir}/wannier90_hr.dat")
+
+    energies = np.arange(-25, 25 + 0.1, 0.1)
+    nspin = 2
+
+    dos = DOS(energies, dos_array, nspin, kpoints, U, H, occupation_matrix)
+
+    return dos
+
+
+@pytest.fixture
+def ref_geometry(shared_datadir) -> Structure:
+    with open(f"{shared_datadir}/geometry.json", "r") as stream:
+        serial = json.load(stream)
+
+    geometry = Structure.from_dict(serial)
+
+    return geometry
 
 
 def test_DOS_from_eigenvalues(ndarrays_regression) -> None:
@@ -24,22 +51,6 @@ def test_DOS_from_eigenvalues(ndarrays_regression) -> None:
     ndarrays_regression.check(
         {"dos_array": dos_array}, default_tolerance={"atol": 0, "rtol": 1e-07}
     )
-
-
-@pytest.fixture
-def dos(datadir) -> None:
-    dos_array = np.load(f"{datadir}/dos_array.npy")
-    kpoints = np.load(f"{datadir}/kpoints.npy")
-    U = np.load(f"{datadir}/U.npy")
-    occupation_matrix = np.load(f"{datadir}/occupation_matrix.npy")
-    H = read_Hamiltonian(f"{datadir}/wannier90_hr.dat")
-
-    energies = np.arange(-25, 25 + 0.1, 0.1)
-    nspin = 2
-
-    dos = DOS(energies, dos_array, nspin, kpoints, U, H, occupation_matrix)
-
-    return dos
 
 
 @pytest.mark.parametrize("sum_matrix", (True, False), ids=("sum_nk", "resolve_nk"))
@@ -123,45 +134,15 @@ def test_DOS_P_ij(dos, ndarrays_regression) -> None:
     )
 
 
-def test_DOS_project(dos, datadir, ndarrays_regression) -> None:
-    geometry = Structure.from_file(f"{datadir}/structure.vasp")
-    wannier_centres = (
-        (9,),
-        (8,),
-        (8,),
-        (9,),
-        (9,),
-        (8,),
-        (8,),
-        (9,),
-        (1, 2, 5, 6),
-        (0, 3, 4, 7),
-    )
-    geometry.add_site_property("wannier_centres", wannier_centres)
-
-    pdos = dos.project(geometry, ("C",))
+def test_DOS_project(dos, ref_geometry, shared_datadir, ndarrays_regression) -> None:
+    pdos = dos.project(ref_geometry, ("C",))
 
     ndarrays_regression.check(pdos, default_tolerance={"atol": 0, "rtol": 1e-07})
 
 
-def test_DOS_get_populations(dos, datadir, ndarrays_regression) -> None:
-    geometry = Structure.from_file(f"{datadir}/structure.vasp")
-    wannier_centres = (
-        (9,),
-        (8,),
-        (8,),
-        (9,),
-        (9,),
-        (8,),
-        (8,),
-        (9,),
-        (1, 2, 5, 6),
-        (0, 3, 4, 7),
-    )
-    geometry.add_site_property("wannier_centres", wannier_centres)
-
+def test_DOS_get_populations(dos, ref_geometry, shared_datadir, ndarrays_regression) -> None:
     mu = 9.8675
-    pdos = dos.project(geometry, ("C",))
+    pdos = dos.project(ref_geometry, ("C",))
     populations = dos.get_populations(pdos, mu)
     populations = np.array(
         (populations["C1"]["population"], populations["C2"]["population"])
@@ -172,25 +153,10 @@ def test_DOS_get_populations(dos, datadir, ndarrays_regression) -> None:
     )
 
 
-def test_DOS_get_populations_charges(dos, datadir, ndarrays_regression) -> None:
-    geometry = Structure.from_file(f"{datadir}/structure.vasp")
-    wannier_centres = (
-        (9,),
-        (8,),
-        (8,),
-        (9,),
-        (9,),
-        (8,),
-        (8,),
-        (9,),
-        (1, 2, 5, 6),
-        (0, 3, 4, 7),
-    )
-    geometry.add_site_property("wannier_centres", wannier_centres)
-
+def test_DOS_get_populations_charges(dos, ref_geometry, shared_datadir, ndarrays_regression) -> None:
     mu = 9.8675
     valence = {"C": 4}
-    pdos = dos.project(geometry, ("C",))
+    pdos = dos.project(ref_geometry, ("C",))
     populations = dos.get_populations(pdos, mu, valence=valence)
     charges = np.array((populations["C1"]["charge"], populations["C2"]["charge"]))
 
@@ -199,25 +165,10 @@ def test_DOS_get_populations_charges(dos, datadir, ndarrays_regression) -> None:
     )
 
 
-def test_DOS_get_populations_wrong_valence(dos, datadir) -> None:
-    geometry = Structure.from_file(f"{datadir}/structure.vasp")
-    wannier_centres = (
-        (9,),
-        (8,),
-        (8,),
-        (9,),
-        (9,),
-        (8,),
-        (8,),
-        (9,),
-        (1, 2, 5, 6),
-        (0, 3, 4, 7),
-    )
-    geometry.add_site_property("wannier_centres", wannier_centres)
-
+def test_DOS_get_populations_wrong_valence(dos, ref_geometry, shared_datadir) -> None:
     mu = 9.8675
     valence = {"N": 4}
-    pdos = dos.project(geometry, ("C",))
+    pdos = dos.project(ref_geometry, ("C",))
 
     with pytest.raises(ValueError):
         populations = dos.get_populations(pdos, mu, valence=valence)

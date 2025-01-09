@@ -36,7 +36,7 @@ def test_occupation_function(occupation_function, ndarrays_regression) -> None:
     (fermi_dirac, gaussian, cold),
     ids=("fermi_dirac", "gaussian", "cold"),
 )
-def test_occupation_function_invalid_sigma(datadir, occupation_function) -> None:
+def test_occupation_function_invalid_sigma(occupation_function) -> None:
     eigenvalues = np.array([-1, -0.75, -0.5, -0.25, 0.25, 0.5, 0.75, 1])
     mu = 0
     sigma = -0.2

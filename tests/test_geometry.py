@@ -1,57 +1,67 @@
+import json
 import pytest
-import numpy as np
-from pengwann.geometry import InteractionFinder
+from pengwann.geometry import build_geometry, find_interactions
 from pymatgen.analysis.structure_matcher import StructureMatcher
 from pymatgen.core import Structure
 
 
-def test_InteractionFinder_init_from_xyz(datadir) -> None:
+@pytest.fixture
+def ref_geometry(shared_datadir) -> Structure:
+    with open(f"{shared_datadir}/geometry.json", "r") as stream:
+        serial = json.load(stream)
+
+    geometry = Structure.from_dict(serial)
+
+    return geometry
+
+
+def test_build_geometry(ref_geometry, shared_datadir) -> None:
     cell = (
         (-1.7803725545451619, -1.7803725545451616, 0.0000000000000000),
         (-1.7803725545451616, 0.0000000000000000, -1.7803725545451616),
         (-0.0000000000000003, -1.7803725545451616, -1.7803725545451616),
     )
-    finder = InteractionFinder.from_xyz(f"{datadir}/centres.xyz", cell)
+    test_geometry = build_geometry(f"{shared_datadir}/centres.xyz", cell)
+    num_wann = len([site for site in test_geometry if site.species_string == "X0+"])
 
-    ref_geometry = Structure.from_file(f"{datadir}/ref_geometry.vasp")
     sm = StructureMatcher()
 
-    assert finder._num_wann == 8
-    assert sm.fit(finder._geometry, ref_geometry)
+    assert num_wann == 8
+    assert sm.fit(test_geometry, ref_geometry)
 
 
-def test_InteractionFinder_init_no_wann(datadir) -> None:
-    geometry = Structure.from_file(f"{datadir}/ref_geometry.vasp")
-    geometry.remove_species(["X0+"])
-
-    with pytest.raises(ValueError):
-        InteractionFinder(geometry)
-
-
-def test_InteractionFinder_init_no_site_property(datadir) -> None:
-    geometry = Structure.from_file(f"{datadir}/ref_geometry.vasp")
-
-    with pytest.raises(ValueError):
-        InteractionFinder(geometry)
-
-
-def test_InteractionFinder_get_interactions(datadir) -> None:
-    cell = (
-        (-1.7803725545451619, -1.7803725545451616, 0.0000000000000000),
-        (-1.7803725545451616, 0.0000000000000000, -1.7803725545451616),
-        (-0.0000000000000003, -1.7803725545451616, -1.7803725545451616),
-    )
-    finder = InteractionFinder.from_xyz(f"{datadir}/centres.xyz", cell)
-
+def test_find_interactions(ref_geometry, data_regression):
     cutoffs = {("C", "C"): 1.6}
-    interactions = finder.get_interactions(cutoffs)
-    test_atomic_interaction = interactions[0]
-    test_wannier_interaction = test_atomic_interaction.wannier_interactions[0]
+    interactions = find_interactions(ref_geometry, cutoffs)
 
-    ref_R_1 = np.array([0, 1, 0])
-    ref_R_2 = np.array([0, 0, 0])
+    serialised_interactions = {"pair_ids": [], "i": [], "j": [], "R_1": [], "R_2": []}
+    for interaction in interactions:
+        serialised_interactions["pair_ids"].append(interaction.pair_id)
 
-    assert test_atomic_interaction.pair_id == ("C1", "C2")
-    assert test_wannier_interaction.i == 1 and test_wannier_interaction.j == 0
-    np.testing.assert_array_equal(test_wannier_interaction.R_1, ref_R_1, strict=True)
-    np.testing.assert_array_equal(test_wannier_interaction.R_2, ref_R_2, strict=True)
+        for w_interaction in interaction.wannier_interactions:
+            serialised_interactions["i"].append(w_interaction.i)
+            serialised_interactions["j"].append(w_interaction.j)
+
+            serial_R_1 = w_interaction.R_1.tolist()
+            serial_R_2 = w_interaction.R_2.tolist()
+
+            serialised_interactions["R_1"].append(serial_R_1)
+            serialised_interactions["R_2"].append(serial_R_2)
+
+    data_regression.check(serialised_interactions)
+
+
+def test_find_interactions_no_site_property(ref_geometry) -> None:
+    ref_geometry.remove_site_property("wannier_centres")
+    cutoffs = {("C", "C"): 1.6}
+
+    with pytest.raises(ValueError):
+        find_interactions(ref_geometry, cutoffs)
+
+
+def test_find_interactions_no_wann(ref_geometry) -> None:
+    ref_geometry.remove_species(["X0+"])
+    cutoffs = {("C", "C"): 1.6}
+
+    with pytest.raises(ValueError):
+        find_interactions(ref_geometry, cutoffs)
