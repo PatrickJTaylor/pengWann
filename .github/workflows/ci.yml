@@ -22,7 +22,7 @@ jobs:
     - name: Run static type checking
       run: |
         mypy pengwann
-        mypy tests
+        mypy --no-incremental tests
     - name: Enforce black formatting
       run: |
         black --check pengwann
