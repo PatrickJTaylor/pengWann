@@ -53,6 +53,12 @@ def test_DOS_from_eigenvalues(ndarrays_regression) -> None:
     )
 
 
+def test_DOS_energies(dos, ndarrays_regression) -> None:
+    ndarrays_regression.check(
+        {"energies": dos.energies}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
+
+
 @pytest.mark.parametrize("sum_matrix", (True, False), ids=("sum_nk", "resolve_nk"))
 def test_DOS_get_dos_matrix(dos, sum_matrix, ndarrays_regression) -> None:
     i, j = 1, 0
