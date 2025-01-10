@@ -30,34 +30,24 @@ def test_build_geometry(ref_geometry, shared_datadir) -> None:
     assert sm.fit(test_geometry, ref_geometry)
 
 
-def test_find_interactions(ref_geometry, data_regression) -> None:
-    cutoffs = {("C", "C"): 1.6}
+@pytest.mark.parametrize("binary", (False, True), ids=("element", "binary"))
+def test_find_interactions(ref_geometry, binary, data_regression) -> None:
+    if binary:
+        ref_geometry.replace(9, "O", properties={"wannier_centres": (0, 3, 4, 6)})
+        cutoffs = {("C", "O"): 1.6}
+
+    else:
+        cutoffs = {("C", "C"): 1.6}
+
     interactions = find_interactions(ref_geometry, cutoffs)
 
-    serialised_interactions = {"pair_ids": [], "i": [], "j": [], "R_1": [], "R_2": []}
-    for interaction in interactions:
-        serialised_interactions["pair_ids"].append(interaction.pair_id)
-
-        for w_interaction in interaction.wannier_interactions:
-            serialised_interactions["i"].append(w_interaction.i)
-            serialised_interactions["j"].append(w_interaction.j)
-
-            serial_R_1 = w_interaction.R_1.tolist()
-            serial_R_2 = w_interaction.R_2.tolist()
-
-            serialised_interactions["R_1"].append(serial_R_1)
-            serialised_interactions["R_2"].append(serial_R_2)
-
-    data_regression.check(serialised_interactions)
-
-
-def test_find_interactions_binary(ref_geometry, data_regression) -> None:
-    ref_geometry.replace(9, "O", properties={"wannier_centres": (0, 3, 4, 6)})
-
-    cutoffs = {("C", "O"): 1.6}
-    interactions = find_interactions(ref_geometry, cutoffs)
-
-    serialised_interactions = {"pair_ids": [], "i": [], "j": [], "R_1": [], "R_2": []}
+    serialised_interactions = {
+        "pair_ids": [],
+        "i": [],
+        "j": [],
+        "R_1": [],
+        "R_2": [],
+    }  # type: dict[str, list]
     for interaction in interactions:
         serialised_interactions["pair_ids"].append(interaction.pair_id)
 
