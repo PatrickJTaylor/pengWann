@@ -8,7 +8,7 @@ from pymatgen.core import Structure
 
 
 @pytest.fixture
-def dos(shared_datadir) -> None:
+def dos(shared_datadir) -> DOS:
     dos_array = np.load(f"{shared_datadir}/dos_array.npy")
     kpoints = np.load(f"{shared_datadir}/kpoints.npy")
     U = np.load(f"{shared_datadir}/U.npy")
@@ -216,6 +216,8 @@ def test_DOS_process_interaction(
         pair_id=("C1", "C2"),
         wannier_interactions=(wannier_interaction_1, wannier_interaction_2),
     )
+
+    labels: tuple[str, ...]
 
     if sum_k:
         labels = ("WOHP", "WOBI", "sum_k")
