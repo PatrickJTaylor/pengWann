@@ -16,13 +16,13 @@ Besides the [API reference](./api), a detailed use case of how `pengwann` can be
 ```{figure} _static/example_outputs_light.svg
 :align: center
 :class: only-light
-:scale: 125%
+:scale: 140%
 ```
 
 ```{figure} _static/example_outputs_dark.svg
 :align: center
 :class: only-dark
-:scale: 125%
+:scale: 140%
 ```
 
 <center>
