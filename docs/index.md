@@ -13,6 +13,24 @@ More specifically, `pengwann` can be used to calculate the WOHP (Wannier Orbital
 
 Besides the [API reference](./api), a detailed use case of how `pengwann` can be used to derive WOHPs, WOBIs and the pDOS can be found on the [Examples](./examples) page.
 
+```{figure} _static/example_outputs_light.svg
+:align: center
+:class: only-light
+:scale: 125%
+```
+
+```{figure} _static/example_outputs_dark.svg
+:align: center
+:class: only-dark
+:scale: 125%
+```
+
+<center>
+<small>
+A handful of example outputs from <code>pengwann</code> as applied to rutile. The colour-coded numbers next to the crystal structure are Wannier charges computed for Ti and O.
+</small>
+</center>
+
 ```{toctree}
 ---
 hidden: True
