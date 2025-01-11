@@ -11,7 +11,7 @@ from pengwann.version import __version__ as VERSION
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'pengWann'
-copyright = '2024, Patrick J. Taylor'
+copyright = '2025, Patrick J. Taylor'
 author = 'Patrick J. Taylor'
 release = VERSION
 
