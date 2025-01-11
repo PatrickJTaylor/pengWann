@@ -27,7 +27,7 @@ Besides the [API reference](./api), a detailed use case of how `pengwann` can be
 
 <center>
 <small>
-A handful of example outputs from <code>pengwann</code> as applied to rutile. The colour-coded numbers next to the crystal structure are Wannier charges computed for Ti and O.
+A handful of example outputs from <code>pengwann</code> as applied to rutile. The colour-coded numbers next to the crystal structure are Wannier charges computed for Ti (blue) and O (red).
 </small>
 </center>
 
