@@ -51,7 +51,8 @@ dev = [
 docs = [
   'furo',
   'myst_parser',
-  'sphinx'
+  'sphinx',
+  'sphinxcontrib-bibtex'
 ]
 
 [project.urls]

@@ -20,8 +20,9 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['myst_parser', 'sphinx.ext.napoleon', 'sphinx.ext.autodoc', 'sphinx.ext.mathjax']
+extensions = ['myst_parser', 'sphinx.ext.napoleon', 'sphinx.ext.autodoc', 'sphinx.ext.mathjax', 'sphinxcontrib.bibtex']
 
+bibtex_bibfiles = ['refs.bib']
 mathjax3_config = {
     'loader' : {'load' : ['[tex]/braket']},
     'tex' : {'packages' : {'[+]' : ['braket']}}
