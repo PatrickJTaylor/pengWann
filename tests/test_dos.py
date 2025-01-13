@@ -248,11 +248,12 @@ def test_DOS_get_BWDF(dos, ndarrays_regression) -> None:
         coords_are_cartesian=True,
     )
 
-    bwdf = dos.get_BWDF(integrated_descriptors, geometry)
-    r, weights = bwdf[("C", "C")]
+    r_range = (0, 5)
+    nbins = 200
+    r, bwdf = dos.get_BWDF(integrated_descriptors, geometry, r_range, nbins)
 
     ndarrays_regression.check(
-        {"r": r, "weights": weights}, default_tolerance={"atol": 0, "rtol": 1e-07}
+        {"r": r, "BWDF": bwdf[("C", "C")]}, default_tolerance={"atol": 0, "rtol": 1e-07}
     )
 
 
