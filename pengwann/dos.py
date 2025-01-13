@@ -544,50 +544,59 @@ class DOS:
         self,
         integrated_descriptors: dict[tuple[str, str], dict[str, float]],
         geometry: Structure,
-    ) -> dict[tuple[str, str], tuple[np.ndarray, np.ndarray]]:
+        r_range: tuple[float, float],
+        nbins: int,
+    ) -> tuple[np.ndarray, dict[tuple[str, str], np.ndarray]]:
         """
         Return the necessary data to plot one or more Bond-Weighted Distribution
         Functions (BWDFs).
 
         Args:
             integrated_descriptors (dict[tuple[str, str], dict[str, float]]): The
-                IWOHPs necessary to weight the RDFs.
+                IWOHPs necessary to weight the BWDFs.
             geometry (Structure): The Pymatgen Structure object from which to extract
                 bond lengths.
+            r_range (tuple[float, float]): The range of distances over which the BWDFs
+                are to be evaluated.
+            nbins (int): The number of bins with which to calculate each BWDF.
 
         Returns:
-            dict[tuple[str, str], tuple[np.ndarray, np.ndarray]]: A dictionary
-            containing the necessary inputs to plot the BWDFs. Each key identifies the
-            type of bond, whilst the values contain the bond lengths and IWOHPs
-            respectively.
+            tuple[np.ndarray, dict[tuple[str, str], np.ndarray]]:
+
+            np.ndarray: The centre of each distance bin.
+
+            dict[tuple[str, str], np.ndarray]: A dictionary containing the BWDFs.
+            Each key identifies the type of bond e.g. ("Ga", "As") for the Ga-As BWDF.
         """
         num_wann = len([site for site in geometry if site.species_string == "X0+"])
         distance_matrix = geometry.distance_matrix
 
+        r_min, r_max = r_range
+        intervals = np.linspace(r_min, r_max, nbins + 1)
+        dr = (r_max - r_min) / nbins
+        r = intervals[:-1] + dr / 2
+
         bonds = []
-        cumulative_bwdf = {}
+        bwdf = {}
         for pair_id, integrals in integrated_descriptors.items():
             id_i, id_j = pair_id
             symbol_i, i = parse_id(id_i)
             symbol_j, j = parse_id(id_j)
             idx_i = i + num_wann - 1
             idx_j = j + num_wann - 1
-            r = distance_matrix[idx_i, idx_j]
+            distance = distance_matrix[idx_i, idx_j]
 
             bond = (symbol_i, symbol_j)
             if bond not in bonds:
                 bonds.append(bond)
 
-                cumulative_bwdf[bond] = ([r], [integrals["IWOHP"]])
+                bwdf[bond] = np.zeros((nbins))
 
-            else:
-                cumulative_bwdf[bond][0].append(r)
-                cumulative_bwdf[bond][1].append(integrals["IWOHP"])
+            for bin_idx, boundary_i, boundary_j in zip(
+                range(len(r)), intervals[:-1], intervals[1:], strict=False
+            ):
+                if boundary_i <= distance < boundary_j:
+                    bwdf[bond][bin_idx] += integrals["IWOHP"]
+                    break
 
-        bwdf = {}
-        for bond, data in cumulative_bwdf.items():
-            r, weights = data
-
-            bwdf[bond] = (np.array(r), np.array(weights))
-
-        return bwdf
+        return r, bwdf
