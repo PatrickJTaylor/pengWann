@@ -111,6 +111,7 @@ class DOS:
             * np.exp(-(x_mu**2) / sigma)
             / eigenvalues.shape[1]
         )
+        dos_array = np.swapaxes(dos_array, 1, 2)
 
         return cls(energies, dos_array, nspin, kpoints, U, H, occupation_matrix)
 
@@ -151,7 +152,7 @@ class DOS:
         C = (np.exp(1j * 2 * np.pi * self._kpoints @ R_2))[:, np.newaxis] * np.conj(
             self._U[:, :, j]
         )
-        C_star_C = (C_star * C).T
+        C_star_C = C_star * C
 
         dos_matrix = self._nspin * C_star_C[np.newaxis, :, :].real * self._dos_array
 
