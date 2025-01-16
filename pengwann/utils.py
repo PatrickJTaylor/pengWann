@@ -4,6 +4,9 @@ codebase.
 """
 
 import numpy as np
+from collections.abc import Iterable
+from multiprocessing.shared_memory import SharedMemory
+from numpy.typing import NDArray
 from pengwann.occupation_functions import fixed
 from pymatgen.core import Structure
 from scipy.integrate import trapezoid  # type: ignore
@@ -171,3 +174,25 @@ def integrate(energies: np.ndarray, descriptor: np.ndarray, mu: float) -> float:
             break
 
     return trapezoid(descriptor[:fermi_idx], energies[:fermi_idx], axis=0)
+
+
+def allocate_shared_memory(
+    keys: Iterable[str], data: Iterable[NDArray]
+) -> tuple[dict[str, tuple[tuple[int, ...], np.dtype]], list[SharedMemory]]:
+    memory_metadata = {}
+    memory_handles = []
+    for memory_key, to_share in zip(keys, data):
+        memory_metadata[memory_key] = (to_share.shape, to_share.dtype)
+        flattened_array = to_share.flatten()
+
+        shared_memory = SharedMemory(
+            name=memory_key, create=True, size=flattened_array.nbytes
+        )
+        buffered_array = np.ndarray(
+            flattened_array.shape, dtype=flattened_array.dtype, buffer=shared_memory.buf
+        )  # type: NDArray
+        buffered_array[:] = flattened_array[:]
+
+        memory_handles.append(shared_memory)
+
+    return memory_metadata, memory_handles

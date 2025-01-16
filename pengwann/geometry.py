@@ -7,13 +7,15 @@ descriptors.
 from __future__ import annotations
 
 import numpy as np
-from numpy.typing import ArrayLike
+from dataclasses import dataclass
+from numpy.typing import ArrayLike, NDArray
 from pengwann.utils import assign_wannier_centres, get_atom_indices
 from pymatgen.core import Lattice, Molecule, Structure
-from typing import NamedTuple
+from typing import Optional
 
 
-class AtomicInteraction(NamedTuple):
+@dataclass
+class AtomicInteraction:
     """
     A class representing the interaction between atoms i and j in terms of their
     respective Wannier functions.
@@ -27,9 +29,17 @@ class AtomicInteraction(NamedTuple):
 
     pair_id: tuple[str, str]
     wannier_interactions: tuple[WannierInteraction, ...]
+    dos_matrix: Optional[NDArray[np.float64]] = None
+    wohp: Optional[NDArray[np.float64]] = None
+    wobi: Optional[NDArray[np.float64]] = None
+    iwohp: Optional[np.float64] = None
+    iwobi: Optional[np.float64] = None
+    population: Optional[np.float64] = None
+    charge: Optional[np.float64] = None
 
 
-class WannierInteraction(NamedTuple):
+@dataclass
+class WannierInteraction:
     r"""
     A class representing the interaction between :math:`\ket{iR_{1}}` and
     :math:`\ket{jR_{2}}`.
@@ -47,6 +57,20 @@ class WannierInteraction(NamedTuple):
     j: int
     R_1: np.ndarray
     R_2: np.ndarray
+    dos_matrix: Optional[NDArray[np.float64]] = None
+    h_ij: Optional[np.float64] = None
+    p_ij: Optional[np.float64] = None
+    iwohp: Optional[np.float64] = None
+    iwobi: Optional[np.float64] = None
+    population: Optional[np.float64] = None
+
+    @property
+    def wohp(self):
+        return -self.h_ij * self.dos_matrix
+
+    @property
+    def wobi(self):
+        return self.p_ij * self.dos_matrix
 
 
 def build_geometry(path: str, cell: ArrayLike) -> Structure:
