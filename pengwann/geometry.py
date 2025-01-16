@@ -29,13 +29,14 @@ class AtomicInteraction:
 
     pair_id: tuple[str, str]
     wannier_interactions: tuple[WannierInteraction, ...]
+
     dos_matrix: Optional[NDArray[np.float64]] = None
     wohp: Optional[NDArray[np.float64]] = None
     wobi: Optional[NDArray[np.float64]] = None
-    iwohp: Optional[np.float64] = None
-    iwobi: Optional[np.float64] = None
-    population: Optional[np.float64] = None
-    charge: Optional[np.float64] = None
+    iwohp: Optional[float] = None
+    iwobi: Optional[float] = None
+    population: Optional[float] = None
+    charge: Optional[float] = None
 
 
 @dataclass
@@ -47,22 +48,23 @@ class WannierInteraction:
     Attributes:
         i (int): The index for Wannier function i.
         j (int): The index for Wannier function j.
-        R_1 (np.ndarray): The Bravais lattice vector specifying the translation of
+        bl_1 (np.ndarray): The Bravais lattice vector specifying the translation of
             Wannier function i.
-        R_2 (np.ndarray): The Bravais lattice vector specifying the translation of
+        bl_2 (np.ndarray): The Bravais lattice vector specifying the translation of
             Wannier function j.
     """
 
     i: int
     j: int
-    R_1: np.ndarray
-    R_2: np.ndarray
+    bl_1: np.ndarray
+    bl_2: np.ndarray
+
     dos_matrix: Optional[NDArray[np.float64]] = None
     h_ij: Optional[np.float64] = None
     p_ij: Optional[np.float64] = None
-    iwohp: Optional[np.float64] = None
-    iwobi: Optional[np.float64] = None
-    population: Optional[np.float64] = None
+    iwohp: Optional[float] = None
+    iwobi: Optional[float] = None
+    population: Optional[float] = None
 
     @property
     def wohp(self):
@@ -183,10 +185,10 @@ def find_interactions(
                 wannier_interactions_list = []
                 for m in wannier_centres[i]:
                     for n in wannier_centres[j]:
-                        _, R_1 = geometry[i].distance_and_image(geometry[m])
-                        _, R_2 = geometry[j].distance_and_image(geometry[n])
+                        _, bl_1 = geometry[i].distance_and_image(geometry[m])
+                        _, bl_2 = geometry[j].distance_and_image(geometry[n])
 
-                        wannier_interaction = WannierInteraction(m, n, R_1, R_2)
+                        wannier_interaction = WannierInteraction(m, n, bl_1, bl_2)
                         wannier_interactions_list.append(wannier_interaction)
 
                 wannier_interactions = tuple(wannier_interactions_list)
