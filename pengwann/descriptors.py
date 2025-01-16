@@ -256,6 +256,9 @@ class DescriptorCalculator:
 
                 interactions.append(interaction)
 
+        if not interactions:
+            raise ValueError(f"No atoms matching symbols in {symbols} found.")
+
         memory_keys = ("dos_array", "kpoints", "u")
         shared_data = (self._dos_array, self._kpoints, self._u)
 
@@ -544,6 +547,13 @@ class DescriptorCalculator:
         Returns:
             NDArray[np.float64]: The density of energy.
         """
+        for interaction in interactions:
+            if interaction.wohp is None:
+                raise TypeError(
+                    f"""The WOHP for interaction {interaction.pair_id} has 
+                not been computed. This is required to calculate the DOE."""
+                )
+
         wannier_indices = range(num_wann)
 
         diagonal_terms = tuple(
@@ -568,7 +578,7 @@ class DescriptorCalculator:
 
         Args:
             interactions (tuple[AtomicInteraction, ...]): A set of AtomicInteraction
-                objects containing all of the necessary WOHPs to generate the desired
+                objects containing all of the necessary IWOHPs to generate the desired
                 BWDFs.
             geometry (Structure): A Pymatgen Structure object from which to extract
                 interatomic distances.
@@ -596,6 +606,12 @@ class DescriptorCalculator:
         bonds = []
         bwdf = {}
         for interaction in interactions:
+            if interaction.iwohp is None:
+                raise TypeError(
+                    f"""The IWOHP for interaction {interaction.pair_id} 
+                has not been computed. This is required to calculate the BWDF."""
+                )
+
             id_i, id_j = interaction.pair_id
             symbol_i, i = parse_id(id_i)
             symbol_j, j = parse_id(id_j)
