@@ -1,13 +1,13 @@
 # API reference
 
-## `dos`
+## `descriptors`
 
 ```{toctree}
 ---
 maxdepth: 2
 ---
 
-dos
+descriptors
 ```
 
 ## `geometry`
