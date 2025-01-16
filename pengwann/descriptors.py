@@ -51,7 +51,7 @@ class DescriptorCalculator:
         classmethod.
     """
 
-    _R_0 = np.array((0, 0, 0))
+    _bl_0 = np.array((0, 0, 0))
 
     def __init__(
         self,
@@ -131,7 +131,7 @@ class DescriptorCalculator:
         return cls(dos_array, nspin, kpoints, u, h, occupation_matrix, energies)
 
     @property
-    def energies(self) -> NDArray[np.float64]:
+    def energies(self) -> NDArray[np.float64] | None:
         """
         The energies over which the density of states (and all derived quantities such
         as WOHPs or WOBIs) has been evaluated.
@@ -139,22 +139,22 @@ class DescriptorCalculator:
         return self._energies
 
     def get_coefficient_matrix(
-        self, i: int, R: NDArray[np.int64]
+        self, i: int, bl_vector: NDArray[np.int64]
     ) -> NDArray[np.complex128]:
         """
         Calculate the coefficient matrix C_iR for a given Wannier function.
 
         Args:
             i (int): The index identifying a particular Wannier function.
-            R (NDArray[np.int64]): The Bravais lattice vector specifying the relative
-                translation of Wannier function i from its home cell.
+            bl_vector (NDArray[np.int64]): The Bravais lattice vector specifying the
+                relative translation of Wannier function i from its home cell.
 
         Returns:
             NDArray[np.complex128]: The coefficient matrix C_iR.
         """
-        return (np.exp(1j * 2 * np.pi * self._kpoints @ R))[:, np.newaxis] * np.conj(
-            self._u[:, :, i]
-        )
+        return (np.exp(1j * 2 * np.pi * self._kpoints @ bl_vector))[
+            :, np.newaxis
+        ] * np.conj(self._u[:, :, i])
 
     def get_dos_matrix(
         self,
@@ -246,7 +246,9 @@ class DescriptorCalculator:
 
                 wannier_interactions = []
                 for i in wannier_centres[idx]:
-                    wannier_interaction = WannierInteraction(i, i, self._R_0, self._R_0)
+                    wannier_interaction = WannierInteraction(
+                        i, i, self._bl_0, self._bl_0
+                    )
 
                     wannier_interactions.append(wannier_interaction)
 
@@ -298,7 +300,7 @@ class DescriptorCalculator:
             interaction.wannier_interactions = associated_wannier_interactions
             running_count += len(interaction.wannier_interactions)
 
-        return interactions
+        return tuple(interactions)
 
     def assign_populations(
         self,
@@ -418,8 +420,8 @@ class DescriptorCalculator:
 
         if calc_wohp:
             for w_interaction in amended_wannier_interactions:
-                R = tuple((w_interaction.R_2 - w_interaction.R_1).tolist())
-                h_ij = self._h[R][w_interaction.i, w_interaction.j].real
+                bl_vector = tuple((w_interaction.bl_2 - w_interaction.bl_1).tolist())
+                h_ij = self._h[bl_vector][w_interaction.i, w_interaction.j].real
 
                 w_interaction.h_ij = h_ij
 
@@ -506,7 +508,7 @@ class DescriptorCalculator:
         wannier_indices = range(num_wann)
 
         diagonal_terms = tuple(
-            WannierInteraction(i, i, self._R_0, self._R_0) for i in wannier_indices
+            WannierInteraction(i, i, self._bl_0, self._bl_0) for i in wannier_indices
         )
         diagonal_interaction = (AtomicInteraction(("D1", "D1"), diagonal_terms),)
         self.assign_descriptors(diagonal_interaction, calc_wobi=False)
@@ -622,8 +624,8 @@ class DescriptorCalculator:
 
         dcalc = cls(**kwargs)
 
-        c_star = np.conj(dcalc.get_coefficient_matrix(interaction.i, interaction.R_1))
-        c = dcalc.get_coefficient_matrix(interaction.j, interaction.R_2)
+        c_star = np.conj(dcalc.get_coefficient_matrix(interaction.i, interaction.bl_1))
+        c = dcalc.get_coefficient_matrix(interaction.j, interaction.bl_2)
 
         interaction.dos_matrix = dcalc.get_dos_matrix(c_star, c, resolve_k)
 
