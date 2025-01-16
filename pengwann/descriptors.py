@@ -15,7 +15,7 @@ from pengwann.geometry import AtomicInteraction, WannierInteraction
 from pengwann.utils import allocate_shared_memory, integrate, parse_id
 from pymatgen.core import Structure
 from tqdm.auto import tqdm
-from typing import NamedTuple, Optional
+from typing import Any, NamedTuple, Optional
 
 
 class DescriptorCalculator:
@@ -131,7 +131,7 @@ class DescriptorCalculator:
         return cls(dos_array, nspin, kpoints, u, h, occupation_matrix, energies)
 
     @property
-    def energies(self) -> NDArray[np.float64] | None:
+    def energies(self) -> Optional[NDArray[np.float64]]:
         """
         The energies over which the density of states (and all derived quantities such
         as WOHPs or WOBIs) has been evaluated.
@@ -203,7 +203,7 @@ class DescriptorCalculator:
             np.complex128: Element P_ij of the Wannier density matrix.
         """
         if self._occupation_matrix is None:
-            raise ValueError(
+            raise TypeError(
                 "The occupation matrix is required to calculate elements of the Wannier density matrix."
             )
 
@@ -289,13 +289,13 @@ class DescriptorCalculator:
 
         running_count = 0
         for interaction in interactions:
-            interaction.dos_matrix = np.zeros(self._energies.shape)
+            interaction.dos_matrix = np.zeros(self._dos_array.shape[0])
 
             associated_wannier_interactions = amended_wannier_interactions[
                 running_count : running_count + len(interaction.wannier_interactions)
             ]
             for w_interaction in associated_wannier_interactions:
-                interaction.dos_matrix += w_interaction.dos_matrix
+                interaction.dos_matrix += w_interaction.dos_matrix  # type: ignore[arg-type]
 
             interaction.wannier_interactions = associated_wannier_interactions
             running_count += len(interaction.wannier_interactions)
@@ -334,7 +334,20 @@ class DescriptorCalculator:
             can be obtained via the
             :py:meth:`~pengwann.descriptors.DescriptorCalculator.get_pdos` method.
         """
+        if self._energies is None:
+            raise TypeError(
+                """The energies property returned None. The discretised 
+            energies used to compute the DOS array are required for integration."""
+            )
+
         for interaction in interactions:
+            if interaction.dos_matrix is None:
+                raise TypeError(
+                    f"""The DOS matrix for interaction {interaction.pair_id} 
+                has not been computed. This is required to calculate the 
+                population/charge."""
+                )
+
             interaction.population = integrate(
                 self._energies, interaction.dos_matrix, mu
             )
@@ -350,6 +363,14 @@ class DescriptorCalculator:
 
             if resolve_orbitals:
                 for w_interaction in interaction.wannier_interactions:
+                    if w_interaction.dos_matrix is None:
+                        raise TypeError(
+                            f"""The DOS matrix for interaction 
+                        {w_interaction.i}{w_interaction.bl_1}<=>
+                        {w_interaction.j}{w_interaction.bl_2} has not been computed. 
+                        This is required to calculate the population."""
+                        )
+
                     w_interaction.population = integrate(
                         self._energies, w_interaction.dos_matrix, mu
                     )
@@ -388,6 +409,12 @@ class DescriptorCalculator:
         memory_keys = ["dos_array", "kpoints", "u"]
         shared_data = [self._dos_array, self._kpoints, self._u]
         if calc_wobi:
+            if self._occupation_matrix is None:
+                raise TypeError(
+                    """The occupation matrix must be supplied to calculate 
+                WOBIs."""
+                )
+
             memory_keys.append("occupation_matrix")
             shared_data.append(self._occupation_matrix)
 
@@ -419,6 +446,12 @@ class DescriptorCalculator:
             memory_handle.unlink()
 
         if calc_wohp:
+            if self._h is None:
+                raise TypeError(
+                    """The Wannier Hamiltonian must be supplied to calculate 
+                WOHPs."""
+                )
+
             for w_interaction in amended_wannier_interactions:
                 bl_vector = tuple((w_interaction.bl_2 - w_interaction.bl_1).tolist())
                 h_ij = self._h[bl_vector][w_interaction.i, w_interaction.j].real
@@ -428,10 +461,10 @@ class DescriptorCalculator:
         running_count = 0
         for interaction in interactions:
             if calc_wohp:
-                interaction.wohp = np.zeros(self._energies.shape)
+                interaction.wohp = np.zeros(self._dos_array.shape[0])
 
             if calc_wobi:
-                interaction.wobi = np.zeros(self._energies.shape)
+                interaction.wobi = np.zeros(self._dos_array.shape[0])
 
             associated_wannier_interactions = amended_wannier_interactions[
                 running_count : running_count + len(interaction.wannier_interactions)
@@ -469,6 +502,12 @@ class DescriptorCalculator:
         Returns:
             None
         """
+        if self._energies is None:
+            raise TypeError(
+                """The energies property returned None. The discretised 
+            energies used to compute the DOS array are required for integration."""
+            )
+
         for interaction in interactions:
             if interaction.wohp is not None:
                 interaction.iwohp = integrate(self._energies, interaction.wohp, mu)
@@ -513,10 +552,9 @@ class DescriptorCalculator:
         diagonal_interaction = (AtomicInteraction(("D1", "D1"), diagonal_terms),)
         self.assign_descriptors(diagonal_interaction, calc_wobi=False)
 
-        return np.sum(
-            [interaction.wohp for interaction in interactions + diagonal_interaction],
-            axis=0,
-        )
+        all_interactions = interactions + diagonal_interaction
+
+        return np.sum([interaction.wohp for interaction in all_interactions], axis=0)  # type: ignore[arg-type]
 
     def get_bwdf(
         self,
@@ -553,7 +591,7 @@ class DescriptorCalculator:
         r_min, r_max = r_range
         intervals = np.linspace(r_min, r_max, nbins + 1)
         dr = (r_max - r_min) / nbins
-        r = intervals[:-1] + dr / 2
+        r = (intervals[:-1] + dr / 2).astype(np.float64)
 
         bonds = []
         bwdf = {}
@@ -578,7 +616,7 @@ class DescriptorCalculator:
                     bwdf[bond][bin_idx] += interaction.iwohp
                     break
 
-        return r, bwdf
+        return r, bwdf  # type: ignore[return-value]
 
     @classmethod
     def process_interaction(
@@ -611,13 +649,15 @@ class DescriptorCalculator:
             WannierInteraction: The input WannierInteraction with the computed
             properties assigned to the relevant attributes.
         """
-        kwargs = {"nspin": nspin}
+        kwargs = {"nspin": nspin}  # type: dict[str, Any]
         memory_handles = []
         for memory_key, metadata in memory_metadata.items():
             shape, dtype = metadata
 
             shared_memory = SharedMemory(name=memory_key)
-            buffered_data = np.ndarray(shape, dtype=dtype, buffer=shared_memory.buf)
+            buffered_data = np.ndarray(
+                shape, dtype=dtype, buffer=shared_memory.buf
+            )  # type: NDArray
 
             kwargs[memory_key] = buffered_data
             memory_handles.append(shared_memory)
