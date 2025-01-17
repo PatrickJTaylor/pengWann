@@ -292,7 +292,11 @@ class DescriptorCalculator:
 
         running_count = 0
         for interaction in interactions:
-            interaction.dos_matrix = np.zeros(self._dos_array.shape[0])
+            if resolve_k:
+                interaction.dos_matrix = np.zeros(self._dos_array.shape[:-1])
+
+            else:
+                interaction.dos_matrix = np.zeros(self._dos_array.shape[0])
 
             associated_wannier_interactions = amended_wannier_interactions[
                 running_count : running_count + len(interaction.wannier_interactions)
@@ -464,10 +468,18 @@ class DescriptorCalculator:
         running_count = 0
         for interaction in interactions:
             if calc_wohp:
-                interaction.wohp = np.zeros(self._dos_array.shape[0])
+                if resolve_k:
+                    interaction.wohp = np.zeros(self._dos_array.shape[:-1])
+
+                else:
+                    interaction.wohp = np.zeros(self._dos_array.shape[0])
 
             if calc_wobi:
-                interaction.wobi = np.zeros(self._dos_array.shape[0])
+                if resolve_k:
+                    interaction.wobi = np.zeros(self._dos_array.shape[:-1])
+
+                else:
+                    interaction.wobi = np.zeros(self._dos_array.shape[0])
 
             associated_wannier_interactions = amended_wannier_interactions[
                 running_count : running_count + len(interaction.wannier_interactions)
