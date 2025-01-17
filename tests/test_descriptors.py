@@ -397,3 +397,35 @@ def test_DescriptorCalculator_get_density_of_energy(dcalc, ndarrays_regression) 
     ndarrays_regression.check(
         {"DOE": doe}, default_tolerance={"atol": 0, "rtol": 1e-07}
     )
+
+
+def test_DescriptorCalculator_get_bwdf(
+    dcalc, ref_geometry, ndarrays_regression
+) -> None:
+    wannier_interaction_1 = WannierInteraction(
+        i=1, j=0, bl_1=np.array([0, 1, 0]), bl_2=np.array([0, 0, 0])
+    )
+    wannier_interaction_2 = WannierInteraction(
+        i=5, j=6, bl_1=np.array([0, 1, 1]), bl_2=np.array([0, 0, 0])
+    )
+    interactions = (
+        AtomicInteraction(
+            pair_id=("C1", "C2"),
+            wannier_interactions=(wannier_interaction_1, wannier_interaction_2),
+        ),
+    )
+
+    dcalc.assign_descriptors(interactions)
+
+    mu = 9.8675
+
+    dcalc.integrate_descriptors(interactions, mu)
+
+    r_range = (0, 5)
+    nbins = 500
+
+    r, bwdf = dcalc.get_bwdf(interactions, ref_geometry, r_range, nbins)
+
+    ndarrays_regression.check(
+        {"r": r, "BWDF": bwdf[("C", "C")]}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
