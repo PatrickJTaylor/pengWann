@@ -15,7 +15,7 @@ def dcalc(shared_datadir) -> DescriptorCalculator:
     occupation_matrix = np.load(f"{shared_datadir}/occupation_matrix.npy")
     h = read_Hamiltonian(f"{shared_datadir}/wannier90_hr.dat")
 
-    energies = np.arange(-25, 25 + 0.1, 0.1)
+    energies = np.arange(-25, 25 + 0.1, 0.1, dtype=np.float64)
     nspin = 2
 
     dcalc = DescriptorCalculator(

@@ -59,7 +59,7 @@ class DescriptorCalculator:
         nspin: int,
         kpoints: NDArray[np.float64],
         u: NDArray[np.complex128],
-        h: Optional[dict[tuple[int, int, int], NDArray[np.complex128]]] = None,
+        h: Optional[dict[tuple[int, ...], NDArray[np.complex128]]] = None,
         occupation_matrix: Optional[NDArray[np.float64]] = None,
         energies: Optional[NDArray[np.float64]] = None,
     ):
@@ -81,7 +81,7 @@ class DescriptorCalculator:
         sigma: float,
         kpoints: NDArray[np.float64],
         u: NDArray[np.complex128],
-        h: Optional[dict[tuple[int, int, int], NDArray[np.complex128]]] = None,
+        h: Optional[dict[tuple[int, ...], NDArray[np.complex128]]] = None,
         occupation_matrix: Optional[NDArray[np.float64]] = None,
     ) -> DescriptorCalculator:
         """
