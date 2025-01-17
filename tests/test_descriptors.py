@@ -1,6 +1,7 @@
 import json
 import pytest
 import numpy as np
+from numpy.typing import NDArray
 from pengwann.descriptors import DescriptorCalculator
 from pengwann.io import read_hamiltonian
 from pengwann.geometry import AtomicInteraction, WannierInteraction
@@ -325,13 +326,13 @@ def test_DescriptorCalculator_integrate_descriptors(
 
     dcalc.integrate_descriptors(interactions, mu, resolve_orbitals=resolve_orbitals)
 
-    integrals = {}
+    integrals = {}  # type: dict[str, float | np.float64 | NDArray[np.float64]]
     for interaction in interactions:
         id_i, id_j = interaction.pair_id
         label = id_i + id_j
 
-        integrals[label + "_IWOHP"] = interaction.iwohp
-        integrals[label + "_IWOBI"] = interaction.iwobi
+        integrals[label + "_IWOHP"] = interaction.iwohp  # type: ignore
+        integrals[label + "_IWOBI"] = interaction.iwobi  # type: ignore
 
         for w_interaction in interaction.wannier_interactions:
             w_label = str(w_interaction.i) + str(w_interaction.j)
