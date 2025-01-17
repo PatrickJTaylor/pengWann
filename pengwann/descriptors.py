@@ -283,7 +283,7 @@ class DescriptorCalculator:
         pool = Pool()
 
         amended_wannier_interactions = tuple(
-            pool.starmap(self.process_interaction, tqdm(args, total=len(args)))
+            tqdm(pool.imap(self.parallel_wrapper, args), total=len(args))
         )
 
         pool.close()
@@ -445,7 +445,7 @@ class DescriptorCalculator:
         pool = Pool()
 
         amended_wannier_interactions = tuple(
-            pool.starmap(self.process_interaction, tqdm(args, total=len(args)))
+            tqdm(pool.imap(self.parallel_wrapper, args), total=len(args))
         )
 
         pool.close()
@@ -650,6 +650,22 @@ class DescriptorCalculator:
                     break
 
         return r, bwdf  # type: ignore[return-value]
+
+    @classmethod
+    def parallel_wrapper(cls, args) -> WannierInteraction:
+        """
+        A simple wrapper for
+        :py:meth:`~pengwann.descriptors.DescriptorCalculator.process_interaction` to
+        enable proper tqdm functionality.
+
+        Args:
+            args: The arguments to be unpacked for process_interaction.
+
+        Returns:
+            WannierInteraction: The input WannierInteraction with the computed
+            properties assigned to the relevant attributes.
+        """
+        return cls.process_interaction(*args)
 
     @classmethod
     def process_interaction(
