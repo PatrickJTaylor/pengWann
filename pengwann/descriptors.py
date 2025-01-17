@@ -15,7 +15,7 @@ from pengwann.geometry import AtomicInteraction, WannierInteraction
 from pengwann.utils import allocate_shared_memory, integrate, parse_id
 from pymatgen.core import Structure
 from tqdm.auto import tqdm
-from typing import Any, NamedTuple, Optional
+from typing import Any, Optional
 
 
 class DescriptorCalculator:
@@ -33,7 +33,7 @@ class DescriptorCalculator:
             calculation.
         u (NDArray[np.complex128]): The U matrices that define the Wannier functions in
             terms of the canonical Bloch states.
-        h (dict[tuple[int, int, int], NDArray[np.complex128]], optional): The
+        h (dict[tuple[int, ...], NDArray[np.complex128]], optional): The
             Hamiltonian in the Wannier basis. Required for the computation of WOHPs.
             Defaults to None.
         occupation_matrix(NDArray[np.float64], optional): The Kohn-Sham occupation
@@ -101,7 +101,7 @@ class DescriptorCalculator:
                 calculation.
             u (NDArray[np.complex128]): The U matrices that define the Wannier functions in
                 terms of the canonical Bloch states.
-            h (dict[tuple[int, int, int], NDArray[np.complex128]], optional): The
+            h (dict[tuple[int, ...], NDArray[np.complex128]], optional): The
                 Hamiltonian in the Wannier basis. Required for the computation of WOHPs.
                 Defaults to None.
             occupation_matrix(NDArray[np.float64], optional): The Kohn-Sham occupation
@@ -146,7 +146,7 @@ class DescriptorCalculator:
 
         Args:
             i (int): The index identifying a particular Wannier function.
-            bl_vector (NDArray[np.int_]): The Bravais lattice vector specifying the
+            bl_vector (NDArray[np.int\\_]): The Bravais lattice vector specifying the
                 relative translation of Wannier function i from its home cell.
 
         Returns:

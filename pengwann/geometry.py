@@ -48,9 +48,9 @@ class WannierInteraction:
     Attributes:
         i (int): The index for Wannier function i.
         j (int): The index for Wannier function j.
-        bl_1 (NDArray[np.int_]): The Bravais lattice vector specifying the translation of
+        bl_1 (NDArray[np.int\\_]): The Bravais lattice vector specifying the translation of
             Wannier function i with respect to its home cell.
-        bl_2 (NDArray[np.int_]): The Bravais lattice vector specifying the translation of
+        bl_2 (NDArray[np.int\\_]): The Bravais lattice vector specifying the translation of
             Wannier function j with respect to its home cell.
     """
 

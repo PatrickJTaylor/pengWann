@@ -5,6 +5,8 @@ parsing all the data required to construct an instance of the
 :py:class:`~pengwann.dos.DOS` class.
 """
 
+from __future__ import annotations
+
 import os
 import numpy as np
 from numpy.typing import NDArray

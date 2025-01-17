@@ -3,6 +3,8 @@ This module contains some miscellaneous utility functions required elsewhere in 
 codebase.
 """
 
+from __future__ import annotations
+
 import numpy as np
 from collections.abc import Iterable
 from multiprocessing.shared_memory import SharedMemory

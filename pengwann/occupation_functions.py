@@ -5,6 +5,8 @@ the :py:func:`~pengwann.utils.get_occupation_matrix` function to build the occup
 matrix needed to calculate WOBIs with the :py:class:`~pengwann.dos.DOS` class.
 """
 
+from __future__ import annotations
+
 import numpy as np
 from math import factorial
 from numpy.typing import NDArray
