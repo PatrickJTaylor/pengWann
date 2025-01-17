@@ -45,8 +45,8 @@ def test_find_interactions(ref_geometry, binary, data_regression) -> None:
         "pair_ids": [],
         "i": [],
         "j": [],
-        "R_1": [],
-        "R_2": [],
+        "bl_1": [],
+        "bl_2": [],
     }  # type: dict[str, list]
     for interaction in interactions:
         serialised_interactions["pair_ids"].append(interaction.pair_id)
@@ -55,11 +55,11 @@ def test_find_interactions(ref_geometry, binary, data_regression) -> None:
             serialised_interactions["i"].append(w_interaction.i)
             serialised_interactions["j"].append(w_interaction.j)
 
-            serial_R_1 = w_interaction.R_1.tolist()
-            serial_R_2 = w_interaction.R_2.tolist()
+            serial_bl_1 = w_interaction.bl_1.tolist()
+            serial_bl_2 = w_interaction.bl_2.tolist()
 
-            serialised_interactions["R_1"].append(serial_R_1)
-            serialised_interactions["R_2"].append(serial_R_2)
+            serialised_interactions["bl_1"].append(serial_bl_1)
+            serialised_interactions["bl_2"].append(serial_bl_2)
 
     data_regression.check(serialised_interactions)
 
