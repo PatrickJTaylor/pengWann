@@ -1,4 +1,4 @@
-from pengwann.io import read, read_eigenvalues, read_Hamiltonian, read_U
+from pengwann.io import read, read_eigenvalues, read_hamiltonian, read_u
 
 
 def test_read_eigenvalues(shared_datadir, ndarrays_regression) -> None:
@@ -14,28 +14,28 @@ def test_read_eigenvalues(shared_datadir, ndarrays_regression) -> None:
     )
 
 
-def test_read_U(shared_datadir, ndarrays_regression) -> None:
-    U, kpoints = read_U(f"{shared_datadir}/wannier90_u.mat")
+def test_read_u(shared_datadir, ndarrays_regression) -> None:
+    u, kpoints = read_u(f"{shared_datadir}/wannier90_u.mat")
 
     ndarrays_regression.check(
-        {"U": U, "kpoints": kpoints}, default_tolerance={"atol": 0, "rtol": 1e-07}
+        {"U": u, "kpoints": kpoints}, default_tolerance={"atol": 0, "rtol": 1e-07}
     )
 
 
-def test_read_Hamiltonian(shared_datadir, ndarrays_regression) -> None:
-    test_H = read_Hamiltonian(f"{shared_datadir}/wannier90_hr.dat")
+def test_read_hamiltonian(shared_datadir, ndarrays_regression) -> None:
+    test_h = read_hamiltonian(f"{shared_datadir}/wannier90_hr.dat")
 
-    for R, matrix in test_H.items():
+    for R, matrix in test_h.items():
         assert matrix.shape == (8, 8)
 
-    H_000 = test_H[(0, 0, 0)]
+    h_000 = test_h[(0, 0, 0)]
 
     ndarrays_regression.check(
-        {"H_000": H_000}, default_tolerance={"atol": 0, "rtol": 1e-07}
+        {"H_000": h_000}, default_tolerance={"atol": 0, "rtol": 1e-07}
     )
 
 
-def test_read_U_dis(shared_datadir, ndarrays_regression) -> None:
-    _, _, U, _ = read("wannier90", f"{shared_datadir}")
+def test_read_u_dis(shared_datadir, ndarrays_regression) -> None:
+    _, _, u, _ = read("wannier90", f"{shared_datadir}")
 
-    ndarrays_regression.check({"U": U}, default_tolerance={"atol": 0, "rtol": 1e-07})
+    ndarrays_regression.check({"U": u}, default_tolerance={"atol": 0, "rtol": 1e-07})

@@ -91,17 +91,17 @@ def get_atom_indices(
 
 
 def get_occupation_matrix(
-    eigenvalues: np.ndarray,
+    eigenvalues: NDArray[np.float64],
     mu: float,
     nspin: int,
     occupation_function: Optional[Callable] = None,
     **function_kwargs,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """
     Calculate the occupation matrix.
 
     Args:
-        eigenvalues (np.ndarray): The Kohn-Sham eigenvalues.
+        eigenvalues (NDArray[np.float64]): The Kohn-Sham eigenvalues.
         mu (float): The Fermi level.
         nspin (int): The number of electrons per fully-occupied Kohn-Sham state.
         occupation_function (Optional[Callable]): The occupation function to be used to
@@ -111,7 +111,7 @@ def get_occupation_matrix(
             function in addition to the eigenvalues and the Fermi level.
 
     Returns:
-        np.ndarray: The occupation matrix.
+        NDArray[np.float64]: The occupation matrix.
 
     Notes:
         Several pre-defined occupation functions may be imported from the
@@ -156,24 +156,28 @@ def parse_id(identifier: str) -> tuple[str, int]:
     return symbol, idx
 
 
-def integrate(energies: np.ndarray, descriptor: np.ndarray, mu: float) -> float:
+def integrate(
+    energies: NDArray[np.float64], descriptor: NDArray[np.float64], mu: float
+) -> np.float64:
     """
     Integrate a given descriptor up to the Fermi level.
 
     Args:
-        energies (np.ndarray): The energies at which the descriptor has been evaluated.
-        descriptor (np.ndarray): The descriptor to be integrated.
+        energies (NDArray[np.float64]): The energies at which the descriptor has been evaluated.
+        descriptor (NDArray[np.float64]): The descriptor to be integrated.
         mu (float): The Fermi level.
 
     Returns:
-        float: The resulting integral.
+        np.float64: The resulting integral.
     """
     for idx, energy in enumerate(energies):
         if energy > mu:
             fermi_idx = idx
             break
 
-    return trapezoid(descriptor[:fermi_idx], energies[:fermi_idx], axis=0)
+    integral = trapezoid(descriptor[:fermi_idx], energies[:fermi_idx], axis=0)
+
+    return np.float64(integral)
 
 
 def allocate_shared_memory(

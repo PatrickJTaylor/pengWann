@@ -7,10 +7,11 @@ matrix needed to calculate WOBIs with the :py:class:`~pengwann.dos.DOS` class.
 
 import numpy as np
 from math import factorial
+from numpy.typing import NDArray
 from scipy.special import erf
 
 
-def fixed(eigenvalues: np.ndarray, mu: float) -> np.ndarray:
+def fixed(eigenvalues: NDArray[np.float64], mu: float) -> NDArray[np.float64]:
     r"""
     A simple heaviside occupation function.
 
@@ -21,16 +22,18 @@ def fixed(eigenvalues: np.ndarray, mu: float) -> np.ndarray:
         \end{cases}
 
     Args:
-        eigenvalues (np.ndarray): The Kohn-Sham eigenvalues.
+        eigenvalues (NDArray[np.float64]): The Kohn-Sham eigenvalues.
         mu (float): The Fermi level.
 
     Returns:
-        np.ndarray: The occupation numbers.
+        NDArray[np.float64]: The occupation numbers.
     """
     return np.heaviside(-1 * (eigenvalues - mu), 1)
 
 
-def fermi_dirac(eigenvalues: np.ndarray, mu: float, sigma: float) -> np.ndarray:
+def fermi_dirac(
+    eigenvalues: NDArray[np.float64], mu: float, sigma: float
+) -> NDArray[np.float64]:
     r"""
     The Fermi-Dirac occupation function.
 
@@ -38,13 +41,13 @@ def fermi_dirac(eigenvalues: np.ndarray, mu: float, sigma: float) -> np.ndarray:
         f_{nk} = \frac{1}{\exp[\frac{\epsilon_{nk} - \mu}{\sigma}] + 1}
 
     Args:
-        eigenvalues (np.ndarray): The Kohn-Sham eigenvalues.
+        eigenvalues (NDArray[np.float64]): The Kohn-Sham eigenvalues.
         mu (float): The Fermi level.
         sigma (float): The smearing width in eV (in this case = kT for some electronic
             temperature T).
 
     Returns:
-        np.ndarray: The occupation numbers.
+        NDArray[np.float64]: The occupation numbers.
     """
     if sigma <= 0:
         raise ValueError("The smearing width must > 0, {sigma} is <= 0")
@@ -54,7 +57,7 @@ def fermi_dirac(eigenvalues: np.ndarray, mu: float, sigma: float) -> np.ndarray:
     return 1 / (np.exp(x) + 1)
 
 
-def gaussian(eigenvalues: np.ndarray, mu: float, sigma: float) -> np.ndarray:
+def gaussian(eigenvalues: np.ndarray, mu: float, sigma: float) -> NDArray[np.float64]:
     r"""
     A Gaussian occupation function.
 
@@ -63,22 +66,24 @@ def gaussian(eigenvalues: np.ndarray, mu: float, sigma: float) -> np.ndarray:
         \mathrm{erf}\left(\frac{\epsilon_{nk} - \mu}{\sigma}\right)\right]
 
     Args:
-        eigenvalues (np.ndarray): The Kohn-Sham eigenvalues.
+        eigenvalues (NDArray[np.float64]): The Kohn-Sham eigenvalues.
         mu (float): The Fermi level.
         sigma (float): The smearing width in eV.
 
     Returns:
-        np.ndarray: The occupation numbers.
+        NDArray[np.float64]: The occupation numbers.
     """
     if sigma <= 0:
         raise ValueError("The smearing width must > 0, {sigma} is <= 0")
 
     x = (eigenvalues - mu) / sigma
 
-    return 0.5 * (1 - erf(x))
+    return (0.5 * (1 - erf(x))).astype(np.float64)
 
 
-def cold(eigenvalues: np.ndarray, mu: float, sigma: float) -> np.ndarray:
+def cold(
+    eigenvalues: NDArray[np.float64], mu: float, sigma: float
+) -> NDArray[np.float64]:
     r"""
     The Marzari-Vanderbilt occupation function.
 
@@ -90,12 +95,12 @@ def cold(eigenvalues: np.ndarray, mu: float, sigma: float) -> np.ndarray:
     Where :math:`x = \frac{\epsilon_{nk} - \mu}{\sigma}`.
 
     Args:
-        eigenvalues (np.ndarray): The Kohn-Sham eigenvalues.
+        eigenvalues (NDArray[np.float64]): The Kohn-Sham eigenvalues.
         mu (float): The Fermi level.
         sigma (float): The smearing width in eV.
 
     Returns:
-        np.ndarray: The occupation numbers.
+        NDArray[np.float64]: The occupation numbers.
     """
     if sigma <= 0:
         raise ValueError("The smearing width must > 0, {sigma} is <= 0")

@@ -2,7 +2,7 @@ import json
 import pytest
 import numpy as np
 from pengwann.descriptors import DescriptorCalculator
-from pengwann.io import read_Hamiltonian
+from pengwann.io import read_hamiltonian
 from pengwann.geometry import AtomicInteraction, WannierInteraction
 from pymatgen.core import Structure
 
@@ -13,7 +13,7 @@ def dcalc(shared_datadir) -> DescriptorCalculator:
     kpoints = np.load(f"{shared_datadir}/kpoints.npy")
     u = np.load(f"{shared_datadir}/U.npy")
     occupation_matrix = np.load(f"{shared_datadir}/occupation_matrix.npy")
-    h = read_Hamiltonian(f"{shared_datadir}/wannier90_hr.dat")
+    h = read_hamiltonian(f"{shared_datadir}/wannier90_hr.dat")
 
     energies = np.arange(-25, 25 + 0.1, 0.1, dtype=np.float64)
     nspin = 2

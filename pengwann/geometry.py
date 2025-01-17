@@ -33,38 +33,38 @@ class AtomicInteraction:
     dos_matrix: Optional[NDArray[np.float64]] = None
     wohp: Optional[NDArray[np.float64]] = None
     wobi: Optional[NDArray[np.float64]] = None
-    iwohp: Optional[float] = None
-    iwobi: Optional[float] = None
-    population: Optional[float] = None
-    charge: Optional[float] = None
+    iwohp: Optional[np.float64] = None
+    iwobi: Optional[np.float64] = None
+    population: Optional[np.float64] = None
+    charge: Optional[np.float64] = None
 
 
 @dataclass
 class WannierInteraction:
-    r"""
-    A class representing the interaction between :math:`\ket{iR_{1}}` and
-    :math:`\ket{jR_{2}}`.
+    """
+    A class representing the interaction between the two Wannier functions iR_1 and
+    jR_2.
 
     Attributes:
         i (int): The index for Wannier function i.
         j (int): The index for Wannier function j.
-        bl_1 (np.ndarray): The Bravais lattice vector specifying the translation of
-            Wannier function i.
-        bl_2 (np.ndarray): The Bravais lattice vector specifying the translation of
-            Wannier function j.
+        bl_1 (NDArray[np.int_]): The Bravais lattice vector specifying the translation of
+            Wannier function i with respect to its home cell.
+        bl_2 (NDArray[np.int_]): The Bravais lattice vector specifying the translation of
+            Wannier function j with respect to its home cell.
     """
 
     i: int
     j: int
-    bl_1: np.ndarray
-    bl_2: np.ndarray
+    bl_1: NDArray[np.int_]
+    bl_2: NDArray[np.int_]
 
     dos_matrix: Optional[NDArray[np.float64]] = None
     h_ij: Optional[np.float64] = None
     p_ij: Optional[np.float64] = None
-    iwohp: Optional[float] = None
-    iwobi: Optional[float] = None
-    population: Optional[float] = None
+    iwohp: Optional[np.float64] = None
+    iwobi: Optional[np.float64] = None
+    population: Optional[np.float64] = None
 
     @property
     def wohp(self):

@@ -7,11 +7,15 @@ parsing all the data required to construct an instance of the
 
 import os
 import numpy as np
+from numpy.typing import NDArray
 
 
-def read(
-    seedname: str, path: str = "."
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[tuple[int, ...], np.ndarray]]:
+def read(seedname: str, path: str = ".") -> tuple[
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.complex128],
+    dict[tuple[int, ...], NDArray[np.complex128]],
+]:
     """
     Wrapper function for reading in the main Wannier90 output files.
 
@@ -21,32 +25,32 @@ def read(
             current working directory.
 
     Returns:
-        tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.complex128], dict[tuple[int, ...], NDArray[np.complex128]]]:
 
-        np.ndarray: The k-points used in the prior DFT calculation.
+        NDArray[np.float64]: The k-points used in the prior DFT calculation.
 
-        np.ndarray: The Kohn-Sham eigenvalues.
+        NDArray[np.float64]: The Kohn-Sham eigenvalues.
 
-        np.ndarray: The unitary matrices :math:`U^{k}`.
+        NDArray[np.float64]: The unitary matrices :math:`U^{k}`.
 
-        np.ndarray: The Hamiltonian in the Wannier basis.
+        dict[tuple[int, ...], NDArray[np.complex128]]: The Hamiltonian in the Wannier basis.
     """
-    U, kpoints = read_U(f"{path}/{seedname}_u.mat")
+    u, kpoints = read_u(f"{path}/{seedname}_u.mat")
     if os.path.isfile(f"{path}/{seedname}_u_dis.mat"):
-        U_dis, _ = read_U(f"{path}/{seedname}_u_dis.mat")
-        U = U_dis @ U
+        u_dis, _ = read_u(f"{path}/{seedname}_u_dis.mat")
+        u = (u_dis @ u).astype(np.complex128)
 
-    H = read_Hamiltonian(f"{path}/{seedname}_hr.dat")
-    eigenvalues = read_eigenvalues(f"{path}/{seedname}.eig", U.shape[1], U.shape[0])
+    h = read_hamiltonian(f"{path}/{seedname}_hr.dat")
+    eigenvalues = read_eigenvalues(f"{path}/{seedname}.eig", u.shape[1], u.shape[0])
 
-    return kpoints, eigenvalues, U, H
+    return kpoints, eigenvalues, u, h
 
 
 def read_eigenvalues(
     path: str,
     num_bands: int,
     num_kpoints: int,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """
     Read in the Kohn-Sham eigenvalues.
 
@@ -56,7 +60,7 @@ def read_eigenvalues(
         num_kpoints (int): The number of k-points.
 
     Returns:
-        np.ndarray: The Kohn-Sham eigenvalues.
+        NDArray[np.float64]: The Kohn-Sham eigenvalues.
 
     Notes:
         The output array is a num_bands x num_kpoints matrix.
@@ -83,7 +87,7 @@ def read_eigenvalues(
     return eigenvalues
 
 
-def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
+def read_u(path: str) -> tuple[NDArray[np.complex128], NDArray[np.float64]]:
     r"""
     Read in the unitary matrices :math:`U^{k}` that define the Wannier functions
     :math:`\ket{w_{nR}}` from the Kohn-Sham states :math:`\ket{\psi_{mk}}`.
@@ -92,17 +96,17 @@ def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
         path (str): The filepath to seedname_u.mat or seedname_u_dis.mat.
 
     Returns:
-        tuple[np.ndarray, np.ndarray]:
+        tuple[NDArray[np.complex128], NDArray[np.float64]]:
 
-        np.ndarray: The unitary matrices :math:`U^{k}`.
+        NDArray[np.complex128]: The unitary matrices :math:`U^{k}`.
 
-        np.ndarray: The k-points corresponding to each :math:`U^{k}`.
+        NDArray[np.float64]: The k-points corresponding to each :math:`U^{k}`.
 
     Notes:
         The output array is a num_kpoints x num_bands x num_wann array, each
         num_bands x num_wann block is a matrix :math:`U^{k}`.
     """
-    U_list, kpoints_list = [], []
+    u_list, kpoints_list = [], []
 
     with open(path, "r") as stream:
         lines = stream.readlines()
@@ -113,7 +117,7 @@ def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
     column_indices = [idx * num_bands for idx in range(num_wann)]
 
     for block_idx in block_indices:
-        U_k = []
+        u_k = []
 
         kpoint = [float(string) for string in lines[block_idx - 1].split()]
         kpoints_list.append(kpoint)
@@ -129,17 +133,17 @@ def read_U(path: str) -> tuple[np.ndarray, np.ndarray]:
 
                 row.append(complex(real, imaginary))
 
-            U_k.append(row)
+            u_k.append(row)
 
-        U_list.append(U_k)
+        u_list.append(u_k)
 
-    U = np.array(U_list)
+    u = np.array(u_list)
     kpoints = np.array(kpoints_list)
 
-    return U, kpoints
+    return u, kpoints
 
 
-def read_Hamiltonian(path: str) -> dict[tuple[int, ...], np.ndarray]:
+def read_hamiltonian(path: str) -> dict[tuple[int, ...], NDArray[np.complex128]]:
     """
     Read in the Wannier Hamiltonian.
 
@@ -147,7 +151,7 @@ def read_Hamiltonian(path: str) -> dict[tuple[int, ...], np.ndarray]:
         path (str): The filepath to seedname_hr.dat.
 
     Returns:
-        np.ndarray: The Wannier Hamiltonian.
+        dict[tuple[int, ...], NDArray[np.complex128]]: The Wannier Hamiltonian.
 
     Notes:
         H is a dictionary with keys corresponding to Bravais lattice vectors (in tuple
@@ -157,22 +161,22 @@ def read_Hamiltonian(path: str) -> dict[tuple[int, ...], np.ndarray]:
         lines = stream.readlines()
 
     num_wann = int(lines[1])
-    num_Rpoints = int(lines[2])
+    num_rpoints = int(lines[2])
 
-    start_idx = int(np.ceil(num_Rpoints / 15)) + 3
+    start_idx = int(np.ceil(num_rpoints / 15)) + 3
 
-    H = {}  # type: dict[tuple[int, ...], np.ndarray]
+    h = {}  # type: dict[tuple[int, ...], NDArray[np.complex128]]
 
     for line in lines[start_idx:]:
         data = line.split()
-        R = tuple([int(string) for string in data[:3]])
+        bl = tuple([int(string) for string in data[:3]])
 
-        if R not in H.keys():
-            H[R] = np.zeros((num_wann, num_wann), dtype=complex)
+        if bl not in h.keys():
+            h[bl] = np.zeros((num_wann, num_wann), dtype=np.complex128)
 
         m, n = [int(string) - 1 for string in data[3:5]]
         real, imaginary = [float(string) for string in data[5:]]
 
-        H[R][m, n] = complex(real, imaginary)
+        h[bl][m, n] = complex(real, imaginary)
 
-    return H
+    return h

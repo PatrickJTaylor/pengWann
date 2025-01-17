@@ -139,14 +139,14 @@ class DescriptorCalculator:
         return self._energies
 
     def get_coefficient_matrix(
-        self, i: int, bl_vector: NDArray[np.int64]
+        self, i: int, bl_vector: NDArray[np.int_]
     ) -> NDArray[np.complex128]:
         """
         Calculate the coefficient matrix C_iR for a given Wannier function.
 
         Args:
             i (int): The index identifying a particular Wannier function.
-            bl_vector (NDArray[np.int64]): The Bravais lattice vector specifying the
+            bl_vector (NDArray[np.int_]): The Bravais lattice vector specifying the
                 relative translation of Wannier function i from its home cell.
 
         Returns:
@@ -460,7 +460,12 @@ class DescriptorCalculator:
                 )
 
             for w_interaction in amended_wannier_interactions:
-                bl_vector = tuple((w_interaction.bl_2 - w_interaction.bl_1).tolist())
+                bl_vector = tuple(
+                    [
+                        int(component)
+                        for component in w_interaction.bl_2 - w_interaction.bl_1
+                    ]
+                )
                 h_ij = self._h[bl_vector][w_interaction.i, w_interaction.j].real
 
                 w_interaction.h_ij = h_ij
