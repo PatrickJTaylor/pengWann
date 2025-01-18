@@ -68,11 +68,19 @@ class WannierInteraction:
 
     @property
     def wohp(self):
-        return -self.h_ij * self.dos_matrix
+        if self.h_ij is None:
+            return None
+
+        else:
+            return -self.h_ij * self.dos_matrix
 
     @property
     def wobi(self):
-        return self.p_ij * self.dos_matrix
+        if self.p_ij is None:
+            return None
+
+        else:
+            return self.p_ij * self.dos_matrix
 
 
 def build_geometry(path: str, cell: ArrayLike) -> Structure:

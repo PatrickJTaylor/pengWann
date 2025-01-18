@@ -6,6 +6,16 @@ from pengwann.descriptors import DescriptorCalculator
 from pengwann.io import read_hamiltonian
 from pengwann.geometry import AtomicInteraction, WannierInteraction
 from pymatgen.core import Structure
+from pengwann.utils import allocate_shared_memory
+from typing import Any
+
+
+def none_to_nan(data: Any) -> Any:
+    if data is None:
+        return np.nan
+
+    else:
+        return data
 
 
 @pytest.fixture
@@ -174,14 +184,64 @@ def test_DescriptorCalculator_assign_populations(
         for w_interaction in interaction.wannier_interactions:
             w_label = str(w_interaction.i) + str(w_interaction.j)
 
-            population = w_interaction.population
-            if population is None:
-                populations[w_label] = np.nan
-
-            else:
-                populations[w_label] = population
+            populations[w_label] = none_to_nan(w_interaction.population)
 
     ndarrays_regression.check(populations, default_tolerance={"atol": 0, "rtol": 1e-07})
+
+
+@pytest.mark.parametrize(
+    "resolve_orbitals", (False, True), ids=("sum_orbitals", "resolve_orbitals")
+)
+def test_DescriptorCalculator_assign_populations_no_energies(
+    dcalc, resolve_orbitals
+) -> None:
+    dcalc._energies = None
+
+    wannier_interaction_1 = WannierInteraction(
+        i=1, j=0, bl_1=np.array([0, 1, 0]), bl_2=np.array([0, 0, 0])
+    )
+    wannier_interaction_2 = WannierInteraction(
+        i=5, j=6, bl_1=np.array([0, 1, 1]), bl_2=np.array([0, 0, 0])
+    )
+    interactions = (
+        AtomicInteraction(
+            pair_id=("C1", "C2"),
+            wannier_interactions=(wannier_interaction_1, wannier_interaction_2),
+        ),
+    )
+
+    mu = 9.8675
+
+    with pytest.raises(TypeError):
+        dcalc.assign_populations(interactions, mu, resolve_orbitals=resolve_orbitals)
+
+
+@pytest.mark.parametrize(
+    "resolve_k, resolve_orbitals",
+    ((False, False), (False, True), (True, False), (True, True)),
+    ids=(
+        "sum_k, sum_orbitals",
+        "sum_k, resolve_orbitals",
+        "resolve_k, sum_orbitals",
+        "resolve_k, resolve_orbitals",
+    ),
+)
+def test_DescriptorCalculator_assign_populations_no_atomic_dos_matrix(
+    dcalc, ref_geometry, resolve_k, resolve_orbitals
+) -> None:
+    symbols = ("C",)
+    interactions = dcalc.get_pdos(ref_geometry, symbols, resolve_k=resolve_k)
+
+    if resolve_orbitals:
+        interactions[0].wannier_interactions[0].dos_matrix = None
+
+    else:
+        interactions[0].dos_matrix = None
+
+    mu = 9.8675
+
+    with pytest.raises(TypeError):
+        dcalc.assign_populations(interactions, mu, resolve_orbitals=resolve_orbitals)
 
 
 @pytest.mark.parametrize("resolve_k", (False, True), ids=("sum_k", "resolve_k"))
@@ -218,9 +278,31 @@ def test_DescriptorCalculator_assign_populations_charges_wrong_valence(
         dcalc.assign_populations(interactions, mu, valence=valence)
 
 
-@pytest.mark.parametrize("resolve_k", (False, True), ids=("sum_k", "resolve_k"))
+@pytest.mark.parametrize(
+    "calc_wohp, calc_wobi, resolve_k",
+    (
+        (False, False, False),
+        (False, False, True),
+        (False, True, False),
+        (True, False, False),
+        (False, True, True),
+        (True, False, True),
+        (True, True, False),
+        (True, True, True),
+    ),
+    ids=(
+        "no_wohp, no_wobi, sum_k",
+        "no_wohp, no_wobi, resolve_k",
+        "no_wohp, calc_wobi, sum_k",
+        "calc_wohp, no_wobi, sum_k",
+        "no_wohp, calc_wobi, resolve_k",
+        "calc_wohp, no_wobi, resolve_k",
+        "calc_wohp, calc_wobi, sum_k",
+        "calc_wohp, calc_wobi, resolve_k",
+    ),
+)
 def test_DescriptorCalculator_assign_descriptors(
-    dcalc, resolve_k, ndarrays_regression
+    dcalc, calc_wohp, calc_wobi, resolve_k, ndarrays_regression
 ) -> None:
     wannier_interaction_1 = WannierInteraction(
         i=1, j=0, bl_1=np.array([0, 1, 0]), bl_2=np.array([0, 0, 0])
@@ -235,21 +317,25 @@ def test_DescriptorCalculator_assign_descriptors(
         ),
     )
 
-    dcalc.assign_descriptors(interactions, resolve_k=resolve_k)
+    dcalc.assign_descriptors(
+        interactions, calc_wohp=calc_wohp, calc_wobi=calc_wobi, resolve_k=resolve_k
+    )
 
     descriptors = {}
     for interaction in interactions:
         id_i, id_j = interaction.pair_id
         label = id_i + id_j
 
-        descriptors[label + "_WOHP"] = interaction.wohp
-        descriptors[label + "_WOBI"] = interaction.wobi
+        descriptors[label + "_dos_matrix"] = interaction.dos_matrix
+        descriptors[label + "_WOHP"] = none_to_nan(interaction.wohp)
+        descriptors[label + "_WOBI"] = none_to_nan(interaction.wobi)
 
         for w_interaction in interaction.wannier_interactions:
             w_label = str(w_interaction.i) + str(w_interaction.j)
 
-            descriptors[w_label + "_WOHP"] = w_interaction.wohp
-            descriptors[w_label + "_WOBI"] = w_interaction.wobi
+            descriptors[w_label + "_dos_matrix"] = w_interaction.dos_matrix
+            descriptors[w_label + "_WOHP"] = none_to_nan(w_interaction.wohp)
+            descriptors[w_label + "_WOBI"] = none_to_nan(w_interaction.wobi)
 
     ndarrays_regression.check(descriptors, default_tolerance={"atol": 0, "rtol": 1e-07})
 
@@ -336,25 +422,19 @@ def test_DescriptorCalculator_integrate_descriptors(
 
         for w_interaction in interaction.wannier_interactions:
             w_label = str(w_interaction.i) + str(w_interaction.j)
-            iwohp = w_interaction.iwohp
-            iwobi = w_interaction.iwobi
 
-            if iwohp is None:
-                integrals[w_label + "_IWOHP"] = np.nan
-
-            else:
-                integrals[w_label + "_IWOHP"] = iwohp
-
-            if iwobi is None:
-                integrals[w_label + "_IWOBI"] = np.nan
-
-            else:
-                integrals[w_label + "_IWOBI"] = iwobi
+            integrals[w_label + "_IWOHP"] = none_to_nan(w_interaction.iwohp)
+            integrals[w_label + "_IWOBI"] = none_to_nan(w_interaction.iwobi)
 
     ndarrays_regression.check(integrals, default_tolerance={"atol": 0, "rtol": 1e-07})
 
 
-def test_DescriptorCalculator_integrate_descriptors_no_energies(dcalc) -> None:
+@pytest.mark.parametrize(
+    "resolve_orbitals", (False, True), ids=("sum_orbitals", "resolve_orbitals")
+)
+def test_DescriptorCalculator_integrate_descriptors_no_energies(
+    dcalc, resolve_orbitals
+) -> None:
     wannier_interaction_1 = WannierInteraction(
         i=1, j=0, bl_1=np.array([0, 1, 0]), bl_2=np.array([0, 0, 0])
     )
@@ -372,7 +452,7 @@ def test_DescriptorCalculator_integrate_descriptors_no_energies(dcalc) -> None:
     dcalc._energies = None
 
     with pytest.raises(TypeError):
-        dcalc.integrate_descriptors(interactions, mu)
+        dcalc.integrate_descriptors(interactions, mu, resolve_orbitals=resolve_orbitals)
 
 
 def test_DescriptorCalculator_get_density_of_energy(dcalc, ndarrays_regression) -> None:
@@ -429,3 +509,42 @@ def test_DescriptorCalculator_get_bwdf(
     ndarrays_regression.check(
         {"r": r, "BWDF": bwdf[("C", "C")]}, default_tolerance={"atol": 0, "rtol": 1e-07}
     )
+
+
+@pytest.mark.parametrize(
+    "calc_wobi, resolve_k",
+    ((False, False), (False, True), (True, False), (True, True)),
+    ids=(
+        "no_wobi, sum_k",
+        "no_wobi, resolve_k",
+        "calc_wobi, sum_k",
+        "calc_wobi, resolve_k",
+    ),
+)
+def test_DescriptorCalculator_process_interaction(
+    dcalc, calc_wobi, resolve_k, ndarrays_regression
+) -> None:
+    memory_keys = ["dos_array", "kpoints", "u"]
+    shared_data = [dcalc._dos_array, dcalc._kpoints, dcalc._u]
+    if calc_wobi:
+        memory_keys.append("occupation_matrix")
+        shared_data.append(dcalc._occupation_matrix)
+
+    memory_metadata, memory_handles = allocate_shared_memory(memory_keys, shared_data)
+
+    wannier_interaction = WannierInteraction(
+        i=1, j=0, bl_1=np.array([0, 1, 0]), bl_2=np.array([0, 0, 0])
+    )
+
+    amended_interaction = dcalc.process_interaction(
+        wannier_interaction, dcalc._nspin, calc_wobi, resolve_k, memory_metadata
+    )
+
+    for memory_handle in memory_handles:
+        memory_handle.unlink()
+
+    descriptors = {"dos_matrix": amended_interaction.dos_matrix}
+    if calc_wobi:
+        descriptors["P_ij"] = wannier_interaction.p_ij
+
+    ndarrays_regression.check(descriptors, default_tolerance={"atol": 0, "rtol": 1e-07})

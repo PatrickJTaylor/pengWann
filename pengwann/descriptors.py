@@ -472,6 +472,12 @@ class DescriptorCalculator:
 
         running_count = 0
         for interaction in interactions:
+            if resolve_k:
+                interaction.dos_matrix = np.zeros(self._dos_array.shape[:-1])
+
+            else:
+                interaction.dos_matrix = np.zeros(self._dos_array.shape[0])
+
             if calc_wohp:
                 if resolve_k:
                     interaction.wohp = np.zeros(self._dos_array.shape[:-1])
@@ -490,6 +496,8 @@ class DescriptorCalculator:
                 running_count : running_count + len(interaction.wannier_interactions)
             ]
             for w_interaction in associated_wannier_interactions:
+                interaction.dos_matrix += w_interaction.dos_matrix  # type: ignore
+
                 if calc_wohp:
                     interaction.wohp += w_interaction.wohp
 
