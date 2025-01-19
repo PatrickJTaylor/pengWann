@@ -17,14 +17,29 @@ from typing import Optional
 @dataclass
 class AtomicInteraction:
     """
-    A class representing the interaction between atoms i and j in terms of their
-    respective Wannier functions.
+    Represents an interatomic interaction in terms of Wannier functions.
 
-    Attributes:
-        pair_id (tuple[str, str]): A pair of strings identifying atoms i and j.
-        wannier_interactions (tuple[WannierInteraction, ...]): The individual
-            :py:class:`~pengwann.geometry.WannierInteraction` objects that together
-            comprise the total interaction between atoms i and j.
+    Attributes
+    ----------
+    pair_id : tuple[str, str]
+        A pair of strings labelling atoms i and j.
+    wannier_interactions : tuple[WannierInteraction, ...]
+        The individual :py:class:`~pengwann.geometry.WannierInteraction` objects that
+        together comprise the total interaction between atoms i and j.
+    dos_matrix : NDArray[np.float64] | None, optional
+        The total DOS matrix. Defaults to None.
+    wohp : NDArray[np.float64] | None, optional
+        The total WOHP. Defaults to None.
+    wobi : NDArray[np.float64] | None, optional
+        The total WOBI. Defaults to None.
+    iwohp : np.float64 | NDArray[np.float64] | None, optional
+        The integrated total WOHP. Defaults to None.
+    iwobi : np.float64 | NDArray[np.float64] | None, optional
+        The integrated total WOBI. Defaults to None.
+    population : np.float64 | NDArray[np.float64] | None, optional
+        The population (integrated DOS matrix). Defaults to None.
+    charge : np.float64 | NDArray[np.float64] | None, optional
+        The charge (valence - population). Defaults to None.
     """
 
     pair_id: tuple[str, str]
@@ -33,25 +48,43 @@ class AtomicInteraction:
     dos_matrix: Optional[NDArray[np.float64]] = None
     wohp: Optional[NDArray[np.float64]] = None
     wobi: Optional[NDArray[np.float64]] = None
-    iwohp: Optional[np.float64] = None
-    iwobi: Optional[np.float64] = None
-    population: Optional[np.float64] = None
-    charge: Optional[np.float64] = None
+    iwohp: Optional[np.float64 | NDArray[np.float64]] = None
+    iwobi: Optional[np.float64 | NDArray[np.float64]] = None
+    population: Optional[np.float64 | NDArray[np.float64]] = None
+    charge: Optional[np.float64 | NDArray[np.float64]] = None
 
 
 @dataclass
 class WannierInteraction:
     """
-    A class representing the interaction between the two Wannier functions iR_1 and
-    jR_2.
+    Represents the interaction between two Wannier functions.
 
-    Attributes:
-        i (int): The index for Wannier function i.
-        j (int): The index for Wannier function j.
-        bl_1 (NDArray[np.int\\_]): The Bravais lattice vector specifying the translation of
-            Wannier function i with respect to its home cell.
-        bl_2 (NDArray[np.int\\_]): The Bravais lattice vector specifying the translation of
-            Wannier function j with respect to its home cell.
+    Attributes
+    ----------
+    i : int
+        An index identifying Wannier function i.
+    j : int
+        An index identifying Wannier function j.
+    bl_1 : NDArray[np.int\\_]
+        The Bravais lattice vector specifying the translation of Wannier function i
+        with respect to its home cell.
+    bl_2 : NDArray[np.int\\_]
+        The Bravais lattice vector specifying the translation of Wannier function j
+        with respect to its home cell.
+    dos_matrix : NDArray[np.float64] | None, optional
+        The DOS matrix. Defaults to None.
+    h_ij : np.float64 | None, optional
+        Element of the Wannier Hamiltonian required to compute the WOHP. Defaults to
+        None.
+    p_ij : np.float64 | None, optional
+        Element of the Wannier density matrix required to compute the WOBI. Defaults
+        to None.
+    iwohp : np.float64 | NDArray[np.float64] | None, optional
+        The integrated WOHP. Defaults to None.
+    iwobi : np.float64 | NDArray[np.float64] | None, optional
+        The integrated WOBI. Defaults to None.
+    population : np.float64 | NDArray[np.float64] | None, optional
+        The population (integrated DOS matrix). Defaults to None.
     """
 
     i: int
@@ -62,9 +95,9 @@ class WannierInteraction:
     dos_matrix: Optional[NDArray[np.float64]] = None
     h_ij: Optional[np.float64] = None
     p_ij: Optional[np.float64] = None
-    iwohp: Optional[np.float64] = None
-    iwobi: Optional[np.float64] = None
-    population: Optional[np.float64] = None
+    iwohp: Optional[np.float64 | NDArray[np.float64]] = None
+    iwobi: Optional[np.float64 | NDArray[np.float64]] = None
+    population: Optional[np.float64 | NDArray[np.float64]] = None
 
     @property
     def wohp(self):
@@ -85,26 +118,29 @@ class WannierInteraction:
 
 def build_geometry(path: str, cell: ArrayLike) -> Structure:
     """
-    Construct a Pymatgen Structure containing all of the necessary information to
-    identify interatomic interactions and the Wannier functions involved.
+    Return a Pymatgen Structure with a :code:`"wannier_centres"` site property.
 
-    More specifically, the final Structure object has a :code:`"wannier_centres"` site
-    property which associates each atom with the indices of its Wannier functions and
-    each Wannier centre with the index of its associated atom.
+    The "wannier_centres" site property associates each atom in the structure with a
+    sequence of indices. These indices indicate the Wannier centres that have been
+    assigned to each atom.
 
-    Args:
-        path (str): Filepath to the xyz file containing the coordinates of the Wannier
-            centres.
-        cell (ArrayLike): The cell vectors associated with the structure.
+    Parameters
+    ----------
+    path : str
+        Filepath to the xyz file output by Wannier90.
+    cell : ArrayLike
+        The cell vectors associated with the structure.
 
-    Returns:
-        Structure: The Pymatgen Structure containing the relevant atoms and Wannier
-        centres.
+    Returns
+    -------
+    geometry : Structure
+        The Pymatgen Structure with a :code:`"wannier_centres"` site property.
 
-    Notes:
-        The Pymatgen Structure returned by this function can be used as the
-        :code:`geometry` argument to several methods of the
-        :py:class:`~pengwann.dos.DOS` class.
+    Notes
+    -----
+    The `geometry` returned by this function can be passed as the `geometry` argument
+    to several methods of the :py:class:`~pengwann.descriptors.DescriptorCalculator`
+    class.
     """
     lattice = Lattice(cell)
 
@@ -128,22 +164,25 @@ def find_interactions(
     """
     Identify interatomic interactions according to a set of radial distance cutoffs.
 
-    Args:
-        radial_cutoffs (dict[tuple[str, str], float]): A dictionary defining radial
-            cutoffs for pairs of atomic species.
+    Parameters
+    ----------
+    geometry : Structure
+        A Pymatgen Structure object with a :code:`"wannier_centres"` site property that
+        associates each atom with the indices of its Wannier centres.
+    radial_cutoffs : dict[tuple[str, str], float]
+        A dictionary defining radial cutoffs for pairs of atomic species e.g
+        :code:`{("C", "C"): 1.6, ("C", "O"): 1.5}`.
 
-            For example:
+    Returns
+    -------
+    interactions : tuple[AtomicInteraction, ...]
+        The interactions identified according to the `radial_cuttoffs`.
 
-            {('Fe', 'O') : 1.8, ('Si', 'O') : 2.0}
-
-    Returns:
-        tuple[AtomicInteraction, ...]: The interactions identified by the radial
-        cutoffs.
-
-    Notes:
-        The :py:class:`~pengwann.geometry.AtomicInteraction` objects returned by this
-        function can be supplied to the :py:meth:`pengwann.dos.DOS.get_descriptors`
-        method to automate the computation of desirable bonding descriptors.
+    Notes
+    -----
+    The :py:class:`~pengwann.geometry.AtomicInteraction` objects returned by this
+    function can be supplied to the :py:meth:`pengwann.dos.DOS.get_descriptors`
+    method to automate the computation of chemical bonding descriptors.
     """
     if "wannier_centres" not in geometry.site_properties.keys():
         raise ValueError('Input geometry is missing a "wannier_centres" site property.')

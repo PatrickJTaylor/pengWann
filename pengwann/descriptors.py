@@ -20,35 +20,48 @@ from typing import Any, Optional
 
 class DescriptorCalculator:
     """
-    A class for the calculation of various descriptors of chemical bonding and local
-    electronic structure.
+    Compute descriptors of chemical bonding and local electronic structure.
 
-    Args:
-        dos_array (NDArray[np.float64]): The density of states discretised across
-            energies, k-points and bands.
-        nspin (int): The number of electrons per fully-occupied band. This should be
-            set to 2 for non-spin-polarised calculations and set to 1 for spin-polarised
-            calculations.
-        kpoints (NDArray[np.float64]): The full k-point mesh used in the prior Wannier90
-            calculation.
-        u (NDArray[np.complex128]): The U matrices that define the Wannier functions in
-            terms of the canonical Bloch states.
-        h (dict[tuple[int, ...], NDArray[np.complex128]], optional): The
-            Hamiltonian in the Wannier basis. Required for the computation of WOHPs.
-            Defaults to None.
-        occupation_matrix(NDArray[np.float64], optional): The Kohn-Sham occupation
-            matrix. Required for the computation of WOBIs. Defaults to None.
-        energies (NDArray[np.float64], optional): The energies at which the dos_array
-            has been evaluated. Defaults to None.
+    This class can be used to calculate:
 
-    Returns:
-        None
+    - Wannier orbital Hamilton populations (WOHPs) + integrals (IWOHPs)
+    - Wannier orbital bond indices (WOBIs) + integrals (IWOBIs)
+    - The projected density of states (pDOS)
+    - Wannier-function-resolved populations
+    - Atomic charges
+    - The density of energy (DOE)
+    - Bond-weighted distribution functions (BWDFs)
 
-    Notes:
-        This class should not normally be initialised using the base constructor. See
-        instead the
-        :py:meth:`~pengwann.descriptors.DescriptorCalculator.from_eigenvalues`
-        classmethod.
+    Parameters
+    ----------
+    dos_array : NDArray[np.float64]
+        The density of states discretised across energies, k-points and bands.
+    nspin : int
+        The number of electrons per fully-occupied band. This should be set to 2 for
+        non-spin-polarised calculations and set to 1 for spin-polarised calculations.
+    kpoints : NDArray[np.float64]
+        The full k-point mesh used in the prior Wannier90 calculation.
+    u : NDArray[np.complex128]
+        The U matrices that define the Wannier functions in terms of the canonical
+        Bloch states.
+    h : dict[tuple[int, ...], NDArray[np.complex128]] | None, optional
+        The Hamiltonian in the Wannier basis. Required for the computation of WOHPs.
+        Defaults to None.
+    occupation_matrix : NDArray[np.float64] | None, optional
+        The Kohn-Sham occupation matrix. Required for the computation of WOBIs.
+        Defaults to None.
+    energies : NDArray[np.float64] | None, optional
+        The energies at which the `dos_array` has been evaluated. Defaults to None.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    This class should not normally be initialised using the base constructor. See
+    instead the :py:meth:`~pengwann.descriptors.DescriptorCalculator.from_eigenvalues`
+    classmethod.
     """
 
     _bl_0 = np.array((0, 0, 0))
@@ -87,34 +100,43 @@ class DescriptorCalculator:
         """
         Initialise a DescriptorCalculator object from a set of Kohn-Sham eigenvalues.
 
-        Args:
-            eigenvalues (NDArray[np.float64]): The Kohn-Sham eigenvalues.
-            nspin (int): The number of electrons per fully-occupied band. This should be
-                set to 2 for non-spin-polarised calculations and set to 1 for spin-polarised
-                calculations.
-            energy_range (tuple[float, float]): The energy range over which the density
-                of states is to be evaluated.
-            resolution (float): The desired energy resolution of the density of states.
-            sigma (float): The width of the Gaussian kernel used to smear the density
-                of states (in eV).
-            kpoints (NDArray[np.float64]): The full k-point mesh used in the prior Wannier90
-                calculation.
-            u (NDArray[np.complex128]): The U matrices that define the Wannier functions in
-                terms of the canonical Bloch states.
-            h (dict[tuple[int, ...], NDArray[np.complex128]], optional): The
-                Hamiltonian in the Wannier basis. Required for the computation of WOHPs.
-                Defaults to None.
-            occupation_matrix(NDArray[np.float64], optional): The Kohn-Sham occupation
-                matrix. Required for the computation of WOBIs. Defaults to None.
+        Parameters
+        ----------
+        eigenvalues : NDArray[np.float64]
+            The Kohn-Sham eigenvalues.
+        nspin : int
+            The number of electrons per fully-occupied band. This should be set to 2
+            for non-spin-polarised calculations and set to 1 for spin-polarised
+            calculations.
+        energy_range : tuple[float, float]
+            The energy range over which the density of states is to be evaluated.
+        resolution : float
+            The desired energy resolution of the density of states.
+        sigma : float
+            The width of the Gaussian kernel used to smear the density of states (in eV).
+        kpoints : NDArray[np.float64]
+            The full k-point mesh used in the prior Wannier90 calculation.
+        u : NDArray[np.complex128]
+            The U matrices that define the Wannier functions in terms of the canonical
+            Bloch states.
+        h : dict[tuple[int, ...], NDArray[np.complex128]] | None, optional
+            The Hamiltonian in the Wannier basis. Required for the computation of WOHPs.
+            Defaults to None.
+        occupation_matrix : NDArray[np.float64] | None, optional
+            The Kohn-Sham occupation matrix. Required for the computation of WOBIs.
+            Defaults to None.
 
-        Returns:
-            DescriptorCalculator: The initialised DescriptorCalculator object.
+        Returns
+        -------
+        descriptor_calculator : DescriptorCalculator
+            The initialised DescriptorCalculator object.
 
-        Notes:
-            See the :py:mod:`~pengwann.io` module for parsing the eigenvalues, k-point
-            mesh, U matrices and Hamiltonian from Wannier90 output files. See the
-            :py:func:`~pengwann.utils.get_occupation_matrix` function for computing the
-            occupation matrix.
+        Notes
+        -----
+        See the :py:mod:`~pengwann.io` module for parsing the eigenvalues, k-point
+        mesh, U matrices and Hamiltonian from Wannier90 output files. See the
+        :py:func:`~pengwann.utils.get_occupation_matrix` function for computing the
+        occupation matrix.
         """
         emin, emax = energy_range
         energies = np.arange(emin, emax + resolution, resolution, dtype=np.float64)
@@ -133,28 +155,41 @@ class DescriptorCalculator:
     @property
     def energies(self) -> Optional[NDArray[np.float64]]:
         """
-        The energies over which the density of states (and all derived quantities such
-        as WOHPs or WOBIs) has been evaluated.
+        The discrete energies over which the DOS (and derived descriptors) has been evaluated.
+
+        Returns
+        -------
+        energies : NDArray[np.float64] | None
+            The energies over which the DOS (and all derived quantities such as WOHPs
+            or WOBIs) has been evaluated. If these energies were not provided when the
+            constructor was called, this property will simply return None.
         """
         return self._energies
 
     def get_coefficient_matrix(
         self, i: int, bl_vector: NDArray[np.int_]
     ) -> NDArray[np.complex128]:
-        """
-        Calculate the coefficient matrix C_iR for a given Wannier function.
+        r"""
+        Calculate the coefficient matrix for a given Wannier function.
 
-        Args:
-            i (int): The index identifying a particular Wannier function.
-            bl_vector (NDArray[np.int\\_]): The Bravais lattice vector specifying the
-                relative translation of Wannier function i from its home cell.
+        Parameters
+        ----------
+        i : int
+            The index identifying the target Wannier function.
+        bl_vector : NDArray[np.int\\_]
+            The Bravais lattice vector specifying the translation of Wannier function
+            i from its home cell.
 
-        Returns:
-            NDArray[np.complex128]: The coefficient matrix C_iR.
+        Returns
+        -------
+        c : NDArray[np.complex128]
+            The coefficient matrix C^iR, where R is the input Bravais lattice vector.
         """
-        return (np.exp(1j * 2 * np.pi * self._kpoints @ bl_vector))[
+        c = (np.exp(1j * 2 * np.pi * self._kpoints @ bl_vector))[
             :, np.newaxis
         ] * np.conj(self._u[:, :, i])
+
+        return c
 
     def get_dos_matrix(
         self,
@@ -162,45 +197,57 @@ class DescriptorCalculator:
         c: NDArray[np.complex128],
         resolve_k: bool = False,
     ) -> NDArray[np.float64]:
-        """
+        r"""
         Calculate the DOS matrix for a pair of Wannier functions.
 
-        Args:
-            c_star (NDArray[np.complex128]): The coefficient matrix for Wannier
-                function i with Bravais lattice vector R_1.
-            c (NDArray[np.complex128]): The coefficient matrix for Wannier function j
-                with Bravais lattice vector R_2.
-            resolve_k (bool): Whether or not to resolve the DOS matrix with respect to
-                k-points. Defaults to False.
+        Parameters
+        ----------
+        c_star : NDArray[np.complex128]
+            The coefficient matrix for Wannier function i with Bravais lattice vector
+            R_1.
+        c : NDArray[np.complex128]
+            The coefficient matrix for Wannier function j with Bravais lattice vector
+            R_2.
+        resolve_k : bool, optional
+            Whether or not to resolve the DOS matrix with respect to k-points. Defaults
+            to False.
 
-        Returns:
-            NDArray[np.float64]: The DOS matrix, either summed over bands and k-points
-            or bands only.
+        Returns
+        -------
+        dos_matrix : NDArray[np.float64]
+            The DOS matrix.
         """
         dos_matrix_nk = (
             self._nspin * (c_star * c)[np.newaxis, :, :].real * self._dos_array
         )
 
         if resolve_k:
-            return np.sum(dos_matrix_nk, axis=2)
+            dos_matrix = np.sum(dos_matrix_nk, axis=2)
 
         else:
-            return np.sum(dos_matrix_nk, axis=(1, 2))
+            dos_matrix = np.sum(dos_matrix_nk, axis=(1, 2))
+
+        return dos_matrix
 
     def get_p_ij(
         self, c_star: NDArray[np.complex128], c: NDArray[np.complex128]
     ) -> np.complex128:
-        """
+        r"""
         Calculate element P_ij of the Wannier density matrix.
 
-        Args:
-            c_star (NDArray[np.complex128]): The coefficient matrix for Wannier
-                function i with Bravais lattice vector R_1.
-            c (NDArray[np.complex128]): The coefficient matrix for Wannier function j
-                with Bravais lattice vector R_2.
+        Parameters
+        ----------
+        c_star : NDArray[np.complex128]
+            The coefficient matrix for Wannier function i with Bravais lattice vector
+            R_1.
+        c : NDArray[np.complex128]
+            The coefficient matrix for Wannier function j with Bravais lattice vector
+            R_2.
 
-        Returns:
-            np.complex128: Element P_ij of the Wannier density matrix.
+        Returns
+        -------
+        p_ij : np.complex128
+            Element P_ij of the Wannier density matrix.
         """
         if self._occupation_matrix is None:
             raise TypeError(
@@ -214,25 +261,28 @@ class DescriptorCalculator:
     def get_pdos(
         self, geometry: Structure, symbols: tuple[str, ...], resolve_k: bool = False
     ) -> tuple[AtomicInteraction, ...]:
-        """
-        Calculate the projected density of states for a given set of atoms (and their
-        associated Wannier functions).
+        r"""
+        Compute the pDOS for a set of atoms (and their associated Wannier functions).
 
-        Args:
-            geometry (Structure): A Pymatgen Structure object with a "wannier_centres"
-                site property containing the indices of the Wannier functions
-                associated with each atom.
-            symbols (tuple[str, ...]): The atomic species to compute the pDOS for.
+        Parameters
+        ----------
+        geometry : Structure
+            A Pymatgen Structure object with a :code:`"wannier_centres"` site property
+            that associates each atom with the indices of its Wannier centres.
+        symbols : tuple[str, ...]
+            The atomic species to compute the pDOS for. These should match one or more
+            of the species present in `geometry`.
 
-        Returns:
-            tuple[AtomicInteraction, ...]: A series of AtomicInteraction objects, each
-            of which contains the pDOS with respect to an atom and its associated
-            Wannier functions.
+        Returns
+        -------
+        interactions : tuple[AtomicInteraction, ...]
+            A sequence of AtomicInteraction objects, each of which is associated with
+            the pDOS for a given atom and its associated Wannier functions.
 
-        Notes:
-            See the :py:func:`~pengwann.geometry.build_geometry` function for
-            obtaining an appropriate Pymatgen Structure to pass as the :code:`geometry`
-            argument.
+        Notes
+        -----
+        See the :py:func:`~pengwann.geometry.build_geometry` function for obtaining an
+        appropriate Pymatgen Structure to pass as `geometry`.
         """
         num_wann = len([site for site in geometry if site.species_string == "X0+"])
         wannier_centres = geometry.site_properties["wannier_centres"]
@@ -316,30 +366,59 @@ class DescriptorCalculator:
         resolve_orbitals: bool = False,
         valence: Optional[dict[str, int]] = None,
     ) -> None:
-        """
-        Calculate the populations (and optionally charges) associated with a series of
-        atoms and their associated Wannier functions. The calculated values are
-        assigned to the relevant AtomicInteraction objects as originally input.
+        r"""
+        Compute populations/charges for a series of atoms.
 
-        Args:
-            interactions (tuple[AtomicInteraction, ...]): A series of AtomicInteraction
-                objects containing the pDOS required to compute populations or charges.
-            mu (float): The Fermi level.
-            resolve_orbitals (bool): Whether or not to calculate the populations for
-                the individual Wannier functions associated with each atom. Defaults to
-                False.
-            valence (dict[str, int], optional): The number of valence electrons
-                associated with each atomic species (as per the pseudopotentials used
-                in the prior ab initio calculation). Required for the calculation of
-                Wannier charges. Defaults to None.
+        These are the equivalent of Mulliken populations/charges, but calculated in
+        the orthonormal Wannier basis.
 
-        Returns:
-            None
+        Parameters
+        ----------
+        interactions : tuple[AtomicInteraction, ...]
+            A sequence of AtomicInteraction objects containing the pDOS required to
+            compute populations or charges.
+        mu : float
+            The Fermi level.
+        resolve_orbitals : bool, optional
+            If True, compute Wannier populations for individual Wannier functions as
+            well as the atoms to which they are assigned. Defaults to False.
+        valence : dict[str, int] | None, optional
+            The number of valence electrons associated with each atomic species (as per
+            the pseudopotentials used in the ab initio calculation) e.g.
+            :code:`{"Ti": 12, "O": 6}`. Required for the calculation of Wannier charges.
+            Defaults to None.
 
-        Notes:
-            A suitable set of AtomicInteraction objects containing the necessary pDOS
-            can be obtained via the
-            :py:meth:`~pengwann.descriptors.DescriptorCalculator.get_pdos` method.
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        The input `interactions` are modified in-place by setting the
+        :code:`population` and :code:`charge` attributes of each AtomicInteraction (and
+        optionally its associated WannierInteraction objects).
+
+        The AtomicInteraction objects returned by the
+        :py:meth:`~pengwann.descriptors.DescriptorCalculator.get_pdos` method can be
+        passed for the `interactions` parameter.
+
+        The population for Wannier function :math:`i` is the integral of its pDOS up to
+        the Fermi level
+
+        .. math::
+
+            \mathrm{pop}_{i} = \int^{E_{\mathrm{F}}}_{-\infty} dE\;\mathrm{pDOS}_{i}(E).
+
+        Atomic populations are computed simply by summing the populations of all Wannier
+        functions associated with a given atom (or equivalently, by integrating the
+        total pDOS).
+
+        The Wannier charge of an atom is simply the difference between its number of
+        valence electrons :math:`v_{i}` and its population
+
+        .. math::
+
+            \mathrm{charge}_{i} = v_{i} - \mathrm{pop}_{i}.
         """
         if self._energies is None:
             raise TypeError(
@@ -366,7 +445,9 @@ class DescriptorCalculator:
                 if symbol not in valence.keys():
                     raise ValueError(f"Valence for {symbol} not found in input.")
 
-                interaction.charge = valence[symbol] - interaction.population
+                interaction.charge = (valence[symbol] - interaction.population).astype(
+                    np.float64
+                )
 
             if resolve_orbitals:
                 for w_interaction in interaction.wannier_interactions:
@@ -389,29 +470,47 @@ class DescriptorCalculator:
         calc_wobi: bool = True,
         resolve_k: bool = False,
     ) -> None:
-        """
-        Calculate a series of Wannier Orbital Hamilton Populations (WOHPs) and/or
-        Wannier Orbital Bond Indices (WOBIs) in parallel. The calculated values are
-        assigned to the relevant AtomicInteraction objects as originally input.
+        r"""
+        Compute WOHPs and/or WOBIs for a set of 2-body interactions.
 
-        Args:
-            interactions (tuple[AtomicInteraction, ...]): A series of AtomicInteraction
-                objects specifying the 2-body interactions for which to compute WOHPs
-                and/or WOBIs.
-            calc_wohp (bool): Whether or not to calculate WOHPs for the input
-                interactions. Defaults to True.
-            calc_wobi (bool): Whether or not to calculate WOBIs for the input
-                interactions. Defaults to True.
-            resolve_k (bool): Whether or not to resolve the output WOHPs and/or WOBIs
-                with respect to the k-point mesh. Defaults to False.
+        Parameters
+        ----------
+        interactions : tuple[AtomicInteraction, ...]
+            A sequence of AtomicInteraction objects specifying the 2-body interactions
+            for which to calculate WOHPs and/or WOBIs.
+        calc_wohp : bool, optional
+            Whether or not to calculate WOHPs for the input `interactions`. Defaults to
+            True.
+        calc_wobi : bool, optional
+            Whether or not to calculate WOBIs for the input `interactions`. Defaults to
+            True.
+        resolve_k : bool, optional
+            Whether or not to resolve the output WOHPs and/or WOBIs with respect to
+            k-points. Defaults to False.
 
-        Returns:
-            None
+        Returns
+        -------
+        None
 
-        Notes:
-            A set of appropriate interatomic interactions can be generated in an
-            automated fashion via a distance cutoff criteria using the
-            :py:func:`~pengwann.geometry.find_interactions` function.
+        Notes
+        -----
+        If both `calc_wohp` and `calc_wobi` are False, then the :code:`dos_matrix`
+        attribute of each AtomicInteraction and WannierInteraction will still be set.
+
+        The input `interactions` are modified in-place by setting the :code:`wohp`
+        and/or :code:`wobi` attributes of each AtomicInteraction (and optionally each
+        of its associated WannierInteraction objects).
+
+        The WOHPs and WOBIs for the input `interactions` are computed using shared
+        memory parallelism to avoid copying potentially very large arrays (such as the
+        full DOS array) between concurrent processes. Even with shared memory, very
+        small (low volume -> many k-points) and very large (many electrons -> many
+        bands/Wannier functions) systems can be problematic in terms of memory usage
+        if the energy resolution is too high.
+
+        Relevant interatomic `interactions` can be identified in an automated fashion
+        with a distance cutoff criteria using the
+        :py:func:`~pengwann.geometry.find_interactions` function.
         """
         memory_keys = ["dos_array", "kpoints", "u"]
         shared_data = [self._dos_array, self._kpoints, self._u]
@@ -514,21 +613,29 @@ class DescriptorCalculator:
         resolve_orbitals: bool = False,
     ) -> None:
         """
-        Integrate a set of WOHPs and/or WOBIs up to the Fermi level to derive a
-        corresponding set of IWOHPs and IWOBIs. The calculated values are assigned to
-        the relevant AtomicInteraction objects as originally input.
+        Integrate WOHPs and WOBIs up to the Fermi level to derive IWOHPs and IWOBIs.
 
-        Args:
-            interactions (tuple[AtomicInteraction, ...]): A series of AtomicInteraction
-                objects containing the WOHPs and WOBIs to be integrated.
-            mu (float): The Fermi level.
-            resolve_orbitals (bool): Whether or not to integrate the WOHPs and/or WOBIs
-                for the individual Wannier functions associated with each
-                AtomicInteraction as well as the overall interaction itself. Defaults
-                to False.
+        Parameters
+        ----------
+        interactions : tuple[AtomicInteraction, ...]
+            A sequence of AtomicInteraction objects containing the WOHPs and/or WOBIs
+            to be integrated.
+        mu : float
+            The Fermi level.
+        resolve_orbitals: bool, optional
+            If True, integrate the WOHPs and/or WOBIs for the individual Wannier
+            functions associated with each AtomicInteraction as well as the overall
+            interaction itself. Defaults to False.
 
-        Returns:
-            None
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        The input `interactions` are modified in-place by setting the :code:`iwohp`
+        and/or :code:`iwobi` attributes of each AtomicInteraction (and optionally its
+        associated WannierInteraction objects).
         """
         if self._energies is None:
             raise TypeError(
@@ -558,19 +665,34 @@ class DescriptorCalculator:
     def get_density_of_energy(
         self, interactions: tuple[AtomicInteraction, ...], num_wann: int
     ) -> NDArray[np.float64]:
-        """
-        Calculate the Density of Energy (DOE).
+        r"""
+        Calculate the density of energy (DOE).
 
-        Args:
-            interactions (tuple[AtomicInteraction, ...]): A set of AtomicInteraction
-                objects containing all of the interatomic (off-diagonal) WOHPs. In
-                general this should come from the
-                :py:meth:`~pengwann.descriptors.DescriptorCalculator.assign_descriptors`
-                method.
-            num_wann (int): The total number of Wannier functions.
+        Parameters
+        ----------
+        interactions : tuple[AtomicInteraction, ...]
+            A sequence of AtomicInteraction objects containing all of the interatomic
+            (off-diagonal) WOHPs.
+        num_wann : int
+            The total number of Wannier functions.
 
-        Returns:
-            NDArray[np.float64]: The density of energy.
+        Returns
+        -------
+        doe : NDArray[np.float64]
+            The density of energy.
+
+        Notes
+        -----
+        The off-diagonal WOHPs are easily obtained via the
+        :py:meth:`~pengwann.descriptors.DescriptorCalculator.assign_descriptors` method.
+
+        The density of energy is defined as
+
+        .. math::
+            \mathrm{DOE}(E) = \sum_{ij}\mathrm{WOHP}_{ij}(E),
+
+        it is the total WOHP of the whole system, including diagonal
+        (:math:`i = j`) terms.
         """
         for interaction in interactions:
             if interaction.wohp is None:
@@ -589,7 +711,9 @@ class DescriptorCalculator:
 
         all_interactions = interactions + diagonal_interaction
 
-        return np.sum([interaction.wohp for interaction in all_interactions], axis=0)  # type: ignore[arg-type]
+        doe = np.sum([interaction.wohp for interaction in all_interactions], axis=0)  # type: ignore[arg-type]
+
+        return doe
 
     def get_bwdf(
         self,
@@ -599,26 +723,34 @@ class DescriptorCalculator:
         nbins: int,
     ) -> tuple[NDArray[np.float64], dict[tuple[str, str], NDArray[np.float64]]]:
         """
-        Calculate one or more Bond-Weighted Distribution Functions (BWDFs).
+        Compute one or more bond-weighted distribution functions (BWDFs).
 
-        Args:
-            interactions (tuple[AtomicInteraction, ...]): A set of AtomicInteraction
-                objects containing all of the necessary IWOHPs to generate the desired
-                BWDFs.
-            geometry (Structure): A Pymatgen Structure object from which to extract
-                interatomic distances.
-            r_range (tuple[float, float]): The range of distances over which the BWDFs
-                should be evaluated.
-            nbins (int): The number of bins used to calculate the BWDFs.
+        Parameters
+        ----------
+        interactions : tuple[AtomicInteraction, ...]
+            A sequence of AtomicInteraction obejcts containing all of the necessary
+            IWOHPs to weight the RDF/s.
+        geometry : Structure
+            A Pymatgen Structure object from which to extract interatomic distances.
+        r_range : tuple[float, float]
+            The range of distances over which to evalute the BWDF/s.
+        nbins : int
+            The number of bins used to calculate the BWDF/s.
 
-        Returns:
-            tuple[NDArray[np.float64], dict[tuple[str, str], NDArray[np.float64]]]:
+        Returns
+        -------
+        r : NDArray[np.float64]
+            The centre of each distance bin.
+        bwdf : dict[tuple[str, str], NDArray[np.float64]]
+            A dictionary containing the BWDFs, indexable by the bond species e.g.
+            ("Ga", "As") for the Ga-As BWDF.
 
-            NDArray[np.float64]: The centre of each distance bin.
-
-            dict[tuple[str, str], NDArray[np.float64]]: A dictionary containing the
-            computed BWDFs, indexable by the bond species e.g. ("Ga", "As") for the
-            Ga-As BWDF.
+        Notes
+        -----
+        The BWDF is derived from the RDF (radial distribution function). More
+        specifically, it is the RDF excluding all interatomic distances that are not
+        counted as bonds (as defined by some arbitrary criteria) with the remaining
+        distances being weighted by the corresponding IWOHP.
         """
         num_wann = len([site for site in geometry if site.species_string == "X0+"])
         distance_matrix = geometry.distance_matrix
@@ -663,17 +795,28 @@ class DescriptorCalculator:
     def parallel_wrapper(cls, args) -> WannierInteraction:
         """
         A simple wrapper for
-        :py:meth:`~pengwann.descriptors.DescriptorCalculator.process_interaction` to
-        enable proper tqdm functionality.
+        :py:meth:`~pengwann.descriptors.DescriptorCalculator.process_interaction`.
 
-        Args:
-            args: The arguments to be unpacked for process_interaction.
+        Parameters
+        ----------
+        args
+            The arguments to be unpacked for
+            :py:meth:`~pengwann.descriptors.DescriptorCalculator.process_interaction`.
 
-        Returns:
-            WannierInteraction: The input WannierInteraction with the computed
-            properties assigned to the relevant attributes.
+        Returns
+        -------
+        wannier_interaction : WannierInteraction
+            The input WannierInteraction with the computed properties assigned to the
+            relevant attributes.
+
+        Notes
+        -----
+        This method exists primarily to enable proper :code:`tqdm` functionality with
+        :code:`multiprocessing`.
         """
-        return cls.process_interaction(*args)
+        wannier_interaction = cls.process_interaction(*args)
+
+        return wannier_interaction
 
     @classmethod
     def process_interaction(
@@ -685,26 +828,31 @@ class DescriptorCalculator:
         memory_metadata: dict[str, tuple[tuple[int, ...], np.dtype]],
     ) -> WannierInteraction:
         """
-        For the interaction between Wannier functions iR_1 and jR_2, compute the DOS
-        matrix and (optionally) the element of the Wannier density matrix required to
-        compute the WOBI.
+        For a pair of Wannier functions, compute the DOS matrix and (optionally), the
+        element of the density matrix required to compute the WOBI.
 
-        Args:
-            interaction (WannierInteraction): The interaction for which descriptors are
-                to be calculated.
-            nspin (int): The number of electrons per fully-occupied band. This should be
-                set to 2 for non-spin-polarised calculations and set to 1 for
-                spin-polarised calculations.
-            calc_wobi (bool): Whether or not to calculate the relevant element of the
-                Wannier density matrix for the WOBI.
-            resolve_k (bool): Whether or not to resolve the DOS matrix with respect to
-                the k-point mesh.
-            memory_metadata (dict[str, tuple[tuple[int, ...], np.dtype]]): The keys,
-                shapes and dtypes of any data to be pulled from shared memory.
+        Parameters
+        ----------
+        interaction : WannierInteraction
+            The interaction between two Wannier functions for which descriptors are to
+            be computed.
+        nspin : int
+            The number of electrons per fully-occupied band. This should be set to 2
+            for non-spin-polarised calculations and set to 1 for spin-polarised
+            calculations.
+        calc_wobi : bool
+            Whether or not to calculate the relevant element of the Wannier density
+            matrix for the WOBI.
+        resolve_k : bool
+            Whether or not to resolve the DOS matrix with respect to k-points.
+        memory_metadata : dict[str, tuple[tuple[int, ...], np.dtype]]
+            The keys, shapes and dtypes of any data to be pulled from shared memory.
 
-        Returns:
-            WannierInteraction: The input WannierInteraction with the computed
-            properties assigned to the relevant attributes.
+        Returns
+        -------
+        interaction : WannierInteraction
+            The input `interaction` with the computed properties assigned to the
+            relevant attributes.
         """
         kwargs = {"nspin": nspin}  # type: dict[str, Any]
         memory_handles = []

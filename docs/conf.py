@@ -28,7 +28,7 @@ extensions = [
     "sphinxcontrib.bibtex",
 ]
 
-autodoc_type_aliases = {"ArrayLike": "ArrayLike", "NDArray": "NDArray"}
+autodoc_typehints = "none"
 
 bibtex_bibfiles = ["refs.bib"]
 mathjax3_config = {

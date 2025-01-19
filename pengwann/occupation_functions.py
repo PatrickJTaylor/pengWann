@@ -17,20 +17,32 @@ def fixed(eigenvalues: NDArray[np.float64], mu: float) -> NDArray[np.float64]:
     r"""
     A simple heaviside occupation function.
 
+    Parameters
+    ----------
+    eigenvalues : NDArray[np.float64]
+        The Kohn-Sham eigenvalues.
+    mu : float
+        The Fermi level.
+
+    Returns
+    -------
+    occupation_matrix : NDArray[np.float64]
+        The occupation matrix.
+
+    Notes
+    -----
+    The definition of this occupation function is simply
+
     .. math::
+
         f_{nk} = \begin{cases}
-        1 \: \mathrm{if} \: \epsilon_{nk} \le \mu \\
-        0 \: \mathrm{if} \: \epsilon_{nk} > \mu
+        1\; \mathrm{if}\; \epsilon_{nk} \leq \mu \\
+        0\; \mathrm{if}\; \epsilon_{nk} > \mu.
         \end{cases}
-
-    Args:
-        eigenvalues (NDArray[np.float64]): The Kohn-Sham eigenvalues.
-        mu (float): The Fermi level.
-
-    Returns:
-        NDArray[np.float64]: The occupation numbers.
     """
-    return np.heaviside(-1 * (eigenvalues - mu), 1)
+    occupation_matrix = np.heaviside(-1 * (eigenvalues - mu), 1)
+
+    return occupation_matrix
 
 
 def fermi_dirac(
@@ -39,41 +51,64 @@ def fermi_dirac(
     r"""
     The Fermi-Dirac occupation function.
 
+    Parameters
+    ----------
+    eigenvalues : NDArray[np.float64]
+        The Kohn-Sham eigenvalues.
+    mu : float
+        The Fermi level.
+    sigma : float
+        The smearing width in eV (= kT for some electronic temperature T).
+
+    Returns
+    -------
+    occupation_matrix : NDArray[np.float64]
+        The occupation matrix.
+
+    Notes
+    -----
+    The Fermi-Dirac occupation function is defined as
+
     .. math::
-        f_{nk} = \frac{1}{\exp[\frac{\epsilon_{nk} - \mu}{\sigma}] + 1}
 
-    Args:
-        eigenvalues (NDArray[np.float64]): The Kohn-Sham eigenvalues.
-        mu (float): The Fermi level.
-        sigma (float): The smearing width in eV (in this case = kT for some electronic
-            temperature T).
-
-    Returns:
-        NDArray[np.float64]: The occupation numbers.
+        f_{nk} = \left(\exp\left[\frac{\epsilon_{nk} - \mu}{\sigma}\right] + 1\right)
+        ^{-1}.
     """
     if sigma <= 0:
         raise ValueError("The smearing width must > 0, {sigma} is <= 0")
 
     x = (eigenvalues - mu) / sigma
+    occupation_matrix = 1 / (np.exp(x) + 1)
 
-    return 1 / (np.exp(x) + 1)
+    return occupation_matrix
 
 
 def gaussian(eigenvalues: np.ndarray, mu: float, sigma: float) -> NDArray[np.float64]:
     r"""
     A Gaussian occupation function.
 
+    Parameters
+    ----------
+    eigenvalues : NDArray[np.float64]
+        The Kohn-Sham eigenvalues.
+    mu : float
+        The Fermi level.
+    sigma : float
+        The smearing width in eV.
+
+    Returns
+    -------
+    occupation_matrix : NDArray[np.float64]
+        The occupation matrix.
+
+    Notes
+    -----
+    The definition of this occupation function is
+
     .. math::
-        f_{nk} = \frac{1}{2}\left[1 -
-        \mathrm{erf}\left(\frac{\epsilon_{nk} - \mu}{\sigma}\right)\right]
 
-    Args:
-        eigenvalues (NDArray[np.float64]): The Kohn-Sham eigenvalues.
-        mu (float): The Fermi level.
-        sigma (float): The smearing width in eV.
-
-    Returns:
-        NDArray[np.float64]: The occupation numbers.
+        f_{nk} = \frac{1}{2}\left[1 - \mathrm{erf}\left(\frac{\epsilon_{nk} -
+        \mu}{\sigma}\right)\right]
     """
     if sigma <= 0:
         raise ValueError("The smearing width must > 0, {sigma} is <= 0")
@@ -87,22 +122,32 @@ def cold(
     eigenvalues: NDArray[np.float64], mu: float, sigma: float
 ) -> NDArray[np.float64]:
     r"""
-    The Marzari-Vanderbilt occupation function.
+    The Marzari-Vanderbilt (cold) occupation function.
+
+    Parameters
+    ----------
+    eigenvalues : NDArray[np.float64]
+        The Kohn-Sham eigenvalues.
+    mu : float
+        The Fermi level.
+    sigma : float
+        The smearing width in eV.
+
+    Returns
+    -------
+    occupation_matrix : NDArray[np.float64]
+        The occupation matrix.
+
+    Notes
+    -----
+    The Marzari-Vanderbilt occupation function is defined as
 
     .. math::
-        f_{nk} = \frac{1}{2}\left[\sqrt{\frac{2}{\pi}}\exp\left[-x^{2} -
-        \sqrt{2}x - 1/2\right] + 1 - \mathrm{erf}\left(x + \frac{1}{\sqrt{2}}
-        \right)\right]
 
-    Where :math:`x = \frac{\epsilon_{nk} - \mu}{\sigma}`.
+        f_{nk} = \frac{1}{2}\left[\sqrt{\frac{2}{\pi}}\exp\left[-x^{2} - \sqrt{2}x -
+        1/2\right] + 1 - \mathrm{erf}\left(x + \frac{1}{\sqrt{2}}\right)\right],
 
-    Args:
-        eigenvalues (NDArray[np.float64]): The Kohn-Sham eigenvalues.
-        mu (float): The Fermi level.
-        sigma (float): The smearing width in eV.
-
-    Returns:
-        NDArray[np.float64]: The occupation numbers.
+    where :math:`x = \frac{\epsilon_{nk} - \mu}{\sigma}`.
     """
     if sigma <= 0:
         raise ValueError("The smearing width must > 0, {sigma} is <= 0")

@@ -19,23 +19,28 @@ def read(seedname: str, path: str = ".") -> tuple[
     dict[tuple[int, ...], NDArray[np.complex128]],
 ]:
     """
-    Wrapper function for reading in the main Wannier90 output files.
+    Wrapper function for parsing various Wannier90 output files.
 
-    Args:
-        seedname (str): Wannier90 seedname (prefix for all output files).
-        path: (str): Filepath to main Wannier90 output files. Defaults to '.' i.e. the
-            current working directory.
+    Parameters
+    ----------
+    seedname : str
+        The seedname (prefix for all output files) chosen in the prior Wannier90
+        calculation.
+    path : str, optional
+        Filepath to the Wannier90 output files. Defaults to '.' i.e. the current
+        working directory.
 
-    Returns:
-        tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.complex128], dict[tuple[int, ...], NDArray[np.complex128]]]:
-
-        NDArray[np.float64]: The k-points used in the prior DFT calculation.
-
-        NDArray[np.float64]: The Kohn-Sham eigenvalues.
-
-        NDArray[np.float64]: The unitary matrices :math:`U^{k}`.
-
-        dict[tuple[int, ...], NDArray[np.complex128]]: The Hamiltonian in the Wannier basis.
+    Returns
+    -------
+    kpoints : NDArray[np.float64]
+        The k-point mesh used in the ab-initio calculation.
+    eigenvalues: NDArray[np.float64]
+        The Kohn-Sham eigenvalues.
+    u : NDArray[np.complex128]
+        The unitary matrices U^k that define the Wannier functions in terms of the
+        canonical Bloch states.
+    h : dict[tuple[int, ...], NDArray[np.complex128]]
+        The Hamiltonian in the Wannier basis.
     """
     u, kpoints = read_u(f"{path}/{seedname}_u.mat")
     if os.path.isfile(f"{path}/{seedname}_u_dis.mat"):
@@ -54,18 +59,21 @@ def read_eigenvalues(
     num_kpoints: int,
 ) -> NDArray[np.float64]:
     """
-    Read in the Kohn-Sham eigenvalues.
+    Parse the Kohn-Sham eigenvalues from a Wannier90 .eig file.
 
-    Args:
-        path (str): The filepath to seedname.eig.
-        num_bands (int): The number of bands.
-        num_kpoints (int): The number of k-points.
+    Parameters
+    ----------
+    path : str
+        The filepath to seedname.eig.
+    num_bands : int
+        The number of bands used in the Wannier90 calculation.
+    num_kpoints : int
+        The number of k-points used in the Wanner90 calculation.
 
-    Returns:
-        NDArray[np.float64]: The Kohn-Sham eigenvalues.
-
-    Notes:
-        The output array is a num_bands x num_kpoints matrix.
+    Returns
+    -------
+    eigenvalues : NDArray[np.float64]
+        The Kohn-Sham eigenvalues.
     """
     eigenvalues_list = []
 
@@ -90,23 +98,20 @@ def read_eigenvalues(
 
 
 def read_u(path: str) -> tuple[NDArray[np.complex128], NDArray[np.float64]]:
-    r"""
-    Read in the unitary matrices :math:`U^{k}` that define the Wannier functions
-    :math:`\ket{w_{nR}}` from the Kohn-Sham states :math:`\ket{\psi_{mk}}`.
+    """
+    Parse the unitary matrices U^k from a Wannier90 _u.mat file.
 
-    Args:
-        path (str): The filepath to seedname_u.mat or seedname_u_dis.mat.
+    Parameters
+    ----------
+    path : str
+        The filepath to seedname_u.mat or seedname_u_dis.mat.
 
-    Returns:
-        tuple[NDArray[np.complex128], NDArray[np.float64]]:
-
-        NDArray[np.complex128]: The unitary matrices :math:`U^{k}`.
-
-        NDArray[np.float64]: The k-points corresponding to each :math:`U^{k}`.
-
-    Notes:
-        The output array is a num_kpoints x num_bands x num_wann array, each
-        num_bands x num_wann block is a matrix :math:`U^{k}`.
+    Returns
+    -------
+    u : NDArray[np.complex128]
+        The unitary matrices U^k.
+    kpoints : NDArray[np.float64]
+        The k-point mesh used in the Wannier90 calculation.
     """
     u_list, kpoints_list = [], []
 
@@ -147,17 +152,17 @@ def read_u(path: str) -> tuple[NDArray[np.complex128], NDArray[np.float64]]:
 
 def read_hamiltonian(path: str) -> dict[tuple[int, ...], NDArray[np.complex128]]:
     """
-    Read in the Wannier Hamiltonian.
+    Parse the Wannier Hamiltonian from a Wannier90 seedname_hr.dat file.
 
-    Args:
-        path (str): The filepath to seedname_hr.dat.
+    Parameters
+    ----------
+    path : str
+        The filepath to seedname_hr.dat.
 
-    Returns:
-        dict[tuple[int, ...], NDArray[np.complex128]]: The Wannier Hamiltonian.
-
-    Notes:
-        H is a dictionary with keys corresponding to Bravais lattice vectors (in tuple
-        form). Each value is a num_wann x num_wann matrix.
+    Returns
+    -------
+    h : dict[tuple[int, ...], NDArray[np.complex128]]
+        The Wannier Hamiltonian.
     """
     with open(path, "r") as stream:
         lines = stream.readlines()

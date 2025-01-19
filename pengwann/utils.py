@@ -19,12 +19,20 @@ def assign_wannier_centres(geometry: Structure) -> None:
     """
     Assign Wannier centres to atoms based on a closest distance criterion.
 
-    Args:
-        geometry (Structure): A Pymatgen Structure object containing the structure
-            itself as well as the positions of the Wannier centres (as "X" atoms).
+    A :code:`"wannier_centres"` site property will be added to the input `geometry`,
+    associating each atom in the structure with a sequence of indices. These indices
+    refer to the order of atoms in `geometry` and associate each atom with the Wannier
+    centres to which it is closer than any other atom.
 
-    Returns:
-        None
+    Parameters
+    ----------
+    geometry : Structure
+        A Pymatgen Structure object containing the structure itself as well as the
+        positions of the Wannier centres (as "X" atoms).
+
+    Returns
+    -------
+    None
     """
     wannier_indices, atom_indices = [], []
     for idx in range(len(geometry)):
@@ -65,16 +73,19 @@ def get_atom_indices(
     geometry: Structure, symbols: tuple[str, ...]
 ) -> dict[str, tuple[int, ...]]:
     """
-    Categorise all site indices of a Pymatgen Structure object according to the atomic
-    species.
+    Categorise the site indices of a Pymatgen Structure according to atomic species.
 
-    Args:
-        geometry (Structure): The Pymatgen Structure object.
-        symbols (tuple[str, ...]): The atomic species to associate indices with.
+    Parameters
+    ----------
+    geometry : Structure
+        A Pymatgen Structure object.
+    symbols : tuple[str, ...]
+        The atomic species to associate site indices with.
 
-    Returns:
-        dict[str, tuple[int, ...]]: The site indices categorised by atomic species (as
-        dictionary keys).
+    Returns
+    -------
+    atom_indices : dict[str, tuple[int, ...]]
+        The site indices categorised by atomic species.
     """
     atom_indices_list: dict[str, list[int]] = {}
     for symbol in symbols:
@@ -96,38 +107,46 @@ def get_occupation_matrix(
     eigenvalues: NDArray[np.float64],
     mu: float,
     nspin: int,
-    occupation_function: Optional[Callable] = None,
+    occupation_function: Callable = fixed,
     **function_kwargs,
 ) -> NDArray[np.float64]:
     """
-    Calculate the occupation matrix.
+    Compute an occupation matrix.
 
-    Args:
-        eigenvalues (NDArray[np.float64]): The Kohn-Sham eigenvalues.
-        mu (float): The Fermi level.
-        nspin (int): The number of electrons per fully-occupied Kohn-Sham state.
-        occupation_function (Optional[Callable]): The occupation function to be used to
-            calculate the occupation matrix. Defaults to None (which means fixed
-            occupations will be assumed).
-        **function_kwargs: Additional keyword arguments to be passed to the occupation
-            function in addition to the eigenvalues and the Fermi level.
+    Parameters
+    ----------
+    eigenvalues : NDArray[np.float64]
+        The Kohn-Sham eigenvalues.
+    mu : float
+        The Fermi level.
+    nspin : int
+        The number of electrons per fully-occupied Kohn-Sham state. For
+        non-spin-polarised calculations set to 2, for spin-polarised calculations set
+        to 1.
+    occupation_function : Callable, optional
+        The occupation function used to calculate the occupation matrix. Defaults to
+        :py:func:`~pengwann.occupation_functions.fixed` (i.e. fixed occupations).
+    **function_kwargs
+        Additional keyword arguments to be passed to `occupation_function`.
 
-    Returns:
-        NDArray[np.float64]: The occupation matrix.
+    Returns
+    -------
+    occupation_matrix : NDArray[np.float64]
+        The occupation matrix.
 
-    Notes:
-        Several pre-defined occupation functions may be imported from the
-        :py:mod:`~pengwann.occupation_functions` module (Gaussian, Marzari-Vanderbilt
-        etc).
+    Notes
+    -----
+    Ideally the occupation matrix should be read in directly from the ab initio code
+    (in which case this function is redundant). Failing that, the occupation matrix can
+    be reconstructed so long as the correct occupation function is used.
 
-        Alternatively, one may choose to use a custom occupation function, in which case
-        it must take the eigenvalues and the Fermi level as the first two positional arguments.
+    Various pre-defined occupation functions (Gaussian, Marzari-Vanderbilt etc) can be
+    found in the :py:mod:`~pengwann.occupation_functions` module. If none of these
+    match the occupation function used by the ab initio code, a custom occupation
+    function can be defined and passed as `occupation_function` (so long as it takes
+    `eigenvalues` and `mu` as the first two positional arguments).
     """
-    if occupation_function is not None:
-        occupation_matrix = occupation_function(eigenvalues, mu, **function_kwargs)
-
-    else:
-        occupation_matrix = fixed(eigenvalues, mu)
+    occupation_matrix = occupation_function(eigenvalues, mu, **function_kwargs)
 
     occupation_matrix *= nspin
 
@@ -136,41 +155,48 @@ def get_occupation_matrix(
 
 def parse_id(identifier: str) -> tuple[str, int]:
     """
-    Parse an atom identifer (e.g. "Ga1") and return individually the elemental symbol
-    and the index.
+    Parse an atom identifier (e.g. "Ga1") and return the symbol and index separately.
 
-    Args:
-        identifier (str): The atom indentifier to be parsed.
+    Parameters
+    ----------
+    identifier : str
+        The identifier to be parsed.
 
-    Returns:
-        tuple[str, int]:
-
-        str: The elemental symbol for the atom.
-
-        int: The identifying index for the atom.
+    Returns
+    -------
+    symbol : str
+        The symbol from the id.
+    index : int
+        The index from the id.
     """
     for i, character in enumerate(identifier):
         if character.isdigit():
             symbol = identifier[:i]
-            idx = int(identifier[i:])
+            index = int(identifier[i:])
             break
 
-    return symbol, idx
+    return symbol, index
 
 
 def integrate(
     energies: NDArray[np.float64], descriptor: NDArray[np.float64], mu: float
-) -> np.float64:
+) -> np.float64 | NDArray[np.float64]:
     """
-    Integrate a given descriptor up to the Fermi level.
+    Integrate a energy-resolved descriptor up to the Fermi level.
 
-    Args:
-        energies (NDArray[np.float64]): The energies at which the descriptor has been evaluated.
-        descriptor (NDArray[np.float64]): The descriptor to be integrated.
-        mu (float): The Fermi level.
+    Parameters
+    ----------
+    energies : NDArray[np.float64]
+        The discrete energies at which the descriptor has been evaluated.
+    descriptor : NDArray[np.float64]
+        The descriptor to be integrated.
+    mu : float
+        The Fermi level.
 
-    Returns:
-        np.float64: The resulting integral.
+    Returns
+    -------
+    integral : np.float64
+        The integrated descriptor.
     """
     for idx, energy in enumerate(energies):
         if energy > mu:
@@ -185,6 +211,26 @@ def integrate(
 def allocate_shared_memory(
     keys: Iterable[str], data: Iterable[NDArray]
 ) -> tuple[dict[str, tuple[tuple[int, ...], np.dtype]], list[SharedMemory]]:
+    """
+    Allocate one or more blocks of shared memory and populate them with numpy arrays.
+
+    Parameters
+    ----------
+    keys : Iterable[str]
+        A sequence of strings identifying each array to be put into shared memory.
+    data : Iterable[NDArray]
+        The arrays to be put into shared memory.
+
+    Returns
+    -------
+    memory_metadata : dict[str, tuple[tuple[int, ...], np.dtype]]
+        A dictionary containing metadata for each allocated block of shared memory. The
+        keys are set by `keys` and the values are a tuple containing the shape and dtype
+        of the corresponding array.
+    memory_handles : list[SharedMemory]
+        A sequence of SharedMemory objects (returned to allow easy access to the
+        :code:`unlink` method.
+    """
     memory_metadata = {}
     memory_handles = []
     for memory_key, to_share in zip(keys, data):
