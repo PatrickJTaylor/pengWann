@@ -131,12 +131,10 @@ class DescriptorCalculator:
         descriptor_calculator : DescriptorCalculator
             The initialised DescriptorCalculator object.
 
-        Notes
-        -----
-        See the :py:mod:`~pengwann.io` module for parsing the eigenvalues, k-point
-        mesh, U matrices and Hamiltonian from Wannier90 output files. See the
-        :py:func:`~pengwann.utils.get_occupation_matrix` function for computing the
-        occupation matrix.
+        See Also
+        --------
+        pengwann.io.read : Parse Wannier90 output files.
+        pengwann.utils.get_occupation_matrix
         """
         emin, emax = energy_range
         energies = np.arange(emin, emax + resolution, resolution, dtype=np.float64)
@@ -183,7 +181,7 @@ class DescriptorCalculator:
         Returns
         -------
         c : ndarray[complex]
-            The coefficient matrix C^iR, where R is the input Bravais lattice vector.
+            The coefficient matrix.
         """
         c = (np.exp(1j * 2 * np.pi * self._kpoints @ bl_vector))[
             :, np.newaxis
@@ -216,6 +214,10 @@ class DescriptorCalculator:
         -------
         dos_matrix : ndarray[float]
             The DOS matrix.
+
+        See Also
+        --------
+        get_coefficient_matrix
         """
         dos_matrix_nk = (
             self._nspin * (c_star * c)[np.newaxis, :, :].real * self._dos_array
@@ -248,6 +250,10 @@ class DescriptorCalculator:
         -------
         p_ij : complex
             Element P_ij of the Wannier density matrix.
+
+        See Also
+        --------
+        get_coefficient_matrix
         """
         if self._occupation_matrix is None:
             raise TypeError(
@@ -279,10 +285,9 @@ class DescriptorCalculator:
             A sequence of AtomicInteraction objects, each of which is associated with
             the pDOS for a given atom and its associated Wannier functions.
 
-        Notes
-        -----
-        See the :py:func:`~pengwann.geometry.build_geometry` function for obtaining an
-        appropriate Pymatgen Structure to pass as `geometry`.
+        See Also
+        --------
+        pengwann.geometry.build_geometry
         """
         num_wann = len([site for site in geometry if site.species_string == "X0+"])
         wannier_centres = geometry.site_properties["wannier_centres"]
@@ -392,15 +397,15 @@ class DescriptorCalculator:
         -------
         None
 
+        See Also
+        --------
+        get_pdos
+
         Notes
         -----
         The input `interactions` are modified in-place by setting the
         :code:`population` and :code:`charge` attributes of each AtomicInteraction (and
         optionally its associated WannierInteraction objects).
-
-        The AtomicInteraction objects returned by the
-        :py:meth:`~pengwann.descriptors.DescriptorCalculator.get_pdos` method can be
-        passed for the `interactions` parameter.
 
         The population for Wannier function :math:`i` is the integral of its pDOS up to
         the Fermi level
@@ -492,6 +497,10 @@ class DescriptorCalculator:
         -------
         None
 
+        See Also
+        --------
+        pengwann.geometry.find_interactions
+
         Notes
         -----
         If both `calc_wohp` and `calc_wobi` are False, then the :code:`dos_matrix`
@@ -507,10 +516,6 @@ class DescriptorCalculator:
         small (low volume -> many k-points) and very large (many electrons -> many
         bands/Wannier functions) systems can be problematic in terms of memory usage
         if the energy resolution is too high.
-
-        Relevant interatomic `interactions` can be identified in an automated fashion
-        with a distance cutoff criteria using the
-        :py:func:`~pengwann.geometry.find_interactions` function.
         """
         memory_keys = ["dos_array", "kpoints", "u"]
         shared_data = [self._dos_array, self._kpoints, self._u]
@@ -681,6 +686,10 @@ class DescriptorCalculator:
         doe : ndarray[float]
             The density of energy.
 
+        See Also
+        --------
+        assign_descriptors : Calculate off-diagonal terms.
+
         Notes
         -----
         The off-diagonal WOHPs are easily obtained via the
@@ -744,6 +753,11 @@ class DescriptorCalculator:
         bwdf : dict[tuple[str, str], ndarray[float]]
             A dictionary containing the BWDFs, indexable by the bond species e.g.
             ("Ga", "As") for the Ga-As BWDF.
+
+        See Also
+        --------
+        assign_descriptors
+        integrate_descriptors
 
         Notes
         -----

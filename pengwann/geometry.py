@@ -176,13 +176,13 @@ def find_interactions(
     Returns
     -------
     interactions : tuple[AtomicInteraction, ...]
-        The interactions identified according to the `radial_cuttoffs`.
+        The interactions identified according to the `radial_cutoffs`.
 
-    Notes
-    -----
-    The :py:class:`~pengwann.geometry.AtomicInteraction` objects returned by this
-    function can be supplied to the :py:meth:`pengwann.dos.DOS.get_descriptors`
-    method to automate the computation of chemical bonding descriptors.
+    See Also
+    --------
+    build_geometry
+    pengwann.descriptors.DescriptorCalculator.assign_descriptors :
+        Compute bonding descriptors for a set of interatomic interactions.
     """
     if "wannier_centres" not in geometry.site_properties.keys():
         raise ValueError('Input geometry is missing a "wannier_centres" site property.')
