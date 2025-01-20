@@ -1,5 +1,12 @@
 pengwann\.descriptors
 =====================
 
+.. currentmodule:: pengwann.descriptors
+
 .. automodule:: pengwann.descriptors
-   :members:
+
+.. autosummary::
+   :template: class_template.rst
+   :toctree: generated
+
+   DescriptorCalculator

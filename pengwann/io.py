@@ -32,14 +32,14 @@ def read(seedname: str, path: str = ".") -> tuple[
 
     Returns
     -------
-    kpoints : NDArray[np.float64]
+    kpoints : ndarray[float]
         The k-point mesh used in the ab-initio calculation.
-    eigenvalues: NDArray[np.float64]
+    eigenvalues: ndarray[float]
         The Kohn-Sham eigenvalues.
-    u : NDArray[np.complex128]
+    u : ndarray[complex]
         The unitary matrices U^k that define the Wannier functions in terms of the
         canonical Bloch states.
-    h : dict[tuple[int, ...], NDArray[np.complex128]]
+    h : dict[tuple[int, ...], ndarray[complex]]
         The Hamiltonian in the Wannier basis.
     """
     u, kpoints = read_u(f"{path}/{seedname}_u.mat")
@@ -72,7 +72,7 @@ def read_eigenvalues(
 
     Returns
     -------
-    eigenvalues : NDArray[np.float64]
+    eigenvalues : ndarray[float]
         The Kohn-Sham eigenvalues.
     """
     eigenvalues_list = []
@@ -108,9 +108,9 @@ def read_u(path: str) -> tuple[NDArray[np.complex128], NDArray[np.float64]]:
 
     Returns
     -------
-    u : NDArray[np.complex128]
+    u : ndarray[complex]
         The unitary matrices U^k.
-    kpoints : NDArray[np.float64]
+    kpoints : ndarray[float]
         The k-point mesh used in the Wannier90 calculation.
     """
     u_list, kpoints_list = [], []
@@ -161,7 +161,7 @@ def read_hamiltonian(path: str) -> dict[tuple[int, ...], NDArray[np.complex128]]
 
     Returns
     -------
-    h : dict[tuple[int, ...], NDArray[np.complex128]]
+    h : dict[tuple[int, ...], ndarray[complex]]
         The Wannier Hamiltonian.
     """
     with open(path, "r") as stream:

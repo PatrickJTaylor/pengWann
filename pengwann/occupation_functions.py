@@ -19,14 +19,14 @@ def fixed(eigenvalues: NDArray[np.float64], mu: float) -> NDArray[np.float64]:
 
     Parameters
     ----------
-    eigenvalues : NDArray[np.float64]
+    eigenvalues : ndarray[float]
         The Kohn-Sham eigenvalues.
     mu : float
         The Fermi level.
 
     Returns
     -------
-    occupation_matrix : NDArray[np.float64]
+    occupation_matrix : ndarray[float]
         The occupation matrix.
 
     Notes
@@ -53,7 +53,7 @@ def fermi_dirac(
 
     Parameters
     ----------
-    eigenvalues : NDArray[np.float64]
+    eigenvalues : ndarray[float]
         The Kohn-Sham eigenvalues.
     mu : float
         The Fermi level.
@@ -62,7 +62,7 @@ def fermi_dirac(
 
     Returns
     -------
-    occupation_matrix : NDArray[np.float64]
+    occupation_matrix : ndarray[float]
         The occupation matrix.
 
     Notes
@@ -89,7 +89,7 @@ def gaussian(eigenvalues: np.ndarray, mu: float, sigma: float) -> NDArray[np.flo
 
     Parameters
     ----------
-    eigenvalues : NDArray[np.float64]
+    eigenvalues : ndarray[float]
         The Kohn-Sham eigenvalues.
     mu : float
         The Fermi level.
@@ -98,7 +98,7 @@ def gaussian(eigenvalues: np.ndarray, mu: float, sigma: float) -> NDArray[np.flo
 
     Returns
     -------
-    occupation_matrix : NDArray[np.float64]
+    occupation_matrix : ndarray[float]
         The occupation matrix.
 
     Notes
@@ -126,7 +126,7 @@ def cold(
 
     Parameters
     ----------
-    eigenvalues : NDArray[np.float64]
+    eigenvalues : ndarray[float]
         The Kohn-Sham eigenvalues.
     mu : float
         The Fermi level.
@@ -135,7 +135,7 @@ def cold(
 
     Returns
     -------
-    occupation_matrix : NDArray[np.float64]
+    occupation_matrix : ndarray[float]
         The occupation matrix.
 
     Notes

@@ -34,23 +34,23 @@ class DescriptorCalculator:
 
     Parameters
     ----------
-    dos_array : NDArray[np.float64]
+    dos_array : ndarray[float]
         The density of states discretised across energies, k-points and bands.
     nspin : int
         The number of electrons per fully-occupied band. This should be set to 2 for
         non-spin-polarised calculations and set to 1 for spin-polarised calculations.
-    kpoints : NDArray[np.float64]
+    kpoints : ndarray[float]
         The full k-point mesh used in the prior Wannier90 calculation.
-    u : NDArray[np.complex128]
+    u : ndarray[complex]
         The U matrices that define the Wannier functions in terms of the canonical
         Bloch states.
-    h : dict[tuple[int, ...], NDArray[np.complex128]] | None, optional
+    h : dict[tuple[int, ...], ndarray[complex]] | None, optional
         The Hamiltonian in the Wannier basis. Required for the computation of WOHPs.
         Defaults to None.
-    occupation_matrix : NDArray[np.float64] | None, optional
+    occupation_matrix : ndarray[float] | None, optional
         The Kohn-Sham occupation matrix. Required for the computation of WOBIs.
         Defaults to None.
-    energies : NDArray[np.float64] | None, optional
+    energies : ndarray[float] | None, optional
         The energies at which the `dos_array` has been evaluated. Defaults to None.
 
     Returns
@@ -102,7 +102,7 @@ class DescriptorCalculator:
 
         Parameters
         ----------
-        eigenvalues : NDArray[np.float64]
+        eigenvalues : ndarray[float]
             The Kohn-Sham eigenvalues.
         nspin : int
             The number of electrons per fully-occupied band. This should be set to 2
@@ -114,15 +114,15 @@ class DescriptorCalculator:
             The desired energy resolution of the density of states.
         sigma : float
             The width of the Gaussian kernel used to smear the density of states (in eV).
-        kpoints : NDArray[np.float64]
+        kpoints : ndarray[float]
             The full k-point mesh used in the prior Wannier90 calculation.
-        u : NDArray[np.complex128]
+        u : ndarray[complex]
             The U matrices that define the Wannier functions in terms of the canonical
             Bloch states.
-        h : dict[tuple[int, ...], NDArray[np.complex128]] | None, optional
+        h : dict[tuple[int, ...], ndarray[complex]] | None, optional
             The Hamiltonian in the Wannier basis. Required for the computation of WOHPs.
             Defaults to None.
-        occupation_matrix : NDArray[np.float64] | None, optional
+        occupation_matrix : ndarray[float] | None, optional
             The Kohn-Sham occupation matrix. Required for the computation of WOBIs.
             Defaults to None.
 
@@ -159,7 +159,7 @@ class DescriptorCalculator:
 
         Returns
         -------
-        energies : NDArray[np.float64] | None
+        energies : ndarray[float] | None
             The energies over which the DOS (and all derived quantities such as WOHPs
             or WOBIs) has been evaluated. If these energies were not provided when the
             constructor was called, this property will simply return None.
@@ -176,13 +176,13 @@ class DescriptorCalculator:
         ----------
         i : int
             The index identifying the target Wannier function.
-        bl_vector : NDArray[np.int\\_]
+        bl_vector : ndarray of np.int_
             The Bravais lattice vector specifying the translation of Wannier function
             i from its home cell.
 
         Returns
         -------
-        c : NDArray[np.complex128]
+        c : ndarray[complex]
             The coefficient matrix C^iR, where R is the input Bravais lattice vector.
         """
         c = (np.exp(1j * 2 * np.pi * self._kpoints @ bl_vector))[
@@ -202,10 +202,10 @@ class DescriptorCalculator:
 
         Parameters
         ----------
-        c_star : NDArray[np.complex128]
+        c_star : ndarray[complex]
             The coefficient matrix for Wannier function i with Bravais lattice vector
             R_1.
-        c : NDArray[np.complex128]
+        c : ndarray[complex]
             The coefficient matrix for Wannier function j with Bravais lattice vector
             R_2.
         resolve_k : bool, optional
@@ -214,7 +214,7 @@ class DescriptorCalculator:
 
         Returns
         -------
-        dos_matrix : NDArray[np.float64]
+        dos_matrix : ndarray[float]
             The DOS matrix.
         """
         dos_matrix_nk = (
@@ -237,16 +237,16 @@ class DescriptorCalculator:
 
         Parameters
         ----------
-        c_star : NDArray[np.complex128]
+        c_star : ndarray[complex]
             The coefficient matrix for Wannier function i with Bravais lattice vector
             R_1.
-        c : NDArray[np.complex128]
+        c : ndarray[complex]
             The coefficient matrix for Wannier function j with Bravais lattice vector
             R_2.
 
         Returns
         -------
-        p_ij : np.complex128
+        p_ij : complex
             Element P_ij of the Wannier density matrix.
         """
         if self._occupation_matrix is None:
@@ -622,7 +622,7 @@ class DescriptorCalculator:
             to be integrated.
         mu : float
             The Fermi level.
-        resolve_orbitals: bool, optional
+        resolve_orbitals : bool, optional
             If True, integrate the WOHPs and/or WOBIs for the individual Wannier
             functions associated with each AtomicInteraction as well as the overall
             interaction itself. Defaults to False.
@@ -678,7 +678,7 @@ class DescriptorCalculator:
 
         Returns
         -------
-        doe : NDArray[np.float64]
+        doe : ndarray[float]
             The density of energy.
 
         Notes
@@ -739,9 +739,9 @@ class DescriptorCalculator:
 
         Returns
         -------
-        r : NDArray[np.float64]
+        r : ndarray[float]
             The centre of each distance bin.
-        bwdf : dict[tuple[str, str], NDArray[np.float64]]
+        bwdf : dict[tuple[str, str], ndarray[float]]
             A dictionary containing the BWDFs, indexable by the bond species e.g.
             ("Ga", "As") for the Ga-As BWDF.
 

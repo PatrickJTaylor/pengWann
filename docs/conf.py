@@ -22,13 +22,33 @@ sys.path.insert(0, os.path.abspath(".."))
 
 extensions = [
     "myst_parser",
-    "sphinx.ext.napoleon",
+    "numpydoc",
+    "sphinx.ext.intersphinx",
     "sphinx.ext.autodoc",
     "sphinx.ext.mathjax",
     "sphinxcontrib.bibtex",
 ]
 
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
+    "pymatgen": ("https://pymatgen.org", "https://pymatgen.org/objects.inv"),
+}
+
 autodoc_typehints = "none"
+
+numpydoc_show_class_members = False
+numpydoc_xref_param_type = True
+numpydoc_xref_ignore = "all"
+numpydoc_xref_aliases = {
+    "complex" : ":class:`python:complex`",
+    "AtomicInteraction": "pengwann.geometry.AtomicInteraction",
+    "WannierInteraction": "pengwann.geometry.WannierInteraction",
+    "np.dtype": "numpy.dtype",
+    "np.int_": "numpy.int_",
+    "Structure": "pymatgen.core.structure.Structure",
+    "SharedMemory": "multiprocessing.shared_memory.SharedMemory",
+}
 
 bibtex_bibfiles = ["refs.bib"]
 mathjax3_config = {

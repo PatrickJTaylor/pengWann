@@ -1,5 +1,14 @@
 pengwann\.io
 =============
 
+.. currentmodule:: pengwann.io
+
 .. automodule:: pengwann.io
-   :members:
+
+.. autosummary::
+   :toctree: generated
+
+   read
+   read_eigenvalues
+   read_hamiltonian
+   read_u

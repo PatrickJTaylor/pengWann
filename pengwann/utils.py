@@ -115,7 +115,7 @@ def get_occupation_matrix(
 
     Parameters
     ----------
-    eigenvalues : NDArray[np.float64]
+    eigenvalues : ndarray[float]
         The Kohn-Sham eigenvalues.
     mu : float
         The Fermi level.
@@ -123,7 +123,7 @@ def get_occupation_matrix(
         The number of electrons per fully-occupied Kohn-Sham state. For
         non-spin-polarised calculations set to 2, for spin-polarised calculations set
         to 1.
-    occupation_function : Callable, optional
+    occupation_function : callable, optional
         The occupation function used to calculate the occupation matrix. Defaults to
         :py:func:`~pengwann.occupation_functions.fixed` (i.e. fixed occupations).
     **function_kwargs
@@ -131,7 +131,7 @@ def get_occupation_matrix(
 
     Returns
     -------
-    occupation_matrix : NDArray[np.float64]
+    occupation_matrix : ndarray[float]
         The occupation matrix.
 
     Notes
@@ -186,16 +186,16 @@ def integrate(
 
     Parameters
     ----------
-    energies : NDArray[np.float64]
+    energies : ndarray[float]
         The discrete energies at which the descriptor has been evaluated.
-    descriptor : NDArray[np.float64]
+    descriptor : ndarray[float]
         The descriptor to be integrated.
     mu : float
         The Fermi level.
 
     Returns
     -------
-    integral : np.float64
+    integral : float | ndarray[float]
         The integrated descriptor.
     """
     for idx, energy in enumerate(energies):
@@ -216,9 +216,9 @@ def allocate_shared_memory(
 
     Parameters
     ----------
-    keys : Iterable[str]
+    keys : iterable[str]
         A sequence of strings identifying each array to be put into shared memory.
-    data : Iterable[NDArray]
+    data : iterable[ndarray]
         The arrays to be put into shared memory.
 
     Returns

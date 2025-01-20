@@ -26,19 +26,19 @@ class AtomicInteraction:
     wannier_interactions : tuple[WannierInteraction, ...]
         The individual :py:class:`~pengwann.geometry.WannierInteraction` objects that
         together comprise the total interaction between atoms i and j.
-    dos_matrix : NDArray[np.float64] | None, optional
+    dos_matrix : ndarray[float] | None, optional
         The total DOS matrix. Defaults to None.
-    wohp : NDArray[np.float64] | None, optional
+    wohp : ndarray[float] | None, optional
         The total WOHP. Defaults to None.
-    wobi : NDArray[np.float64] | None, optional
+    wobi : ndarray[float] | None, optional
         The total WOBI. Defaults to None.
-    iwohp : np.float64 | NDArray[np.float64] | None, optional
+    iwohp : float | ndarray[float] | None, optional
         The integrated total WOHP. Defaults to None.
-    iwobi : np.float64 | NDArray[np.float64] | None, optional
+    iwobi : float | ndarray[float] | None, optional
         The integrated total WOBI. Defaults to None.
-    population : np.float64 | NDArray[np.float64] | None, optional
+    population : float | ndarray[float] | None, optional
         The population (integrated DOS matrix). Defaults to None.
-    charge : np.float64 | NDArray[np.float64] | None, optional
+    charge : float | ndarray[float] | None, optional
         The charge (valence - population). Defaults to None.
     """
 
@@ -65,25 +65,25 @@ class WannierInteraction:
         An index identifying Wannier function i.
     j : int
         An index identifying Wannier function j.
-    bl_1 : NDArray[np.int\\_]
+    bl_1 : ndarray of np.int_
         The Bravais lattice vector specifying the translation of Wannier function i
         with respect to its home cell.
-    bl_2 : NDArray[np.int\\_]
+    bl_2 : ndarray of np.int_
         The Bravais lattice vector specifying the translation of Wannier function j
         with respect to its home cell.
-    dos_matrix : NDArray[np.float64] | None, optional
+    dos_matrix : ndarray[float] | None, optional
         The DOS matrix. Defaults to None.
-    h_ij : np.float64 | None, optional
+    h_ij : float | None, optional
         Element of the Wannier Hamiltonian required to compute the WOHP. Defaults to
         None.
-    p_ij : np.float64 | None, optional
+    p_ij : float | None, optional
         Element of the Wannier density matrix required to compute the WOBI. Defaults
         to None.
-    iwohp : np.float64 | NDArray[np.float64] | None, optional
+    iwohp : float | ndarray[float] | None, optional
         The integrated WOHP. Defaults to None.
-    iwobi : np.float64 | NDArray[np.float64] | None, optional
+    iwobi : float | ndarray[float] | None, optional
         The integrated WOBI. Defaults to None.
-    population : np.float64 | NDArray[np.float64] | None, optional
+    population : float | ndarray[float] | None, optional
         The population (integrated DOS matrix). Defaults to None.
     """
 
@@ -128,7 +128,7 @@ def build_geometry(path: str, cell: ArrayLike) -> Structure:
     ----------
     path : str
         Filepath to the xyz file output by Wannier90.
-    cell : ArrayLike
+    cell : array_like
         The cell vectors associated with the structure.
 
     Returns
