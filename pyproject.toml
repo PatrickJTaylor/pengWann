@@ -52,6 +52,7 @@ docs = [
   'furo',
   'myst_parser',
   'sphinx',
+  'numpydoc',
   'sphinxcontrib-bibtex'
 ]
 
