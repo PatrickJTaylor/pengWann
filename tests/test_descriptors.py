@@ -496,7 +496,7 @@ def test_DescriptorCalculator_get_density_of_energy_no_wohp(dcalc) -> None:
     num_wann = 7
 
     with pytest.raises(TypeError):
-        doe = dcalc.get_density_of_energy(interactions, num_wann)
+        dcalc.get_density_of_energy(interactions, num_wann)
 
 
 def test_DescriptorCalculator_get_bwdf(

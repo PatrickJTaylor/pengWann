@@ -8,7 +8,6 @@ matrix needed to calculate WOBIs with the :py:class:`~pengwann.dos.DOS` class.
 from __future__ import annotations
 
 import numpy as np
-from math import factorial
 from numpy.typing import NDArray
 from scipy.special import erf
 

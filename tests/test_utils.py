@@ -12,19 +12,6 @@ from pymatgen.core import Structure
 def test_assign_wannier_centres(shared_datadir, data_regression) -> None:
     geometry = Structure.from_file(f"{shared_datadir}/structure.vasp")
 
-    ref_wannier_centres = [
-        (9,),
-        (8,),
-        (8,),
-        (9,),
-        (9,),
-        (8,),
-        (9,),
-        (8,),
-        (1, 2, 5, 7),
-        (0, 3, 4, 6),
-    ]
-
     assign_wannier_centres(geometry)
 
     data_regression.check(

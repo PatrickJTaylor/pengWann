@@ -12,7 +12,7 @@ from numpy.typing import NDArray
 from pengwann.occupation_functions import fixed
 from pymatgen.core import Structure
 from scipy.integrate import trapezoid  # type: ignore
-from typing import Any, Callable, Optional
+from typing import Callable
 
 
 def assign_wannier_centres(geometry: Structure) -> None:
