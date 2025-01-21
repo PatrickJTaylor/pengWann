@@ -69,6 +69,7 @@ class DescriptorCalculator:
     def __init__(
         self,
         dos_array: NDArray[np.float64],
+        num_wann: int,
         nspin: int,
         kpoints: NDArray[np.float64],
         u: NDArray[np.complex128],
@@ -77,6 +78,7 @@ class DescriptorCalculator:
         energies: Optional[NDArray[np.float64]] = None,
     ):
         self._dos_array = dos_array
+        self._num_wann = num_wann
         self._nspin = nspin
         self._kpoints = kpoints
         self._u = u
@@ -84,10 +86,21 @@ class DescriptorCalculator:
         self._occupation_matrix = occupation_matrix
         self._energies = energies
 
+        u_star = np.conj(self._u)
+        overlaps = (u_star * self._u).real
+
+        num_dp = 8
+        spilling_factor = abs(
+            round(1 - np.sum(overlaps) / len(self._kpoints) / self._num_wann, num_dp)
+        )
+
+        print(f"Spilling factor = {spilling_factor}")
+
     @classmethod
     def from_eigenvalues(
         cls,
         eigenvalues: NDArray[np.float64],
+        num_wann: int,
         nspin: int,
         energy_range: tuple[float, float],
         resolution: float,
@@ -104,6 +117,8 @@ class DescriptorCalculator:
         ----------
         eigenvalues : ndarray[float]
             The Kohn-Sham eigenvalues.
+        num_wann : int
+            The total number of Wannier functions.
         nspin : int
             The number of electrons per fully-occupied band. This should be set to 2
             for non-spin-polarised calculations and set to 1 for spin-polarised
@@ -148,7 +163,9 @@ class DescriptorCalculator:
         )
         dos_array = np.swapaxes(dos_array, 1, 2)
 
-        return cls(dos_array, nspin, kpoints, u, h, occupation_matrix, energies)
+        return cls(
+            dos_array, num_wann, nspin, kpoints, u, h, occupation_matrix, energies
+        )
 
     @property
     def energies(self) -> Optional[NDArray[np.float64]]:
@@ -387,14 +404,13 @@ class DescriptorCalculator:
         ----------
         .. footbibliography::
         """
-        num_wann = len([site for site in geometry if site.species_string == "X0+"])
         wannier_centres = geometry.site_properties["wannier_centres"]
 
         interactions = []
         for idx in range(len(geometry)):
             symbol = geometry[idx].species_string
             if symbol in symbols:
-                label = symbol + str(idx - num_wann + 1)
+                label = symbol + str(idx - self._num_wann + 1)
                 pair_id = (label, label)
 
                 wannier_interactions = []
@@ -426,6 +442,7 @@ class DescriptorCalculator:
                 args.append(
                     (
                         w_interaction,
+                        self._num_wann,
                         self._nspin,
                         calc_wobi,
                         resolve_k,
@@ -684,6 +701,7 @@ class DescriptorCalculator:
                 args.append(
                     (
                         w_interaction,
+                        self._num_wann,
                         self._nspin,
                         calc_wobi,
                         resolve_k,
@@ -813,7 +831,7 @@ class DescriptorCalculator:
                         )
 
     def get_density_of_energy(
-        self, interactions: tuple[AtomicInteraction, ...], num_wann: int
+        self, interactions: tuple[AtomicInteraction, ...]
     ) -> NDArray[np.float64]:
         r"""
         Calculate the density of energy (DOE).
@@ -823,8 +841,6 @@ class DescriptorCalculator:
         interactions : tuple[AtomicInteraction, ...]
             A sequence of AtomicInteraction objects containing all of the interatomic
             (off-diagonal) WOHPs.
-        num_wann : int
-            The total number of Wannier functions.
 
         Returns
         -------
@@ -856,7 +872,7 @@ class DescriptorCalculator:
                 not been computed. This is required to calculate the DOE."""
                 )
 
-        wannier_indices = range(num_wann)
+        wannier_indices = range(self._num_wann)
 
         diagonal_terms = tuple(
             WannierInteraction(i, i, self._bl_0, self._bl_0) for i in wannier_indices
@@ -916,7 +932,6 @@ class DescriptorCalculator:
         ----------
         .. footbibliography::
         """
-        num_wann = len([site for site in geometry if site.species_string == "X0+"])
         distance_matrix = geometry.distance_matrix
 
         r_min, r_max = r_range
@@ -936,8 +951,8 @@ class DescriptorCalculator:
             id_i, id_j = interaction.pair_id
             symbol_i, i = parse_id(id_i)
             symbol_j, j = parse_id(id_j)
-            idx_i = i + num_wann - 1
-            idx_j = j + num_wann - 1
+            idx_i = i + self._num_wann - 1
+            idx_j = j + self._num_wann - 1
             distance = distance_matrix[idx_i, idx_j]
 
             bond = (symbol_i, symbol_j)
@@ -986,6 +1001,7 @@ class DescriptorCalculator:
     def process_interaction(
         cls,
         interaction: WannierInteraction,
+        num_wann: int,
         nspin: int,
         calc_wobi: bool,
         resolve_k: bool,
@@ -1000,6 +1016,8 @@ class DescriptorCalculator:
         interaction : WannierInteraction
             The interaction between two Wannier functions for which descriptors are to
             be computed.
+        num_wann : int
+            The total number of Wannier functions.
         nspin : int
             The number of electrons per fully-occupied band. This should be set to 2
             for non-spin-polarised calculations and set to 1 for spin-polarised
@@ -1018,7 +1036,7 @@ class DescriptorCalculator:
             The input `interaction` with the computed properties assigned to the
             relevant attributes.
         """
-        kwargs = {"nspin": nspin}  # type: dict[str, Any]
+        kwargs = {"num_wann": num_wann, "nspin": nspin}  # type: dict[str, Any]
         memory_handles = []
         for memory_key, metadata in memory_metadata.items():
             shape, dtype = metadata

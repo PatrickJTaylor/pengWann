@@ -27,10 +27,11 @@ def dcalc(shared_datadir) -> DescriptorCalculator:
     h = read_hamiltonian(f"{shared_datadir}/wannier90_hr.dat")
 
     energies = np.arange(-25, 25 + 0.1, 0.1, dtype=np.float64)
+    num_wann = 8
     nspin = 2
 
     dcalc = DescriptorCalculator(
-        dos_array, nspin, kpoints, u, h, occupation_matrix, energies
+        dos_array, num_wann, nspin, kpoints, u, h, occupation_matrix, energies
     )
 
     return dcalc
@@ -48,6 +49,7 @@ def ref_geometry(shared_datadir) -> Structure:
 
 def test_DescriptorCalculator_from_eigenvalues(ndarrays_regression) -> None:
     eigenvalues = np.array([[-4, -3, -2, -1, 1, 2, 3, 4], [-5, -4, -3, -2, 2, 3, 4, 5]])
+    num_wann = 8
     nspin = 2
     energy_range = (-6, 6)
     resolution = 0.01
@@ -56,7 +58,7 @@ def test_DescriptorCalculator_from_eigenvalues(ndarrays_regression) -> None:
     u = np.zeros_like((10, 4, 4))
 
     dcalc = DescriptorCalculator.from_eigenvalues(
-        eigenvalues, nspin, energy_range, resolution, sigma, kpoints, u
+        eigenvalues, num_wann, nspin, energy_range, resolution, sigma, kpoints, u
     )
 
     dos_array = dcalc._dos_array
@@ -475,8 +477,7 @@ def test_DescriptorCalculator_get_density_of_energy(dcalc, ndarrays_regression) 
 
     dcalc.assign_descriptors(interactions)
 
-    num_wann = 7
-    doe = dcalc.get_density_of_energy(interactions, num_wann)
+    doe = dcalc.get_density_of_energy(interactions)
 
     ndarrays_regression.check(
         {"DOE": doe}, default_tolerance={"atol": 0, "rtol": 1e-07}
@@ -497,10 +498,8 @@ def test_DescriptorCalculator_get_density_of_energy_no_wohp(dcalc) -> None:
         ),
     )
 
-    num_wann = 7
-
     with pytest.raises(TypeError):
-        dcalc.get_density_of_energy(interactions, num_wann)
+        dcalc.get_density_of_energy(interactions)
 
 
 def test_DescriptorCalculator_get_bwdf(
@@ -561,7 +560,7 @@ def test_DescriptorCalculator_process_interaction(
     )
 
     amended_interaction = dcalc.process_interaction(
-        wannier_interaction, dcalc._nspin, calc_wobi, resolve_k, memory_metadata
+        wannier_interaction, dcalc._num_wann, dcalc._nspin, calc_wobi, resolve_k, memory_metadata
     )
 
     for memory_handle in memory_handles:
