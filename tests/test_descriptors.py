@@ -101,7 +101,9 @@ def test_DescriptorCalculator_get_dos_matrix(
     )
 
 
-def test_DescriptorCalculator_get_density_matrix_element(dcalc, ndarrays_regression) -> None:
+def test_DescriptorCalculator_get_density_matrix_element(
+    dcalc, ndarrays_regression
+) -> None:
     i, j = 1, 4
     bl_1 = np.array([0, 0, 0])
     bl_2 = np.array([-1, 0, 0])
@@ -116,7 +118,9 @@ def test_DescriptorCalculator_get_density_matrix_element(dcalc, ndarrays_regress
     )
 
 
-def test_DescriptorCalculator_get_density_matrix_element_no_occupation_matrix(dcalc) -> None:
+def test_DescriptorCalculator_get_density_matrix_element_no_occupation_matrix(
+    dcalc,
+) -> None:
     dcalc._occupation_matrix = None
 
     c_star = np.ones_like((10, 10))
