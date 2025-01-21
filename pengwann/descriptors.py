@@ -19,7 +19,7 @@ from typing import Any, Optional
 
 
 class DescriptorCalculator:
-    """
+    r"""
     Compute descriptors of chemical bonding and local electronic structure.
 
     This class can be used to calculate:
@@ -59,9 +59,29 @@ class DescriptorCalculator:
 
     Notes
     -----
+    Upon initialisation, the spilling factor will be printed to the console. The
+    spilling factor is defined as :footcite:p:`spilling, WOHP`
+
+    .. math::
+
+        S = \frac{1}{N_{k}}\frac{1}{N_{w}}\sum_{nk} 1 - \sum_{\alpha}
+        |\braket{\psi_{nk}|w_{\alpha}}|^{2},
+
+    where :math:`N_{k}` is the total number of k-points, :math:`N_{w}` is the total
+    number of Wannier functions, :math:`n` labels bands, :math:`k` labels k-points and
+    :math:`\alpha` labels Wannier functions :math:`\ket{w_{\alpha}}`.
+
+    For Wannier functions derived from energetically isolated bands, the spilling
+    factor should be (within machine precision) strictly 0. For disentangled bands,
+    the spilling factor should still ideally be very close to 0.
+
     This class should not normally be initialised using the base constructor. See
     instead the :py:meth:`~pengwann.descriptors.DescriptorCalculator.from_eigenvalues`
     classmethod.
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     _bl_0 = np.array((0, 0, 0))
