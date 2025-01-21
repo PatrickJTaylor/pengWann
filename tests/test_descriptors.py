@@ -560,7 +560,12 @@ def test_DescriptorCalculator_process_interaction(
     )
 
     amended_interaction = dcalc.process_interaction(
-        wannier_interaction, dcalc._num_wann, dcalc._nspin, calc_wobi, resolve_k, memory_metadata
+        wannier_interaction,
+        dcalc._num_wann,
+        dcalc._nspin,
+        calc_wobi,
+        resolve_k,
+        memory_metadata,
     )
 
     for memory_handle in memory_handles:
