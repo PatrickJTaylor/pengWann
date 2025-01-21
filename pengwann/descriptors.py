@@ -15,7 +15,7 @@ from pengwann.geometry import AtomicInteraction, WannierInteraction
 from pengwann.utils import allocate_shared_memory, integrate, parse_id
 from pymatgen.core import Structure
 from tqdm.auto import tqdm
-from typing import Optional
+from typing import Any, Optional
 
 
 class DescriptorCalculator:
