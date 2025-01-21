@@ -36,6 +36,8 @@ class DescriptorCalculator:
     ----------
     dos_array : ndarray[float]
         The density of states discretised across energies, k-points and bands.
+    num_wann : int
+        The total number of Wannier functions.
     nspin : int
         The number of electrons per fully-occupied band. This should be set to 2 for
         non-spin-polarised calculations and set to 1 for spin-polarised calculations.
