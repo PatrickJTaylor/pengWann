@@ -24,8 +24,8 @@ class AtomicInteraction:
     pair_id : tuple[str, str]
         A pair of strings labelling atoms i and j.
     wannier_interactions : tuple[WannierInteraction, ...]
-        The individual :py:class:`~pengwann.geometry.WannierInteraction` objects that
-        together comprise the total interaction between atoms i and j.
+        The individual WannierInteraction objects that together comprise the total
+        interaction between atoms i and j.
     dos_matrix : ndarray[float] | None, optional
         The total DOS matrix. Defaults to None.
     wohp : ndarray[float] | None, optional
@@ -101,6 +101,13 @@ class WannierInteraction:
 
     @property
     def wohp(self):
+        """
+        The Wannier orbital Hamilton population.
+
+        Returns : ndarray[float] | None
+            The WOHP. If the relevant element of the Wannier Hamiltonian is not
+            available, this will simply return None.
+        """
         if self.h_ij is None:
             return None
 
@@ -109,6 +116,13 @@ class WannierInteraction:
 
     @property
     def wobi(self):
+        """
+        The Wannier orbital bond index.
+
+        Returns : ndarray[float] | None
+            The WOBI. If the relevant element of the Wannier density matrix is not
+            available, this will simply return None.
+        """
         if self.p_ij is None:
             return None
 

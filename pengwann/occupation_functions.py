@@ -140,7 +140,7 @@ def cold(
 
     Notes
     -----
-    The Marzari-Vanderbilt occupation function is defined as
+    The Marzari-Vanderbilt occupation function is defined as :footcite:p:`mv_smearing`
 
     .. math::
 
@@ -148,6 +148,10 @@ def cold(
         1/2\right] + 1 - \mathrm{erf}\left(x + \frac{1}{\sqrt{2}}\right)\right],
 
     where :math:`x = \frac{\epsilon_{nk} - \mu}{\sigma}`.
+
+    References
+    ----------
+    .. footbibliography::
     """
     if sigma <= 0:
         raise ValueError("The smearing width must > 0, {sigma} is <= 0")

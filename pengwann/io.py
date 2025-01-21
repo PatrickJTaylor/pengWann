@@ -34,7 +34,7 @@ def read(seedname: str, path: str = ".") -> tuple[
     -------
     kpoints : ndarray[float]
         The k-point mesh used in the ab-initio calculation.
-    eigenvalues: ndarray[float]
+    eigenvalues : ndarray[float]
         The Kohn-Sham eigenvalues.
     u : ndarray[complex]
         The unitary matrices U^k that define the Wannier functions in terms of the

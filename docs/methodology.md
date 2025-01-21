@@ -2,7 +2,7 @@
 
 ## The pCOHP and the pCOBI
 
-The pCOHP and pCOBI are both local descriptors of chemical bonding defined by the projection of the Kohn-Sham eigenstates (as calculated via a prior DFT calculation) onto a chosen set of localised basis functions{footcite:p}`pCOHP, pCOBI`
+The pCOHP and pCOBI are both local descriptors of chemical bonding defined by the projection of the Kohn-Sham eigenstates (as calculated via a prior DFT calculation) onto a chosen set of localised basis functions {footcite:p}`pCOHP, pCOBI`
 
 ```{math}
 \begin{align}
@@ -26,7 +26,7 @@ which have often been used as a quantitative measure of these two characteristic
 
 ## The spilling factor
 
-Perhaps the most serious problem with calculating pCOHPs and pCOBIs in the manner detailed above is that the one requires a suitable set of localised basis functions {math}`\ket{\phi_{\alpha}}` that, when appropriately combined, make for a sufficiently accurate representation of the original Kohn-Sham eigenstates. If the local basis is not sufficiently representative of the canonical Bloch states, then there will be a net loss of information after the projection and the resulting pCOHPs and pCOBIs will be correspondingly less accurate. This potential loss of information is quantified by the **spilling factor**{footcite:p}`spilling`
+Perhaps the most serious problem with calculating pCOHPs and pCOBIs in the manner detailed above is that the one requires a suitable set of localised basis functions {math}`\ket{\phi_{\alpha}}` that, when appropriately combined, make for a sufficiently accurate representation of the original Kohn-Sham eigenstates. If the local basis is not sufficiently representative of the canonical Bloch states, then there will be a net loss of information after the projection and the resulting pCOHPs and pCOBIs will be correspondingly less accurate. This potential loss of information is quantified by the **spilling factor** {footcite:p}`spilling`
 
 ```{math}
 S = \frac{1}{N_{k}}\frac{1}{N_{b}}\sum_{nk} 1 - \sum_{\alpha}|\braket{\psi_{nk}|\phi_{\alpha}}|^{2},
@@ -36,7 +36,7 @@ which takes value between 0 and 1. If the local basis spans the same Hilbert spa
 
 ## Wannier functions
 
-Very briefly, Wannier functions are a localised basis obtained from a set of Kohn-Sham eigenstates via a unitary transformation{footcite:p}`original_Wannier`. For a set of {math}`J` energetically isolated bands (i.e. a manifold of bands separated from all other bands by an energy gap everywhere in the Brillouin zone), this can be written as
+Very briefly, Wannier functions are a localised basis obtained from a set of Kohn-Sham eigenstates via a unitary transformation {footcite:p}`original_Wannier`. For a set of {math}`J` energetically isolated bands (i.e. a manifold of bands separated from all other bands by an energy gap everywhere in the Brillouin zone), this can be written as
 
 ```{math}
 \ket{w_{\alpha R}} = \sum_{k}\exp[-ik\cdot R]\sum^{J}_{m} U^{k}_{m\alpha}\ket{\psi_{mk}},
@@ -54,7 +54,7 @@ which due to the orthonormality of the Kohn-Sham states is simply:
 S = \frac{1}{N_{k}}\frac{1}{N_{b}}\sum_{nk} 1 - \sum_{m}\delta_{mn} = 0.
 ```
 
-In the context of chemical bonding descriptors, Wannier functions therefore represent an ideal localised basis for the computation of the pCOHP and pCOBI or alternatively the WOHP{footcite:p}`WOHP` and WOBI (W for Wannier):
+In the context of chemical bonding descriptors, Wannier functions therefore represent an ideal localised basis for the computation of the pCOHP and pCOBI or alternatively the WOHP {footcite:p}`WOHP` and WOBI (W for Wannier):
 
 ```{math}
 \begin{align}
@@ -75,7 +75,7 @@ Note that here we define the WOHP with the opposite sign to the pCOHP so as to e
 
 Whilst Wannier functions derived from energetically isolated bands are guaranteed to span the same Hilbert space, this does not mean that individual WOHPs and WOBIs are uniquely defined. In general, Wannier functions are strongly non-unique: so long as each {math}`U^{k}` remains unitary, the spilling factor is strictly 0, but the resulting Wannier functions may have wildly different centres, spreads and shapes. In addition, Wannier bases derived from groups of entangled bands (those that are not separated by an energy gap from all other bands everywhere in the Brillouin zone) are no longer guaranteed to span exactly the same space as the original Kohn-Sham states, thus potentially suffering from the same problems as pre-defined basis sets of atomic or pseudo-atomic orbitals.
 
-There exists well-estalished methods for mitigating both of the concerns raised above. The non-uniqeuness of Wannier functions can be circumvented by minimising their spread with respect to the unitary matrices {math}`U^{k}`, thus producing so-called "Maximally-Localised Wannier Functions" or MLWFs{footcite:p}`MLWF, MLWF_dis`. Such Wannier functions tend to be atom-centred and to take on shapes that in many cases match our chemical intution for the system at hand. Maximal localisation can also be applpied to a manifold of entangled bands, although a separate "disentanglement" step is required in this case, unless one chooses to utilise the SCDM method{footcite:p}`SCDM, SCDM_k`.
+There exists well-estalished methods for mitigating both of the concerns raised above. The non-uniqeuness of Wannier functions can be circumvented by minimising their spread with respect to the unitary matrices {math}`U^{k}`, thus producing so-called "Maximally-Localised Wannier Functions" or MLWFs {footcite:p}`MLWF, MLWF_dis`. Such Wannier functions tend to be atom-centred and to take on shapes that in many cases match our chemical intution for the system at hand. Maximal localisation can also be applpied to a manifold of entangled bands, although a separate "disentanglement" step is required in this case, unless one chooses to utilise the SCDM method {footcite:p}`SCDM, SCDM_k`.
 
 In general, obtaining "good" MLWFs for non-trivial systems is not always easy, although developements in recent years are slowly making this a more reliable and automatable process. As a result, the two most obvious use cases for `pengwann` are as follows:
 

@@ -182,6 +182,27 @@ class DescriptorCalculator:
         -------
         c : ndarray[complex]
             The coefficient matrix.
+
+        Notes
+        -----
+        The coefficient matrix :math:`C^{\alpha}` for a given Wannier function
+        :math:`\ket{w_{iR}} = \ket{w_{\alpha}}` has dimensions of num_kpoints x
+        num_bands. Each element is constructed as :footcite:p:`WOHP`
+
+        .. math::
+
+            C^{\alpha}_{nk} = \exp[ik \cdot R]\left(U^{k}_{ni}\right)^{*},
+
+        where :math:`\alpha` combines the values of the `i` and `bl_vector` arguments
+        (it is a combined index that identifies a particular Wannier function), :math:`n`
+        is a band index, :math:`k` is a k-point and :math:`U` refers to the unitary
+        matrices that mix Bloch vectors to produce Wannier functions. Note that within
+        the exponential term, :math:`i = \sqrt{-1}`, whereas it acts as a Wannier
+        function index with respect to :math:`U`.
+
+        References
+        ----------
+        .. footbibliography::
         """
         c = (np.exp(1j * 2 * np.pi * self._kpoints @ bl_vector))[
             :, np.newaxis
@@ -218,6 +239,38 @@ class DescriptorCalculator:
         See Also
         --------
         get_coefficient_matrix
+
+        Notes
+        -----
+        For `resolve_k` = True, the DOS matrix :math:`D_{\alpha\beta}` for a given pair
+        of Wannier functions :math:`\ket{w_{\alpha}}` and :math:`\ket{w_{\beta}}` has
+        dimensions of num_energy x num_kpoints, where num_energy refers to the number
+        of discrete energies over which the density of states has been evaluated. For
+        `resolve_k` = False, it is no longer a DOS matrix but rather a DOS vector with
+        num_energy elements.
+
+        For the k-resolved case, each element of the DOS matrix is constructed as
+        :footcite:p:`original_COHP`
+
+        .. math::
+
+            D_{\alpha\beta}(E, k) = \sum_{n} \mathrm{Re}\left[\left(C^{\alpha}_{nk}
+            \right)^{*}C^{\beta}_{nk}\right] \cdot \delta(\epsilon_{nk} - E),
+
+        where :math:`\left(C^{\alpha}\right)^{*}` and :math:`C^{\beta}` reflect the
+        values of the `c_star` and `c` arguments and :math:`\delta(\epsilon_{nk} - E)`
+        is the density of states evaluated for a particular band and k-point. Summing
+        over :math:`k` (`resolve_k` = False) yields
+
+        .. math::
+
+            D_{\alpha\beta}(E) = \sum_{k} D_{\alpha\beta}(E, k),
+
+        which is the aforementioned DOS vector.
+
+        References
+        ----------
+        .. footbibliography::
         """
         dos_matrix_nk = (
             self._nspin * (c_star * c)[np.newaxis, :, :].real * self._dos_array
@@ -231,11 +284,11 @@ class DescriptorCalculator:
 
         return dos_matrix
 
-    def get_p_ij(
+    def get_density_matrix_element(
         self, c_star: NDArray[np.complex128], c: NDArray[np.complex128]
     ) -> np.complex128:
         r"""
-        Calculate element P_ij of the Wannier density matrix.
+        Calculate an element of the Wannier density matrix.
 
         Parameters
         ----------
@@ -248,12 +301,25 @@ class DescriptorCalculator:
 
         Returns
         -------
-        p_ij : complex
-            Element P_ij of the Wannier density matrix.
+        element : complex
+            An element of the Wannier density matrix.
 
         See Also
         --------
         get_coefficient_matrix
+
+        Notes
+        -----
+        A given element of the Wannier density matrix is constructed as
+
+        .. math::
+
+            P_{\alpha\beta} = \sum_{nk} w_{k}f_{nk}\left(C^{\alpha}_{nk}\right)^{*}
+            C^{\beta}_{nk},
+
+        where :math:`\left(C^{\alpha}\right)^{*}` and :math:`C^{\beta}` refer to the
+        `c_star` and `c` arguments, :math:`f` is the occupation matrix and
+        :math:`\{w_{k}\}` are k-point weights.
         """
         if self._occupation_matrix is None:
             raise TypeError(
@@ -262,7 +328,9 @@ class DescriptorCalculator:
 
         p_nk = self._occupation_matrix * c_star * c
 
-        return np.sum(p_nk, axis=(0, 1)) / len(self._kpoints)
+        element = np.sum(p_nk, axis=(0, 1)) / len(self._kpoints)
+
+        return element
 
     def get_pdos(
         self, geometry: Structure, symbols: tuple[str, ...], resolve_k: bool = False
@@ -278,6 +346,8 @@ class DescriptorCalculator:
         symbols : tuple[str, ...]
             The atomic species to compute the pDOS for. These should match one or more
             of the species present in `geometry`.
+        resolve_k : bool, optional
+            Whether or not to resolve the pDOS with respect to k-points.
 
         Returns
         -------
@@ -287,7 +357,35 @@ class DescriptorCalculator:
 
         See Also
         --------
+        get_dos_matrix
         pengwann.geometry.build_geometry
+
+        Notes
+        -----
+        The k-resolved pDOS for a given Wannier function :math:`\ket{w_{\alpha}}` is
+        just the on-site DOS matrix :footcite:p:`WOHP`
+
+        .. math::
+
+            \mathrm{pDOS}_{\alpha}(E, k) = D_{\alpha\alpha}(E, k).
+
+        For `resolve_k` = False, summing over :math:`k` yields the total pDOS for
+        :math:`\ket{w_{\alpha}}`
+
+        .. math::
+
+            \mathrm{pDOS}_{\alpha}(E) = \sum_{k} D_{\alpha\alpha}(E, k).
+
+        The total pDOS for a given atom :math:`A` is computed simply by summing over all
+        of its associated Wannier functions
+
+        .. math::
+
+            \mathrm{pDOS}_{A}(E) = \sum_{\alpha \in A} \mathrm{pDOS}_{\alpha}(E).
+
+        References
+        ----------
+        .. footbibliography::
         """
         num_wann = len([site for site in geometry if site.species_string == "X0+"])
         wannier_centres = geometry.site_properties["wannier_centres"]
@@ -407,23 +505,28 @@ class DescriptorCalculator:
         :code:`population` and :code:`charge` attributes of each AtomicInteraction (and
         optionally its associated WannierInteraction objects).
 
-        The population for Wannier function :math:`i` is the integral of its pDOS up to
-        the Fermi level
+        The population for Wannier function :math:`\ket{w_{\alpha}}` is computed as the
+        integral of its pDOS up to the Fermi level :footcite:p:`WOHP`
 
         .. math::
 
-            \mathrm{pop}_{i} = \int^{E_{\mathrm{F}}}_{-\infty} dE\;\mathrm{pDOS}_{i}(E).
+            \mathrm{pop}_{\alpha} = \int^{E_{\mathrm{F}}}_{-\infty} dE\;
+            \mathrm{pDOS}_{\alpha}(E).
 
         Atomic populations are computed simply by summing the populations of all Wannier
         functions associated with a given atom (or equivalently, by integrating the
-        total pDOS).
+        total atomic pDOS).
 
         The Wannier charge of an atom is simply the difference between its number of
         valence electrons :math:`v_{i}` and its population
 
         .. math::
 
-            \mathrm{charge}_{i} = v_{i} - \mathrm{pop}_{i}.
+            \mathrm{charge}_{\alpha} = v_{i} - \mathrm{pop}_{\alpha}.
+
+        References
+        ----------
+        .. footbibliography::
         """
         if self._energies is None:
             raise TypeError(
@@ -500,6 +603,7 @@ class DescriptorCalculator:
         See Also
         --------
         pengwann.geometry.find_interactions
+        get_density_matrix_element
 
         Notes
         -----
@@ -516,6 +620,47 @@ class DescriptorCalculator:
         small (low volume -> many k-points) and very large (many electrons -> many
         bands/Wannier functions) systems can be problematic in terms of memory usage
         if the energy resolution is too high.
+
+        For `resolve_k` = True and `calc_wohp` = True, the k-resolved WOHP for a given
+        pair of Wannier functions is computed as :footcite:p:`WOHP, pCOHP`
+
+        .. math::
+
+            \mathrm{WOHP}_{\alpha\beta}(E, k) = -H_{\alpha\beta}D_{\alpha\beta}(E, k),
+
+        where :math:`H` is the Wannier Hamiltonian and :math:`D_{\alpha\beta}` is the
+        DOS matrix for Wannier functions :math:`\ket{w_{\alpha}}` and
+        :math:`\ket{w_{\beta}}`. For `resolve_k` = False, summing over :math:`k` gives
+        the total WOHP between :math:`\ket{w_{\alpha}}` and :math:`\ket{w_{\beta}}`
+
+        .. math::
+
+            \mathrm{WOHP}_{\alpha\beta}(E) = -H_{\alpha\beta}\sum_{k} D_{\alpha\beta}
+            (E, k).
+
+        Summing over all WOHPs associated with a given pair of
+        atoms yields
+
+        .. math::
+
+            \mathrm{WOHP}_{AB}(E) = \sum_{\alpha\beta \in AB}
+            \mathrm{WOHP}_{\alpha\beta}(E),
+
+        which is the total WOHP for the interatomic interaction between atoms :math:`A`
+        and :math:`B`.
+
+        For `calc_wobi` = True, the WOBI for a pair of Wannier functions or a pair of
+        atoms is computed in an identical manner, except that the DOS matrix is
+        weighted by the Wannier density matrix rather than the Wannier Hamiltonian
+        :footcite:p:`pCOBI`:
+
+        .. math::
+
+            \mathrm{WOBI}_{\alpha\beta}(E) = P_{\alpha\beta}D_{\alpha\beta}(E).
+
+        References
+        ----------
+        .. footbibliography::
         """
         memory_keys = ["dos_array", "kpoints", "u"]
         shared_data = [self._dos_array, self._kpoints, self._u]
@@ -692,16 +837,17 @@ class DescriptorCalculator:
 
         Notes
         -----
-        The off-diagonal WOHPs are easily obtained via the
-        :py:meth:`~pengwann.descriptors.DescriptorCalculator.assign_descriptors` method.
-
-        The density of energy is defined as
+        The density of energy is calculated as :footcite:p:`DOE`
 
         .. math::
-            \mathrm{DOE}(E) = \sum_{ij}\mathrm{WOHP}_{ij}(E),
+            \mathrm{DOE}(E) = \sum_{AB}\mathrm{WOHP}_{AB}(E),
 
         it is the total WOHP of the whole system, including diagonal
-        (:math:`i = j`) terms.
+        (:math:`A = B`) terms.
+
+        References
+        ----------
+        .. footbibliography::
         """
         for interaction in interactions:
             if interaction.wohp is None:
@@ -764,7 +910,11 @@ class DescriptorCalculator:
         The BWDF is derived from the RDF (radial distribution function). More
         specifically, it is the RDF excluding all interatomic distances that are not
         counted as bonds (as defined by some arbitrary criteria) with the remaining
-        distances being weighted by the corresponding IWOHP.
+        distances being weighted by the corresponding IWOHP :footcite:p:`BWDF`.
+
+        References
+        ----------
+        .. footbibliography::
         """
         num_wann = len([site for site in geometry if site.species_string == "X0+"])
         distance_matrix = geometry.distance_matrix
@@ -889,7 +1039,7 @@ class DescriptorCalculator:
         interaction.dos_matrix = dcalc.get_dos_matrix(c_star, c, resolve_k)
 
         if calc_wobi:
-            interaction.p_ij = dcalc.get_p_ij(c_star, c).real
+            interaction.p_ij = dcalc.get_density_matrix_element(c_star, c).real
 
         for memory_handle in memory_handles:
             memory_handle.close()
