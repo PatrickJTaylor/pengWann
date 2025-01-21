@@ -101,7 +101,7 @@ def test_DescriptorCalculator_get_dos_matrix(
     )
 
 
-def test_DescriptorCalculator_get_p_ij(dcalc, ndarrays_regression) -> None:
+def test_DescriptorCalculator_get_density_matrix_element(dcalc, ndarrays_regression) -> None:
     i, j = 1, 4
     bl_1 = np.array([0, 0, 0])
     bl_2 = np.array([-1, 0, 0])
@@ -109,21 +109,21 @@ def test_DescriptorCalculator_get_p_ij(dcalc, ndarrays_regression) -> None:
     c_star = np.conj(dcalc.get_coefficient_matrix(i, bl_1))
     c = dcalc.get_coefficient_matrix(j, bl_2)
 
-    p_ij = dcalc.get_p_ij(c_star, c)
+    p_ij = dcalc.get_density_matrix_element(c_star, c)
 
     ndarrays_regression.check(
         {"P_ij": p_ij}, default_tolerance={"atol": 0, "rtol": 1e-07}
     )
 
 
-def test_DescriptorCalculator_get_p_ij_no_occupation_matrix(dcalc) -> None:
+def test_DescriptorCalculator_get_density_matrix_element_no_occupation_matrix(dcalc) -> None:
     dcalc._occupation_matrix = None
 
     c_star = np.ones_like((10, 10))
     c = c_star
 
     with pytest.raises(TypeError):
-        dcalc.get_p_ij(c_star, c)
+        dcalc.get_density_matrix_element(c_star, c)
 
 
 @pytest.mark.parametrize("resolve_k", (False, True), ids=("sum_k", "resolve_k"))
