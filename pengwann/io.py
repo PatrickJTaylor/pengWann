@@ -1,8 +1,10 @@
 """
+Parse Wannier90 output files.
+
 This module implements several parsing functions for reading Wannier90 output files.
 The :py:func:`~pengwann.io.read` function is a convenient wrapper for automatically
 parsing all the data required to construct an instance of the
-:py:class:`~pengwann.dos.DOS` class.
+:py:class:`~pengwann.descriptors.DescriptorCalculator` class.
 """
 
 from __future__ import annotations

@@ -1,4 +1,6 @@
 """
+Various utility functions.
+
 This module contains some miscellaneous utility functions required elsewhere in the
 codebase.
 """

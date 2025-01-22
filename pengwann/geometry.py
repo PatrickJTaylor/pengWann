@@ -1,4 +1,6 @@
 """
+Parse periodic structures, assign Wannier centres and identify interatomic interactions.
+
 This module contains the functions necessary to parse the geometry of the target system
 and from this identify relevant interatomic interactions from which to compute bonding
 descriptors.
