@@ -116,7 +116,7 @@ def integrate(
 
     integral = trapezoid(descriptor[:fermi_idx], energies[:fermi_idx], axis=0)
 
-    return np.float64(integral)
+    return integral
 
 
 def allocate_shared_memory(

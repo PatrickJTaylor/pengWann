@@ -13,7 +13,9 @@
 # You should have received a copy of the GNU General Public License along with pengWann.
 # If not, see <https://www.gnu.org/licenses/>.
 
-from pengwann.utils import get_atom_indices
+import numpy as np
+from multiprocessing.shared_memory import SharedMemory
+from pengwann.utils import allocate_shared_memory, get_atom_indices, integrate, parse_id
 from pymatgen.core import Structure
 
 
@@ -41,3 +43,39 @@ def test_get_atom_indices_all_assigned(shared_datadir, data_regression) -> None:
     indices = get_atom_indices(geometry, ("C", "X0+"))
 
     data_regression.check({"num_C": len(indices["C"]), "num_X": len(indices["X0+"])})
+
+
+def test_parse_id(data_regression) -> None:
+    test_id = "Ga1"
+
+    symbol, idx = parse_id(test_id)
+
+    data_regression.check({"symbol": symbol, "index": idx})
+
+
+def test_integrate(ndarrays_regression) -> None:
+    x = np.linspace(-5, 5, 1000)
+    y = x**2
+    mu = 0
+
+    integral = integrate(x, y, mu)
+
+    ndarrays_regression.check(
+        {"integral": integral}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
+
+
+def test_integrate_2d(ndarrays_regression) -> None:
+    x = np.linspace(-5, 5, 1000)
+    y = np.zeros((2, len(x)))
+
+    y[0] = x**2
+    y[1] = x**3
+
+    mu = 0
+
+    integral = integrate(x, y, mu)
+
+    ndarrays_regression.check(
+        {"integral": integral}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
