@@ -7,6 +7,7 @@ Wannier90).
 
 from __future__ import annotations
 
+import warnings
 import numpy as np
 from multiprocessing import Pool
 from multiprocessing.shared_memory import SharedMemory
@@ -116,7 +117,21 @@ class DescriptorCalculator:
             round(1 - np.sum(overlaps) / len(self._kpoints) / self._num_wann, num_dp)
         )
 
-        print(f"Spilling factor = {spilling_factor}")
+        if spilling_factor > 0:
+            warnings.warn(
+                f"""
+            The spilling factor = {spilling_factor}.
+
+            It is advisable to verify that the spilling factor is sufficiently low. For
+            Wannier functions derived from energetically isolated bands, it should be
+            (within machine precision) strictly 0. For Wannier functions derived using
+            disentanglement, the spilling factor should still be very close to 0.
+
+            If the spilling factor is significantly > 0, this implies that there are
+            parts of the Bloch subspace that the Wannier basis does not span and thus
+            any results derived from the Wannier basis should be analysed with caution.
+            """
+            )
 
     @classmethod
     def from_eigenvalues(
