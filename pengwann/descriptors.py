@@ -62,8 +62,8 @@ class DescriptorCalculator:
 
     Notes
     -----
-    Upon initialisation, the spilling factor will be printed to the console. The
-    spilling factor is defined as :footcite:p:`spilling, WOHP`
+    Upon initialisation, the spilling factor will be calculated. The spilling factor is
+    defined as :footcite:p:`spilling, WOHP`
 
     .. math::
 
@@ -76,7 +76,9 @@ class DescriptorCalculator:
 
     For Wannier functions derived from energetically isolated bands, the spilling
     factor should be (within machine precision) strictly 0. For disentangled bands,
-    the spilling factor should still ideally be very close to 0.
+    the spilling factor should still ideally be very close to 0. If the calculated
+    spilling factor is > 0, a warning will be printed to the console and all derived
+    results should be treated with caution.
 
     This class should not normally be initialised using the base constructor. See
     instead the :py:meth:`~pengwann.descriptors.DescriptorCalculator.from_eigenvalues`
