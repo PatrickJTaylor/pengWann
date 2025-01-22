@@ -819,7 +819,7 @@ class DescriptorCalculator:
                 running_count : running_count + len(interaction.wannier_interactions)
             ]
             for w_interaction in associated_wannier_interactions:
-                interaction.dos_matrix += w_interaction.dos_matrix  # type: ignore
+                interaction.dos_matrix += w_interaction.dos_matrix  # type: ignore[arg-type]
 
                 if calc_wohp:
                     interaction.wohp += w_interaction.wohp

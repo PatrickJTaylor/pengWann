@@ -58,7 +58,7 @@ def test_integrate(ndarrays_regression) -> None:
     y = x**2
     mu = 0
 
-    integral = integrate(x, y, mu)
+    integral = integrate(x, y, mu)  # type: ignore[arg-type]
 
     ndarrays_regression.check(
         {"integral": integral}, default_tolerance={"atol": 0, "rtol": 1e-07}
@@ -74,7 +74,7 @@ def test_integrate_2d(ndarrays_regression) -> None:
 
     mu = 0
 
-    integral = integrate(x, y, mu)
+    integral = integrate(x, y, mu)  # type: ignore[arg-type]
 
     ndarrays_regression.check(
         {"integral": integral}, default_tolerance={"atol": 0, "rtol": 1e-07}
