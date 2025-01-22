@@ -2,7 +2,8 @@
 Various utility functions.
 
 This module contains some miscellaneous utility functions required elsewhere in the
-codebase.
+codebase. For the most part, this module is unlikely to be useful to end users, but
+there are some niche use cases (hence why it is still documented).
 """
 
 # Copyright (C) 2024-2025 Patrick J. Taylor
