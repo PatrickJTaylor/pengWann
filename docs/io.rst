@@ -1,6 +1,5 @@
-pengwann\.io
-=============
-
+Input/output (:code:`pengwann.io`)
+==================================
 .. currentmodule:: pengwann.io
 
 .. automodule:: pengwann.io

@@ -13,10 +13,7 @@
 # You should have received a copy of the GNU General Public License along with pengWann.
 # If not, see <https://www.gnu.org/licenses/>.
 
-import pytest
-import numpy as np
-from pengwann.occupation_functions import fermi_dirac
-from pengwann.utils import get_atom_indices, get_occupation_matrix
+from pengwann.utils import get_atom_indices
 from pymatgen.core import Structure
 
 
@@ -44,30 +41,3 @@ def test_get_atom_indices_all_assigned(shared_datadir, data_regression) -> None:
     indices = get_atom_indices(geometry, ("C", "X0+"))
 
     data_regression.check({"num_C": len(indices["C"]), "num_X": len(indices["X0+"])})
-
-
-def test_get_occupation_matrix_default(ndarrays_regression) -> None:
-    eigenvalues = np.array([-4, -3, -2, -1, 1, 2, 3, 4])
-    mu = 0
-    nspin = 2
-
-    occupations = get_occupation_matrix(eigenvalues, mu, nspin)
-
-    ndarrays_regression.check(
-        {"occupations": occupations}, default_tolerance={"atol": 0, "rtol": 1e-07}
-    )
-
-
-def test_get_occupation_matrix_custom(ndarrays_regression) -> None:
-    eigenvalues = np.array([-1, -0.75, -0.5, -0.25, 0.25, 0.5, 0.75, 1])
-    mu = 0
-    nspin = 2
-    sigma = 0.2
-
-    occupations = get_occupation_matrix(
-        eigenvalues, mu, nspin, occupation_function=fermi_dirac, sigma=sigma
-    )
-
-    ndarrays_regression.check(
-        {"occupations": occupations}, default_tolerance={"atol": 0, "rtol": 1e-07}
-    )

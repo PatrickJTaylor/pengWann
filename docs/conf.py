@@ -11,7 +11,7 @@ from pengwann.version import __version__ as VERSION
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "pengWann"
-copyright = "2025, Patrick J. Taylor"
+copyright = "2024-2025, Patrick J. Taylor"
 author = "Patrick J. Taylor"
 release = VERSION
 
@@ -63,6 +63,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "furo"
+html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
-html_logo = "_static/logo.png"
+
+html_logo = "_static/logo.svg"

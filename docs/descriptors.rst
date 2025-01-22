@@ -1,6 +1,5 @@
-pengwann\.descriptors
-=====================
-
+Bonding descriptors (:code:`pengwann.descriptors`)
+==================================================
 .. currentmodule:: pengwann.descriptors
 
 .. automodule:: pengwann.descriptors

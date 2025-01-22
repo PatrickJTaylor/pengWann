@@ -3,8 +3,8 @@ Occupation functions for reconstructing the ab initio occupation matrix.
 
 This module contains a set of simple functions for calculating orbital occupation
 numbers from a set of Kohn-Sham eigenvalues. Any of these functions can be used together
-with the :py:func:`~pengwann.utils.get_occupation_matrix` function to build the
-occupation matrix needed to calculated WOBIs with the
+with the :py:func:`~pengwann.occupation_functions.get_occupation_matrix` function to
+build the occupation matrix needed to calculated WOBIs with the
 :py:class:`~pengwann.descriptors.DescriptorCalculator` class.
 """
 
@@ -28,6 +28,7 @@ from __future__ import annotations
 import numpy as np
 from numpy.typing import NDArray
 from scipy.special import erf
+from typing import Callable
 
 
 def fixed(eigenvalues: NDArray[np.float64], mu: float) -> NDArray[np.float64]:
@@ -178,3 +179,53 @@ def cold(
     return 0.5 * (
         np.sqrt(2 / np.pi) * np.exp(-(x**2) - np.sqrt(2) * x - 0.5) + 1 - erf(x + 0.5)
     )
+
+
+def get_occupation_matrix(
+    eigenvalues: NDArray[np.float64],
+    mu: float,
+    nspin: int,
+    occupation_function: Callable = fixed,
+    **function_kwargs,
+) -> NDArray[np.float64]:
+    """
+    Compute an occupation matrix.
+
+    Parameters
+    ----------
+    eigenvalues : ndarray[float]
+        The Kohn-Sham eigenvalues.
+    mu : float
+        The Fermi level.
+    nspin : int
+        The number of electrons per fully-occupied Kohn-Sham state. For
+        non-spin-polarised calculations set to 2, for spin-polarised calculations set
+        to 1.
+    occupation_function : callable, optional
+        The occupation function used to calculate the occupation matrix. Defaults to
+        :py:func:`~pengwann.occupation_functions.fixed` (i.e. fixed occupations).
+    **function_kwargs
+        Additional keyword arguments to be passed to `occupation_function`.
+
+    Returns
+    -------
+    occupation_matrix : ndarray[float]
+        The occupation matrix.
+
+    Notes
+    -----
+    Ideally the occupation matrix should be read in directly from the ab initio code
+    (in which case this function is redundant). Failing that, the occupation matrix can
+    be reconstructed so long as the correct occupation function is used.
+
+    Various pre-defined occupation functions (Gaussian, Marzari-Vanderbilt etc) can be
+    found in the :py:mod:`~pengwann.occupation_functions` module. If none of these
+    match the occupation function used by the ab initio code, a custom occupation
+    function can be defined and passed as `occupation_function` (so long as it takes
+    `eigenvalues` and `mu` as the first two positional arguments).
+    """
+    occupation_matrix = occupation_function(eigenvalues, mu, **function_kwargs)
+
+    occupation_matrix *= nspin
+
+    return occupation_matrix.T

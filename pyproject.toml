@@ -49,10 +49,10 @@ dev = [
 ]
 
 docs = [
-  'furo',
   'myst_parser',
-  'sphinx',
   'numpydoc',
+  'pydata-sphinx-theme',
+  'sphinx',
   'sphinxcontrib-bibtex'
 ]
 

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="1630"
+   height="460"
+   viewBox="0 0 431.27081 121.70834"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (e7c3feb100, 2024-10-09)"
+   sodipodi:docname="pengwann_logo_sphinx.svg"
+   inkscape:export-filename="pengwann_logo_github.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25098039"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="false"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.5"
+     inkscape:cx="1046"
+     inkscape:cy="426"
+     inkscape:window-width="2560"
+     inkscape:window-height="1440"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1"
+     inkscape:export-bgcolor="#ffffff00"
+     showgrid="false"
+     showguides="false" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:#7851a9;fill-opacity:1;stroke:none;stroke-width:0.0521896;stroke-opacity:1"
+       d="m 38.653498,1.9544923 c -2.188358,0.01093 -4.350715,0.516588 -6.409018,1.232775 -1.663906,0.623066 -3.296816,1.369085 -4.781968,2.350162 -1.641887,1.2629 -2.835026,3.028712 -3.721266,4.8816287 -1.851718,3.981668 -2.308752,8.456404 -2.175357,12.800889 0.145659,4.33837 0.904973,8.634822 1.935721,12.843573 0.170294,0.25254 0.423841,-0.0882 0.575818,-0.201726 2.680121,-2.617388 5.952805,-4.761381 9.67005,-5.509768 2.947715,-0.569402 6.002967,-0.208299 8.738422,1.026681 2.645709,1.127937 4.931709,2.942032 6.955441,4.958704 0.137824,0.186521 0.418798,0.0079 0.294383,-0.19255 -0.959397,-1.997146 -2.104813,-3.906517 -3.370812,-5.724641 -1.618631,-2.291019 -3.516675,-4.44019 -5.887837,-5.974276 -0.25265,-0.13993 -0.09538,-0.488217 -0.153066,-0.722276 -0.04112,-1.866024 -0.07989,-3.73694 -0.05936,-5.605094 2.46272,-1.445363 4.889645,-3.02965 6.886675,-5.090315 0.899578,-0.938665 1.444765,-2.15445 2.438535,-3.006098 2.226313,-2.0373047 5.103265,-3.2478247 7.975621,-4.0846467 0.792848,-0.236264 1.607471,-0.413545 2.40157,-0.615752 0.191776,-0.212906 -0.204374,-0.298869 -0.360674,-0.352506 -1.34692,-0.306951 -2.745549,-0.229725 -4.116983,-0.218092 -2.00828,0.04415 -4.028067,0.25346 -6.014516,0.421549 -0.349332,-0.0085 -0.589653,-0.346574 -0.891196,-0.490806 -2.300899,-1.517585 -5.003369,-2.378774 -7.733477,-2.671531 -0.730708,-0.05322 -1.464342,-0.06139 -2.196706,-0.05588 z"
+       id="path10" />
+    <ellipse
+       style="fill:#7851a9;fill-opacity:1;stroke-width:0.264583"
+       id="path1"
+       cx="31.220798"
+       cy="88.729469"
+       rx="30.851391"
+       ry="67.754974" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:88.1944px;font-family:'Iosevka Nerd Font Mono';-inkscape-font-specification:'Iosevka Nerd Font Mono';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#7851a9;fill-opacity:1;stroke:none;stroke-width:1.76389;stroke-dasharray:none;stroke-opacity:1"
+       x="71.644852"
+       y="91.520073"
+       id="text14"><tspan
+         sodipodi:role="line"
+         id="tspan14"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:88.1944px;font-family:'Iosevka Nerd Font Mono';-inkscape-font-specification:'Iosevka Nerd Font Mono';fill:#7851a9;fill-opacity:1;stroke:none;stroke-width:1.76389;stroke-opacity:1"
+         x="71.644852"
+         y="91.520073">pengWann</tspan></text>
+    <path
+       style="fill:none;fill-opacity:0;stroke:#7851a9;stroke-width:5;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+       d="M 11.809344,119.20833 H 428.78556"
+       id="path2" />
+  </g>
+</svg>

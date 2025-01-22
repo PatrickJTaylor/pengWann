@@ -1,4 +1,4 @@
-![The pengWann logo: a purple penguin.](docs/_static/logo_with_text.png)
+![The pengWann logo: a purple penguin.](docs/_static/logo.svg)
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Docs](https://readthedocs.org/projects/pengwann/badge/?version=latest)](https://pengwann.readthedocs.io/en/latest/)

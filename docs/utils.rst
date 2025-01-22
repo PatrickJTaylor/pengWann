@@ -1,6 +1,5 @@
-pengwann\.utils
-===============
-
+Utilities (:code:`pengwann.utils`)
+==================================
 .. currentmodule:: pengwann.utils
 
 .. automodule:: pengwann.utils
@@ -10,6 +9,5 @@ pengwann\.utils
 
    allocate_shared_memory
    get_atom_indices
-   get_occupation_matrix
    integrate
    parse_id

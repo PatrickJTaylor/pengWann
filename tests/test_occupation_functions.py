@@ -15,7 +15,13 @@
 
 import pytest
 import numpy as np
-from pengwann.occupation_functions import cold, fermi_dirac, fixed, gaussian
+from pengwann.occupation_functions import (
+    cold,
+    fermi_dirac,
+    fixed,
+    gaussian,
+    get_occupation_matrix,
+)
 
 
 def test_fixed_occupation_function(ndarrays_regression) -> None:
@@ -58,3 +64,30 @@ def test_occupation_function_invalid_sigma(occupation_function) -> None:
 
     with pytest.raises(ValueError):
         occupation_function(eigenvalues, mu, sigma)
+
+
+def test_get_occupation_matrix_default(ndarrays_regression) -> None:
+    eigenvalues = np.array([-4, -3, -2, -1, 1, 2, 3, 4])
+    mu = 0
+    nspin = 2
+
+    occupations = get_occupation_matrix(eigenvalues, mu, nspin)
+
+    ndarrays_regression.check(
+        {"occupations": occupations}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
+
+
+def test_get_occupation_matrix_custom(ndarrays_regression) -> None:
+    eigenvalues = np.array([-1, -0.75, -0.5, -0.25, 0.25, 0.5, 0.75, 1])
+    mu = 0
+    nspin = 2
+    sigma = 0.2
+
+    occupations = get_occupation_matrix(
+        eigenvalues, mu, nspin, occupation_function=fermi_dirac, sigma=sigma
+    )
+
+    ndarrays_regression.check(
+        {"occupations": occupations}, default_tolerance={"atol": 0, "rtol": 1e-07}
+    )
