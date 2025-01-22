@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 from dataclasses import dataclass
 from numpy.typing import ArrayLike, NDArray
-from pengwann.utils import assign_wannier_centres, get_atom_indices
+from pengwann.utils import get_atom_indices
 from pymatgen.core import Lattice, Molecule, Structure
 from typing import Optional
 
@@ -170,6 +170,60 @@ def build_geometry(path: str, cell: ArrayLike) -> Structure:
     assign_wannier_centres(geometry)
 
     return geometry
+
+
+def assign_wannier_centres(geometry: Structure) -> None:
+    """
+    Assign Wannier centres to atoms based on a closest distance criterion.
+
+    A :code:`"wannier_centres"` site property will be added to the input `geometry`,
+    associating each atom in the structure with a sequence of indices. These indices
+    refer to the order of atoms in `geometry` and associate each atom with the Wannier
+    centres to which it is closer than any other atom.
+
+    Parameters
+    ----------
+    geometry : Structure
+        A Pymatgen Structure object containing the structure itself as well as the
+        positions of the Wannier centres (as "X" atoms).
+
+    Returns
+    -------
+    None
+    """
+    wannier_indices, atom_indices = [], []
+    for idx in range(len(geometry)):
+        symbol = geometry[idx].species_string
+
+        if symbol == "X0+":
+            wannier_indices.append(idx)
+
+        else:
+            atom_indices.append(idx)
+
+    if not wannier_indices:
+        raise ValueError(
+            'No Wannier centres ("X" atoms) found in the input Structure object.'
+        )
+
+    distance_matrix = geometry.distance_matrix
+
+    wannier_centres_list: list[list[int]] = [[] for idx in range(len(geometry))]
+    for i in wannier_indices:
+        min_distance, min_idx = np.inf, 2 * len(geometry)
+
+        for j in atom_indices:
+            distance = distance_matrix[i, j]
+
+            if distance < min_distance:
+                min_distance = distance
+                min_idx = j
+
+        wannier_centres_list[i].append(min_idx)
+        wannier_centres_list[min_idx].append(i)
+
+    wannier_centres = tuple([tuple(indices) for indices in wannier_centres_list])
+    geometry.add_site_property("wannier_centres", wannier_centres)
 
 
 def find_interactions(

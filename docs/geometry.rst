@@ -9,6 +9,7 @@ pengwann\.geometry
    :toctree: generated
 
    build_geometry
+   assign_wannier_centres
    find_interactions
 
 .. autosummary::

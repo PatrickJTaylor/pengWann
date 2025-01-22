@@ -1,29 +1,8 @@
 import pytest
 import numpy as np
 from pengwann.occupation_functions import fermi_dirac
-from pengwann.utils import (
-    assign_wannier_centres,
-    get_atom_indices,
-    get_occupation_matrix,
-)
+from pengwann.utils import get_atom_indices, get_occupation_matrix
 from pymatgen.core import Structure
-
-
-def test_assign_wannier_centres(shared_datadir, data_regression) -> None:
-    geometry = Structure.from_file(f"{shared_datadir}/structure.vasp")
-
-    assign_wannier_centres(geometry)
-
-    data_regression.check(
-        {"wannier_centres": geometry.site_properties["wannier_centres"]}
-    )
-
-
-def test_assign_wannier_centres_invalid_structure(shared_datadir) -> None:
-    geometry = Structure.from_file(f"{shared_datadir}/invalid_structure.vasp")
-
-    with pytest.raises(ValueError):
-        assign_wannier_centres(geometry)
 
 
 def test_get_atom_indices(shared_datadir, data_regression) -> None:

@@ -1,6 +1,6 @@
 import json
 import pytest
-from pengwann.geometry import build_geometry, find_interactions
+from pengwann.geometry import assign_wannier_centres, build_geometry, find_interactions
 from pymatgen.analysis.structure_matcher import StructureMatcher
 from pymatgen.core import Structure
 
@@ -28,6 +28,23 @@ def test_build_geometry(ref_geometry, shared_datadir) -> None:
 
     assert num_wann == 8
     assert sm.fit(test_geometry, ref_geometry)
+
+
+def test_assign_wannier_centres(shared_datadir, data_regression) -> None:
+    geometry = Structure.from_file(f"{shared_datadir}/structure.vasp")
+
+    assign_wannier_centres(geometry)
+
+    data_regression.check(
+        {"wannier_centres": geometry.site_properties["wannier_centres"]}
+    )
+
+
+def test_assign_wannier_centres_invalid_structure(shared_datadir) -> None:
+    geometry = Structure.from_file(f"{shared_datadir}/invalid_structure.vasp")
+
+    with pytest.raises(ValueError):
+        assign_wannier_centres(geometry)
 
 
 @pytest.mark.parametrize("binary", (False, True), ids=("element", "binary"))
