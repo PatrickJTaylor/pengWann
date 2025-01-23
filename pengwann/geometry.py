@@ -24,149 +24,106 @@ descriptors.
 from __future__ import annotations
 
 import numpy as np
-from dataclasses import dataclass
 from numpy.typing import ArrayLike, NDArray
 from pengwann.utils import get_atom_indices
 from pymatgen.core import Lattice, Molecule, Structure
-from typing import Optional
+from typing import cast, Iterable, NamedTuple
 
 
-@dataclass
-class AtomicInteraction:
+class AtomicInteraction(NamedTuple):
     """
-    Represents an interatomic interaction in terms of Wannier functions.
+    Stores data regarding the interaction between two atoms.
 
-    It is generally expected that an AtomicInteraction instance will be initialised with
-    only the `pair_id` and `wannier_interactions` attributes being set, with the rest
-    defaulting to None until they are set by methods of the
-    :py:class:`~pengwann.descriptors.DescriptorCalculator` class.
-
-    Parameters
-    ----------
-    pair_id : tuple[str, str]
-        A pair of strings labelling atoms i and j.
-    wannier_interactions : tuple[WannierInteraction, ...]
-        The individual WannierInteraction objects that together comprise the total
-        interaction between atoms i and j.
-    dos_matrix : ndarray[float] | None, optional
-        The total DOS matrix. Defaults to None.
-    wohp : ndarray[float] | None, optional
-        The total WOHP. Defaults to None.
-    wobi : ndarray[float] | None, optional
-        The total WOBI. Defaults to None.
-    iwohp : float | ndarray[float] | None, optional
-        The integrated total WOHP. Defaults to None.
-    iwobi : float | ndarray[float] | None, optional
-        The integrated total WOBI. Defaults to None.
-    population : float | ndarray[float] | None, optional
-        The population (integrated DOS matrix). Defaults to None.
-    charge : float | ndarray[float] | None, optional
-        The charge (valence - population). Defaults to None.
+    Within :code:`pengwann`, the interaction between two atoms is comprised of the
+    interactions between their associated Wannier functions, hence each
+    AtomicInteraction object is associated with a set of WannierInteraction objects.
 
     Attributes
     ----------
     pair_id : tuple[str, str]
-        A pair of strings labelling atoms i and j.
-    wannier_interactions : tuple[WannierInteraction, ...]
-        The individual WannierInteraction objects that together comprise the total
-        interaction between atoms i and j.
-    dos_matrix : ndarray[float] | None
-        The total DOS matrix.
-    wohp : ndarray[float] | None
-        The total WOHP.
-    wobi : ndarray[float] | None
-        The total WOBI.
-    iwohp : float | ndarray[float] | None
-        The integrated total WOHP.
-    iwobi : float | ndarray[float] | None
-        The integrated total WOBI.
-    population : float | ndarray[float] | None
-        The population (integrated DOS matrix).
-    charge : float | ndarray[float] | None
-        The charge (valence - population).
+        A pair of strings identifying the interacting atoms such as ("Ga1", "As2").
+    wannier_interactions : iterable[WannierInteraction]
+        The set of WannierInteraction objects associated with the interactions between
+        the interacting atoms' Wannier functions.
+    dos_matrix : ndarray[float] | None, optional
+        The DOS matrix associated with the interaction. Defaults to None.
+    wohp : ndarray[float] | None, optional
+        The WOHP associated with the interaction. Defaults to None.
+    wobi : ndarray[float] | None, optional
+        The WOBI associated with the interaction. Defaults to None.
+    iwohp : float | ndarray[float] | None, optional
+        The IWOHP (integrated WOHP) associated with the interaction. Defaults to None.
+    iwobi : float | ndarray[float] | None, optional
+        The IWOBI (integrated WOBI) associated with the interaction. Defaults to None.
+    population : float | ndarray[float] | None, optional
+        The population (integrated DOS matrix) associated with the interaction. Defaults
+        to None.
+    charge : float | ndarray[float] | None, optional
+        The charge associated with the interaction (generally this only makes sense for
+        on-site/diagonal interactions where atom_i == atom_j).
 
-    Returns
-    -------
-    None
+    Notes
+    -----
+    It is expected that this class will normally be initialised with solely the data
+    required to specify the interacting atoms: the labels `pair_id` and the set of
+    WannierInteraction objects `wannier_interactions`. The remaining fields will usually
+    only be set by methods of the :py:class:`~pengwann.descriptors.DescriptorCalculator`
+    class.
     """
 
     pair_id: tuple[str, str]
-    wannier_interactions: tuple[WannierInteraction, ...]
+    wannier_interactions: Iterable[WannierInteraction]
 
-    dos_matrix: Optional[NDArray[np.float64]] = None
-    wohp: Optional[NDArray[np.float64]] = None
-    wobi: Optional[NDArray[np.float64]] = None
-    iwohp: Optional[np.float64 | NDArray[np.float64]] = None
-    iwobi: Optional[np.float64 | NDArray[np.float64]] = None
-    population: Optional[np.float64 | NDArray[np.float64]] = None
-    charge: Optional[np.float64 | NDArray[np.float64]] = None
+    dos_matrix: NDArray[np.float64] | None = None
+    wohp: NDArray[np.float64] | None = None
+    wobi: NDArray[np.float64] | None = None
+    iwohp: np.float64 | NDArray[np.float64] | None = None
+    iwobi: np.float64 | NDArray[np.float64] | None = None
+    population: np.float64 | NDArray[np.float64] | None = None
+    charge: np.float64 | NDArray[np.float64] | None = None
 
 
-@dataclass
-class WannierInteraction:
+class WannierInteraction(NamedTuple):
     """
-    Represents the interaction between two Wannier functions.
-
-    It is generally expected that a WannierInteraction instance will be initialised with
-    only the `i`, `j`, `bl_1` and `bl_2` attributes being set, with the rest defaulting
-    to None until they are set by methods of the
-    :py:class:`~pengwann.descriptors.DescriptorCalculator` class.
-
-    Parameters
-    ----------
-    i : int
-        An index identifying Wannier function i.
-    j : int
-        An index identifying Wannier function j.
-    bl_1 : ndarray[np.int_]
-        The Bravais lattice vector specifying the translation of Wannier function i
-        with respect to its home cell.
-    bl_2 : ndarray[np.int_]
-        The Bravais lattice vector specifying the translation of Wannier function j
-        with respect to its home cell.
-    dos_matrix : ndarray[float] | None, optional
-        The DOS matrix. Defaults to None.
-    h_ij : float | None, optional
-        Element of the Wannier Hamiltonian required to compute the WOHP. Defaults to
-        None.
-    p_ij : float | None, optional
-        Element of the Wannier density matrix required to compute the WOBI. Defaults
-        to None.
-    iwohp : float | ndarray[float] | None, optional
-        The integrated WOHP. Defaults to None.
-    iwobi : float | ndarray[float] | None, optional
-        The integrated WOBI. Defaults to None.
-    population : float | ndarray[float] | None, optional
-        The population (integrated DOS matrix). Defaults to None.
+    Stores data regarding the interaction between two Wannier functions.
 
     Attributes
     ----------
     i : int
-        An index identifying Wannier function i.
+        The index identifying Wannier function i.
     j : int
-        An index identifying Wannier function j.
+        The index identifying Wannier function j.
     bl_1 : ndarray[np.int_]
         The Bravais lattice vector specifying the translation of Wannier function i
-        with respect to its home cell.
+        relative to its home cell.
     bl_2 : ndarray[np.int_]
         The Bravais lattice vector specifying the translation of Wannier function j
-        with respect to its home cell.
-    dos_matrix : ndarray[float] | None
-        The DOS matrix.
-    h_ij : float | None
-        Element of the Wannier Hamiltonian required to compute the WOHP.
-    p_ij : float | None
-        Element of the Wannier density matrix required to compute the WOBI.
-    iwohp : float | ndarray[float] | None
-        The integrated WOHP.
-    iwobi : float | ndarray[float] | None
-        The integrated WOBI.
-    population : float | ndarray[float] | None
-        The population (integrated DOS matrix).
+        relative to its home cell.
+    dos_matrix : ndarray[float] | None, optional
+        The DOS matrix associated with the interaction. Defaults to None.
+    wohp
+    wobi
+    h_ij : float | None, optional
+        The element of the Wannier Hamiltonian associated with the interaction. Defaults
+        to None.
+    p_ij : float | None, optional
+        The element of the Wannier density matrix associated with the interaction.
+        Defaults to None.
+    iwohp : float | ndarray[float] | None, optional
+        The IWOHP (integrated WOHP) associated with the interaction. Defaults to None.
+    iwobi : float | ndarray[float] | None, optional
+        The IWOBI (integrated WOBI) associated with the interaction. Defaults to None.
+    population : float | ndarray[float] | None, optional
+        The population (integrated DOS matrix) associated with the interaction. Defaults
+        to None.
 
-    Returns
-    -------
-    None
+    Notes
+    -----
+    It is expected that this class will normally be initialised with solely the data
+    required to specify the interacting Wannier functions: the indices `i` and `j`
+    alongside the Bravais lattice vectors `bl_1` and `bl_2`. The remaining fields will
+    usually only be set by methods of the
+    :py:class:`~pengwann.descriptors.DescriptorCalculator` class.
     """
 
     i: int
@@ -174,64 +131,62 @@ class WannierInteraction:
     bl_1: NDArray[np.int_]
     bl_2: NDArray[np.int_]
 
-    dos_matrix: Optional[NDArray[np.float64]] = None
-    h_ij: Optional[np.float64] = None
-    p_ij: Optional[np.float64] = None
-    iwohp: Optional[np.float64 | NDArray[np.float64]] = None
-    iwobi: Optional[np.float64 | NDArray[np.float64]] = None
-    population: Optional[np.float64 | NDArray[np.float64]] = None
+    dos_matrix: NDArray[np.float64] | None = None
+    h_ij: np.float64 | None = None
+    p_ij: np.float64 | None = None
+    iwohp: np.float64 | NDArray[np.float64] | None = None
+    iwobi: np.float64 | NDArray[np.float64] | None = None
+    population: np.float64 | NDArray[np.float64] | None = None
 
     @property
-    def wohp(self):
+    def wohp(self) -> NDArray[np.float64]:
         """
-        The Wannier orbital Hamilton population.
-
-        This will be evaluated lazily upon request, owing to the fact that separately
-        storing the WOHP and WOBI for a single interaction is redundant (they are just
-        different weightings of the same DOS matrix).
+        The WOHP associated with the interaction.
 
         Returns
         -------
-        wohp : ndarray[float] | None
+        wohp : ndarray[float]
             The WOHP.
 
         Notes
         -----
-        If either the DOS matrix or the relevant element of the Wannier Hamiltonian are
-        not available (i.e. the dos_matrix or h_ij attributes are set to None), then
-        this property will just return None itself.
+        The WOHP will be recalculated from the relevant element of the Wannier
+        Hamiltonian and the DOS matrix every time this property is accessed (it is not
+        cached). This is intended to reduce memory usage and has minimal impact on
+        computational cost, owing to the fact that computing the DOS matrix itself is
+        by far the most demanding step and this is only done once.
         """
         if self.h_ij is None or self.dos_matrix is None:
-            return None
+            raise TypeError
 
-        else:
-            return -self.h_ij * self.dos_matrix
+        wohp = -self.h_ij * self.dos_matrix
+
+        return cast(NDArray[np.float64], wohp)
 
     @property
-    def wobi(self):
+    def wobi(self) -> NDArray[np.float64]:
         """
-        The Wannier orbital bond index.
-
-        This will be evaluated lazily upon request, owing to the fact that separately
-        storing the WOHP and WOBI for a single interaction is redundant (they are just
-        different weightings of the same DOS matrix).
+        The WOBI associated with the interaction.
 
         Returns
         -------
-        wobi : ndarray[float] | None
+        wohp : ndarray[float]
             The WOBI.
 
         Notes
         -----
-        If either the DOS matrix or the relevant element of the Wannier density matrix
-        are not available (i.e. the dos_matrix or p_ij attributes are set to None),
-        then this property will just return None itself.
+        The WOBI will be recalculated from the relevant element of the Wannier
+        density matrix and the DOS matrix every time this property is accessed (it is
+        not cached). This is intended to reduce memory usage and has minimal impact on
+        computational cost, owing to the fact that computing the DOS matrix itself is
+        by far the most demanding step and this is only done once.
         """
         if self.p_ij is None or self.dos_matrix is None:
-            return None
+            raise TypeError
 
-        else:
-            return self.p_ij * self.dos_matrix
+        wobi = self.p_ij * self.dos_matrix
+
+        return cast(NDArray[np.float64], wobi)
 
 
 def build_geometry(path: str, cell: ArrayLike) -> Structure:
