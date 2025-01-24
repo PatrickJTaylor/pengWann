@@ -28,7 +28,7 @@ from collections.abc import Iterable
 from multiprocessing.shared_memory import SharedMemory
 from numpy.typing import NDArray
 from pymatgen.core import Structure
-from scipy.integrate import trapezoid  # type: ignore
+from scipy.integrate import trapezoid
 
 
 def get_atom_indices(
@@ -154,7 +154,7 @@ def allocate_shared_memory(
         )
         buffered_array = np.ndarray(
             flattened_array.shape, dtype=flattened_array.dtype, buffer=shared_memory.buf
-        )  # type: NDArray
+        )
         buffered_array[:] = flattened_array[:]
 
         memory_handles.append(shared_memory)

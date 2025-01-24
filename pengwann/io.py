@@ -189,7 +189,7 @@ def read_hamiltonian(path: str) -> dict[tuple[int, ...], NDArray[np.complex128]]
 
     start_idx = int(np.ceil(num_rpoints / 15)) + 3
 
-    h = {}  # type: dict[tuple[int, ...], NDArray[np.complex128]]
+    h = {}
 
     for line in lines[start_idx:]:
         data = line.split()
