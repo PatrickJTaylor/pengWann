@@ -112,7 +112,7 @@ class AtomicInteraction(NamedTuple):
                     ]
                 )
 
-        return self._replace(**interaction_builder)
+        return self._replace(**new_values)
 
 
 class WannierInteraction(NamedTuple):
