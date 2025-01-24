@@ -115,7 +115,11 @@ class AtomicInteraction(NamedTuple):
         return self._replace(**new_values)
 
     def integrate(
-        self, energies: NDArray[np.float64], mu: float, resolve_orbitals: bool = False
+        self,
+        energies: NDArray[np.float64],
+        mu: float,
+        resolve_orbitals: bool = False,
+        valence: int | None = None,
     ) -> AtomicInteraction:
         new_values = {}
 
@@ -123,6 +127,9 @@ class AtomicInteraction(NamedTuple):
             new_values["population"] = integrate_descriptor(
                 energies, self.dos_matrix, mu
             )
+
+            if valence is not None:
+                new_values["charge"] = valence - new_values["population"]
 
         if self.wohp is not None:
             new_values["iwohp"] = integrate_descriptor(energies, self.wohp, mu)
