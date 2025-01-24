@@ -15,7 +15,7 @@
 
 import numpy as np
 from multiprocessing.shared_memory import SharedMemory
-from pengwann.utils import allocate_shared_memory, get_atom_indices, integrate, parse_id
+from pengwann.utils import allocate_shared_memory, get_atom_indices, integrate_descriptor, parse_id
 from pymatgen.core import Structure
 
 
@@ -53,19 +53,19 @@ def test_parse_id(data_regression) -> None:
     data_regression.check({"symbol": symbol, "index": idx})
 
 
-def test_integrate(ndarrays_regression) -> None:
+def test_integrate_descriptor(ndarrays_regression) -> None:
     x = np.linspace(-5, 5, 1000)
     y = x**2
     mu = 0
 
-    integral = integrate(x, y, mu)  # type: ignore[arg-type]
+    integral = integrate_descriptor(x, y, mu)  # type: ignore[arg-type]
 
     ndarrays_regression.check(
         {"integral": integral}, default_tolerance={"atol": 0, "rtol": 1e-07}
     )
 
 
-def test_integrate_2d(ndarrays_regression) -> None:
+def test_integrate_descriptor_2d(ndarrays_regression) -> None:
     x = np.linspace(-5, 5, 1000)
     y = np.zeros((2, len(x)))
 
@@ -74,7 +74,7 @@ def test_integrate_2d(ndarrays_regression) -> None:
 
     mu = 0
 
-    integral = integrate(x, y, mu)  # type: ignore[arg-type]
+    integral = integrate_descriptor(x, y, mu)  # type: ignore[arg-type]
 
     ndarrays_regression.check(
         {"integral": integral}, default_tolerance={"atol": 0, "rtol": 1e-07}
