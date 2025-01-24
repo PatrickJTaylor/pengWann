@@ -133,7 +133,7 @@ def gaussian(eigenvalues: np.ndarray, mu: float, sigma: float) -> NDArray[np.flo
 
     x = (eigenvalues - mu) / sigma
 
-    return (0.5 * (1 - erf(x))).astype(np.float64)
+    return 0.5 * (1 - erf(x))
 
 
 def cold(

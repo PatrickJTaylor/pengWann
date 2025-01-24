@@ -747,7 +747,7 @@ class DescriptorCalculator:
         r_min, r_max = r_range
         intervals = np.linspace(r_min, r_max, nbins + 1)
         dr = (r_max - r_min) / nbins
-        r = (intervals[:-1] + dr / 2).astype(np.float64)
+        r = intervals[:-1] + dr / 2
 
         bonds = []
         bwdf = {}

@@ -62,7 +62,7 @@ def read(seedname: str, path: str = ".") -> tuple[
     u, kpoints = read_u(f"{path}/{seedname}_u.mat")
     if os.path.isfile(f"{path}/{seedname}_u_dis.mat"):
         u_dis, _ = read_u(f"{path}/{seedname}_u_dis.mat")
-        u = (u_dis @ u).astype(np.complex128)
+        u = u_dis @ u
 
     h = read_hamiltonian(f"{path}/{seedname}_hr.dat")
     eigenvalues = read_eigenvalues(f"{path}/{seedname}.eig", u.shape[1], u.shape[0])
