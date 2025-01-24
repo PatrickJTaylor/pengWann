@@ -686,11 +686,13 @@ class DescriptorCalculator:
             WannierInteraction(i, i, self._bl_0, self._bl_0) for i in wannier_indices
         )
         diagonal_interaction = (AtomicInteraction(("D1", "D1"), diagonal_terms),)
-        self.assign_descriptors(diagonal_interaction, calc_wobi=False)
+        updated_diagonal_interaction = self.assign_descriptors(
+            diagonal_interaction, calc_wobi=False
+        )
 
-        all_interactions = interactions + diagonal_interaction
+        all_interactions = interactions + updated_diagonal_interaction
 
-        doe = np.sum([interaction.wohp for interaction in all_interactions], axis=0)  # type: ignore[arg-type]
+        doe = sum([interaction.wohp for interaction in all_interactions])  # type: ignore[reportArgumentType]
 
         return doe
 
