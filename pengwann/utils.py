@@ -90,7 +90,7 @@ def parse_id(identifier: str) -> tuple[str, int]:
     return symbol, index
 
 
-def integrate(
+def integrate_descriptor(
     energies: NDArray[np.float64], descriptor: NDArray[np.float64], mu: float
 ) -> np.float64 | NDArray[np.float64]:
     """
