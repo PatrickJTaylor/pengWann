@@ -83,10 +83,7 @@ class AtomicInteraction(NamedTuple):
     charge: np.float64 | NDArray[np.float64] | None = None
 
     def sum(self) -> AtomicInteraction:
-        interaction_builder = {
-            "pair_id": self.pair_id,
-            "wannier_interactions": self.wannier_interactions,
-        }
+        interaction_builder = self._as_dict()
 
         descriptor_keys = ("dos_matrix", "wohp", "wobi")
         for descriptor_key in descriptor_keys:
