@@ -101,7 +101,9 @@ def fermi_dirac(
     return occupation_matrix
 
 
-def gaussian(eigenvalues: np.ndarray, mu: float, sigma: float) -> NDArray[np.float64]:
+def gaussian(
+    eigenvalues: NDArray[np.float64], mu: float, sigma: float
+) -> NDArray[np.float64]:
     r"""
     A Gaussian occupation function.
 

@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import warnings
 import numpy as np
-from collections.abc import Iterable
+from collections.abc import Sequence
 from multiprocessing import Pool
 from multiprocessing.shared_memory import SharedMemory
 from numpy.typing import NDArray
@@ -34,7 +34,7 @@ from pengwann.geometry import AtomicInteraction, WannierInteraction
 from pengwann.utils import allocate_shared_memory, parse_id
 from pymatgen.core import Structure
 from tqdm.auto import tqdm
-from typing import Any, Optional
+from typing import Any
 
 
 class DescriptorCalculator:
@@ -116,9 +116,9 @@ class DescriptorCalculator:
         nspin: int,
         kpoints: NDArray[np.float64],
         u: NDArray[np.complex128],
-        h: Optional[dict[tuple[int, ...], NDArray[np.complex128]]] = None,
-        occupation_matrix: Optional[NDArray[np.float64]] = None,
-        energies: Optional[NDArray[np.float64]] = None,
+        h: dict[tuple[int, ...], NDArray[np.complex128]] | None = None,
+        occupation_matrix: NDArray[np.float64] | None = None,
+        energies: NDArray[np.float64] | None = None,
     ):
         self._dos_array = dos_array
         self._num_wann = num_wann
@@ -164,8 +164,8 @@ class DescriptorCalculator:
         sigma: float,
         kpoints: NDArray[np.float64],
         u: NDArray[np.complex128],
-        h: Optional[dict[tuple[int, ...], NDArray[np.complex128]]] = None,
-        occupation_matrix: Optional[NDArray[np.float64]] = None,
+        h: dict[tuple[int, ...], NDArray[np.complex128]] | None = None,
+        occupation_matrix: NDArray[np.float64] | None = None,
     ) -> DescriptorCalculator:
         """
         Initialise a DescriptorCalculator object from a set of Kohn-Sham eigenvalues.
@@ -225,7 +225,7 @@ class DescriptorCalculator:
         )
 
     @property
-    def energies(self) -> Optional[NDArray[np.float64]]:
+    def energies(self) -> NDArray[np.float64] | None:
         """
         The discrete energies over which the DOS (and derived descriptors) has been evaluated.
 
@@ -426,6 +426,8 @@ class DescriptorCalculator:
             of the species present in `geometry`.
         resolve_k : bool, optional
             Whether or not to resolve the pDOS with respect to k-points.
+        num_proc : int, optional
+            The number of processes to spawn when computing the pDOS in parallel.
 
         Returns
         -------
@@ -501,7 +503,7 @@ class DescriptorCalculator:
 
     def assign_descriptors(
         self,
-        interactions: Iterable[AtomicInteraction],
+        interactions: Sequence[AtomicInteraction],
         calc_wohp: bool = True,
         calc_wobi: bool = True,
         resolve_k: bool = False,
@@ -512,7 +514,7 @@ class DescriptorCalculator:
 
         Parameters
         ----------
-        interactions : Iterable[AtomicInteraction]
+        interactions : sequence[AtomicInteraction]
             A sequence of AtomicInteraction objects specifying the 2-body interactions
             for which to calculate WOHPs and/or WOBIs.
         calc_wohp : bool, optional
@@ -524,6 +526,8 @@ class DescriptorCalculator:
         resolve_k : bool, optional
             Whether or not to resolve the output WOHPs and/or WOBIs with respect to
             k-points. Defaults to False.
+        num_proc : int, optional
+            The number of processes to spawn when computing the pDOS in parallel.
 
         Returns
         -------
@@ -631,7 +635,7 @@ class DescriptorCalculator:
             intermediate_interaction = interaction._replace(
                 wannier_interactions=associated_wannier_interactions
             )
-            updated_interaction = interaction.with_summed_descriptors()
+            updated_interaction = intermediate_interaction.with_summed_descriptors()
 
             updated_interactions.append(updated_interaction)
             running_count += len(updated_interaction.wannier_interactions)
@@ -639,7 +643,7 @@ class DescriptorCalculator:
         return tuple(updated_interactions)
 
     def get_density_of_energy(
-        self, interactions: tuple[AtomicInteraction, ...]
+        self, interactions: Sequence[AtomicInteraction]
     ) -> NDArray[np.float64]:
         r"""
         Calculate the density of energy (DOE).
@@ -690,7 +694,7 @@ class DescriptorCalculator:
             diagonal_interaction, calc_wobi=False
         )
 
-        all_interactions = interactions + updated_diagonal_interaction
+        all_interactions = tuple(interactions) + updated_diagonal_interaction
 
         doe = sum([interaction.wohp for interaction in all_interactions])  # type: ignore[reportArgumentType]
 
@@ -698,7 +702,7 @@ class DescriptorCalculator:
 
     def get_bwdf(
         self,
-        interactions: tuple[AtomicInteraction, ...],
+        interactions: Sequence[AtomicInteraction],
         geometry: Structure,
         r_range: tuple[float, float],
         nbins: int,
@@ -708,7 +712,7 @@ class DescriptorCalculator:
 
         Parameters
         ----------
-        interactions : tuple[AtomicInteraction, ...]
+        interactions : sequence[AtomicInteraction]
             A sequence of AtomicInteraction obejcts containing all of the necessary
             IWOHPs to weight the RDF/s.
         geometry : Structure
@@ -782,7 +786,7 @@ class DescriptorCalculator:
 
     def parallelise(
         self,
-        wannier_interactions: Iterable[WannierInteraction],
+        wannier_interactions: Sequence[WannierInteraction],
         calc_p_ij: bool,
         resolve_k: bool,
         n_proc: int,

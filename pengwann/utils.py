@@ -24,7 +24,7 @@ there are some niche use cases (hence why it is still documented).
 from __future__ import annotations
 
 import numpy as np
-from collections.abc import Iterable
+from collections.abc import Sequence
 from multiprocessing.shared_memory import SharedMemory
 from numpy.typing import NDArray
 from pymatgen.core import Structure
@@ -121,7 +121,7 @@ def integrate_descriptor(
 
 
 def allocate_shared_memory(
-    keys: Iterable[str], data: Iterable[NDArray]
+    keys: Sequence[str], data: Sequence[NDArray]
 ) -> tuple[dict[str, tuple[tuple[int, ...], np.dtype]], list[SharedMemory]]:
     """
     Allocate one or more blocks of shared memory and populate them with numpy arrays.
