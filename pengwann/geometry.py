@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
-from pengwann.utils import get_atom_indices
+from pengwann.utils import get_atom_indices, integrate_descriptor
 from pymatgen.core import Lattice, Molecule, Structure
 from typing import Iterable, NamedTuple
 
@@ -91,8 +91,7 @@ class AtomicInteraction(NamedTuple):
 
             for w_interaction in self.wannier_interactions:
                 if w_interaction.dos_matrix is None:
-                    calculated = False
-                    break
+                    raise TypeError
 
                 if descriptor_key == "wohp":
                     if w_interaction.h_ij is None:
@@ -111,6 +110,31 @@ class AtomicInteraction(NamedTuple):
                         for w_interaction in self.wannier_interactions
                     ]
                 )
+
+        return self._replace(**new_values)
+
+    def integrate(
+        self, energies: NDArray[np.float64], mu: float, resolve_orbitals: bool = False
+    ) -> AtomicInteraction:
+        new_values = {}
+
+        if self.dos_matrix is not None:
+            new_values["population"] = integrate_descriptor(
+                energies, self.dos_matrix, mu
+            )
+
+        if self.wohp is not None:
+            new_values["iwohp"] = integrate_descriptor(energies, self.wohp, mu)
+
+        if self.wobi is not None:
+            new_values["iwobi"] = integrate_descriptor(energies, self.wobi, mu)
+
+        if resolve_orbitals:
+            new_values["wannier_interactions"] = []
+            for w_interaction in self.wannier_interactions:
+                updated_wannier_interaction = w_interaction.integrate(energies, mu)
+
+                new_values["wannier_interactions"].append(updated_wannier_interaction)
 
         return self._replace(**new_values)
 
@@ -217,6 +241,22 @@ class WannierInteraction(NamedTuple):
             return None
 
         return self.p_ij * self.dos_matrix
+
+    def integrate(self, energies: NDArray[np.float64], mu: float) -> WannierInteraction:
+        if self.dos_matrix is None:
+            raise TypeError
+
+        new_values = {}
+
+        new_values["population"] = integrate_descriptor(energies, self.dos_matrix, mu)
+
+        if self.h_ij is not None:
+            new_values["iwohp"] = integrate_descriptor(energies, self.wohp, mu)
+
+        if self.p_ij is not None:
+            new_values["iwobi"] = integrate_descriptor(energies, self.wobi, mu)
+
+        return self._replace(**new_values)
 
 
 def build_geometry(path: str, cell: ArrayLike) -> Structure:

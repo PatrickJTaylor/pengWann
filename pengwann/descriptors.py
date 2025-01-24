@@ -30,7 +30,7 @@ from multiprocessing import Pool
 from multiprocessing.shared_memory import SharedMemory
 from numpy.typing import NDArray
 from pengwann.geometry import AtomicInteraction, WannierInteraction
-from pengwann.utils import allocate_shared_memory, integrate, parse_id
+from pengwann.utils import allocate_shared_memory, parse_id
 from pymatgen.core import Structure
 from tqdm.auto import tqdm
 from typing import Any, Optional
@@ -498,115 +498,6 @@ class DescriptorCalculator:
 
         return updated_interactions
 
-    def assign_populations(
-        self,
-        interactions: tuple[AtomicInteraction, ...],
-        mu: float,
-        resolve_orbitals: bool = False,
-        valence: Optional[dict[str, int]] = None,
-    ) -> None:
-        r"""
-        Compute populations/charges for a series of atoms.
-
-        These are the equivalent of Mulliken populations/charges, but calculated in
-        the orthonormal Wannier basis.
-
-        Parameters
-        ----------
-        interactions : tuple[AtomicInteraction, ...]
-            A sequence of AtomicInteraction objects containing the pDOS required to
-            compute populations or charges.
-        mu : float
-            The Fermi level.
-        resolve_orbitals : bool, optional
-            If True, compute Wannier populations for individual Wannier functions as
-            well as the atoms to which they are assigned. Defaults to False.
-        valence : dict[str, int] | None, optional
-            The number of valence electrons associated with each atomic species (as per
-            the pseudopotentials used in the ab initio calculation) e.g.
-            :code:`{"Ti": 12, "O": 6}`. Required for the calculation of Wannier charges.
-            Defaults to None.
-
-        Returns
-        -------
-        None
-
-        See Also
-        --------
-        get_pdos
-
-        Notes
-        -----
-        The input `interactions` are modified in-place by setting the
-        :code:`population` and :code:`charge` attributes of each AtomicInteraction (and
-        optionally its associated WannierInteraction objects).
-
-        The population for Wannier function :math:`\ket{w_{\alpha}}` is computed as the
-        integral of its pDOS up to the Fermi level :footcite:p:`WOHP`
-
-        .. math::
-
-            \mathrm{pop}_{\alpha} = \int^{E_{\mathrm{F}}}_{-\infty} dE\;
-            \mathrm{pDOS}_{\alpha}(E).
-
-        Atomic populations are computed simply by summing the populations of all Wannier
-        functions associated with a given atom (or equivalently, by integrating the
-        total atomic pDOS).
-
-        The Wannier charge of an atom is simply the difference between its number of
-        valence electrons :math:`v_{i}` and its population
-
-        .. math::
-
-            \mathrm{charge}_{\alpha} = v_{i} - \mathrm{pop}_{\alpha}.
-
-        References
-        ----------
-        .. footbibliography::
-        """
-        if self._energies is None:
-            raise TypeError(
-                """The energies property returned None. The discretised 
-            energies used to compute the DOS array are required for integration."""
-            )
-
-        for interaction in interactions:
-            if interaction.dos_matrix is None:
-                raise TypeError(
-                    f"""The DOS matrix for interaction {interaction.pair_id} 
-                has not been computed. This is required to calculate the 
-                population/charge."""
-                )
-
-            interaction.population = integrate(
-                self._energies, interaction.dos_matrix, mu
-            )
-
-            if valence is not None:
-                label = interaction.pair_id[0]
-                symbol, _ = parse_id(label)
-
-                if symbol not in valence.keys():
-                    raise ValueError(f"Valence for {symbol} not found in input.")
-
-                interaction.charge = (valence[symbol] - interaction.population).astype(
-                    np.float64
-                )
-
-            if resolve_orbitals:
-                for w_interaction in interaction.wannier_interactions:
-                    if w_interaction.dos_matrix is None:
-                        raise TypeError(
-                            f"""The DOS matrix for interaction 
-                        {w_interaction.i}{w_interaction.bl_1}<=>
-                        {w_interaction.j}{w_interaction.bl_2} has not been computed. 
-                        This is required to calculate the population."""
-                        )
-
-                    w_interaction.population = integrate(
-                        self._energies, w_interaction.dos_matrix, mu
-                    )
-
     def assign_descriptors(
         self,
         interactions: tuple[AtomicInteraction, ...],
@@ -748,62 +639,6 @@ class DescriptorCalculator:
             running_count += len(updated_interaction.wannier_interactions)
 
         return tuple(updated_interactions)
-
-    def integrate_descriptors(
-        self,
-        interactions: tuple[AtomicInteraction, ...],
-        mu: float,
-        resolve_orbitals: bool = False,
-    ) -> None:
-        """
-        Integrate WOHPs and WOBIs up to the Fermi level to derive IWOHPs and IWOBIs.
-
-        Parameters
-        ----------
-        interactions : tuple[AtomicInteraction, ...]
-            A sequence of AtomicInteraction objects containing the WOHPs and/or WOBIs
-            to be integrated.
-        mu : float
-            The Fermi level.
-        resolve_orbitals : bool, optional
-            If True, integrate the WOHPs and/or WOBIs for the individual Wannier
-            functions associated with each AtomicInteraction as well as the overall
-            interaction itself. Defaults to False.
-
-        Returns
-        -------
-        None
-
-        Notes
-        -----
-        The input `interactions` are modified in-place by setting the :code:`iwohp`
-        and/or :code:`iwobi` attributes of each AtomicInteraction (and optionally its
-        associated WannierInteraction objects).
-        """
-        if self._energies is None:
-            raise TypeError(
-                """The energies property returned None. The discretised 
-            energies used to compute the DOS array are required for integration."""
-            )
-
-        for interaction in interactions:
-            if interaction.wohp is not None:
-                interaction.iwohp = integrate(self._energies, interaction.wohp, mu)
-
-            if interaction.wobi is not None:
-                interaction.iwobi = integrate(self._energies, interaction.wobi, mu)
-
-            if resolve_orbitals:
-                for w_interaction in interaction.wannier_interactions:
-                    if w_interaction.h_ij is not None:
-                        w_interaction.iwohp = integrate(
-                            self._energies, w_interaction.wohp, mu
-                        )
-
-                    if w_interaction.p_ij is not None:
-                        w_interaction.iwobi = integrate(
-                            self._energies, w_interaction.wobi, mu
-                        )
 
     def get_density_of_energy(
         self, interactions: tuple[AtomicInteraction, ...]
