@@ -406,7 +406,11 @@ class DescriptorCalculator:
         return element
 
     def get_pdos(
-        self, geometry: Structure, symbols: tuple[str, ...], resolve_k: bool = False
+        self,
+        geometry: Structure,
+        symbols: tuple[str, ...],
+        resolve_k: bool = False,
+        n_proc: int = 4,
     ) -> tuple[AtomicInteraction, ...]:
         r"""
         Compute the pDOS for a set of atoms (and their associated Wannier functions).
@@ -484,56 +488,15 @@ class DescriptorCalculator:
         if not interactions:
             raise ValueError(f"No atoms matching symbols in {symbols} found.")
 
-        memory_keys = ("dos_array", "kpoints", "u")
-        shared_data = (self._dos_array, self._kpoints, self._u)
-
-        memory_metadata, memory_handles = allocate_shared_memory(
-            memory_keys, shared_data
+        updated_interactions = self.assign_descriptors(
+            interactions,
+            calc_wohp=False,
+            calc_wobi=False,
+            resolve_k=resolve_k,
+            n_proc=n_proc,
         )
 
-        calc_wobi = False
-        args = []
-        for interaction in interactions:
-            for w_interaction in interaction.wannier_interactions:
-                args.append(
-                    (
-                        w_interaction,
-                        self._num_wann,
-                        self._nspin,
-                        calc_wobi,
-                        resolve_k,
-                        memory_metadata,
-                    )
-                )
-
-        pool = Pool()
-
-        amended_wannier_interactions = tuple(
-            tqdm(pool.imap(self.parallel_wrapper, args), total=len(args))
-        )
-
-        pool.close()
-        for memory_handle in memory_handles:
-            memory_handle.unlink()
-
-        running_count = 0
-        for interaction in interactions:
-            if resolve_k:
-                interaction.dos_matrix = np.zeros(self._dos_array.shape[:-1])
-
-            else:
-                interaction.dos_matrix = np.zeros(self._dos_array.shape[0])
-
-            associated_wannier_interactions = amended_wannier_interactions[
-                running_count : running_count + len(interaction.wannier_interactions)
-            ]
-            for w_interaction in associated_wannier_interactions:
-                interaction.dos_matrix += w_interaction.dos_matrix  # type: ignore[arg-type]
-
-            interaction.wannier_interactions = associated_wannier_interactions
-            running_count += len(interaction.wannier_interactions)
-
-        return tuple(interactions)
+        return updated_interactions
 
     def assign_populations(
         self,
@@ -650,13 +613,14 @@ class DescriptorCalculator:
         calc_wohp: bool = True,
         calc_wobi: bool = True,
         resolve_k: bool = False,
-    ) -> None:
+        n_proc: int = 4,
+    ) -> tuple[AtomicInteraction, ...]:
         r"""
         Compute WOHPs and/or WOBIs for a set of 2-body interactions.
 
         Parameters
         ----------
-        interactions : tuple[AtomicInteraction, ...]
+        interactions : Iterable[AtomicInteraction]
             A sequence of AtomicInteraction objects specifying the 2-body interactions
             for which to calculate WOHPs and/or WOBIs.
         calc_wohp : bool, optional
@@ -735,100 +699,55 @@ class DescriptorCalculator:
         ----------
         .. footbibliography::
         """
-        memory_keys = ["dos_array", "kpoints", "u"]
-        shared_data = [self._dos_array, self._kpoints, self._u]
-        if calc_wobi:
-            if self._occupation_matrix is None:
-                raise TypeError(
-                    """The occupation matrix must be supplied to calculate 
-                WOBIs."""
-                )
-
-            memory_keys.append("occupation_matrix")
-            shared_data.append(self._occupation_matrix)
-
-        memory_metadata, memory_handles = allocate_shared_memory(
-            memory_keys, shared_data
-        )
-
-        args = []
-        for interaction in interactions:
-            for w_interaction in interaction.wannier_interactions:
-                args.append(
-                    (
-                        w_interaction,
-                        self._num_wann,
-                        self._nspin,
-                        calc_wobi,
-                        resolve_k,
-                        memory_metadata,
-                    )
-                )
-
-        pool = Pool()
-
-        amended_wannier_interactions = tuple(
-            tqdm(pool.imap(self.parallel_wrapper, args), total=len(args))
-        )
-
-        pool.close()
-        for memory_handle in memory_handles:
-            memory_handle.unlink()
-
         if calc_wohp:
             if self._h is None:
-                raise TypeError(
-                    """The Wannier Hamiltonian must be supplied to calculate 
-                WOHPs."""
-                )
+                raise TypeError
 
-            for w_interaction in amended_wannier_interactions:
-                bl_vector = tuple(
-                    [
-                        int(component)
-                        for component in w_interaction.bl_2 - w_interaction.bl_1
-                    ]
-                )
-                h_ij = self._h[bl_vector][w_interaction.i, w_interaction.j].real
+        if calc_wobi:
+            if self._occupation_matrix is None:
+                raise TypeError
 
-                w_interaction.h_ij = h_ij
+        wannier_interactions = []
+        for interaction in interactions:
+            for w_interaction in interaction.wannier_interactions:
+                if calc_wohp:
+                    bl_vector = tuple(
+                        [
+                            int(component)
+                            for component in w_interaction.bl_2 - w_interaction.bl_1
+                        ]
+                    )
+                    h_ij = self._h[bl_vector][w_interaction.i, w_interaction.j].real
+                    w_interaction_with_h = w_interaction._replace(h_ij=h_ij)
+
+                    wannier_interactions.append(w_interaction_with_h)
+
+                else:
+                    wannier_interactions.append(w_interaction)
+
+        updated_wannier_interactions = self.parallelise(
+            wannier_interactions, calc_wobi, resolve_k, n_proc
+        )
 
         running_count = 0
+        updated_interactions = []
         for interaction in interactions:
-            if resolve_k:
-                interaction.dos_matrix = np.zeros(self._dos_array.shape[:-1])
+            associated_wannier_interactions = tuple(
+                updated_wannier_interactions[
+                    running_count : running_count
+                    + len(interaction.wannier_interactions)
+                ]
+            )
 
-            else:
-                interaction.dos_matrix = np.zeros(self._dos_array.shape[0])
+            intermediate_interaction = interaction._replace(
+                wannier_interactions=associated_wannier_interactions
+            )
+            updated_interaction = intermediate_interaction.sum()
 
-            if calc_wohp:
-                if resolve_k:
-                    interaction.wohp = np.zeros(self._dos_array.shape[:-1])
+            updated_interactions.append(updated_interaction)
+            running_count += len(updated_interaction.wannier_interactions)
 
-                else:
-                    interaction.wohp = np.zeros(self._dos_array.shape[0])
-
-            if calc_wobi:
-                if resolve_k:
-                    interaction.wobi = np.zeros(self._dos_array.shape[:-1])
-
-                else:
-                    interaction.wobi = np.zeros(self._dos_array.shape[0])
-
-            associated_wannier_interactions = amended_wannier_interactions[
-                running_count : running_count + len(interaction.wannier_interactions)
-            ]
-            for w_interaction in associated_wannier_interactions:
-                interaction.dos_matrix += w_interaction.dos_matrix  # type: ignore[arg-type]
-
-                if calc_wohp:
-                    interaction.wohp += w_interaction.wohp
-
-                if calc_wobi:
-                    interaction.wobi += w_interaction.wobi
-
-            interaction.wannier_interactions = associated_wannier_interactions
-            running_count += len(interaction.wannier_interactions)
+        return tuple(updated_interactions)
 
     def integrate_descriptors(
         self,
@@ -1026,8 +945,53 @@ class DescriptorCalculator:
 
         return r, bwdf  # type: ignore[return-value]
 
+    def parallelise(
+        self,
+        wannier_interactions: Iterable[WannierInteraction],
+        calc_p_ij: bool,
+        resolve_k: bool,
+        n_proc: int,
+    ) -> tuple[WannierInteraction]:
+        memory_keys = ["dos_array", "kpoints", "u"]
+        shared_data = [self._dos_array, self._kpoints, self._u]
+        if calc_p_ij:
+            if self._occupation_matrix is None:
+                raise TypeError
+
+            memory_keys.append("occupation_matrix")
+            shared_data.append(self._occupation_matrix)
+
+        memory_metadata, memory_handles = allocate_shared_memory(
+            memory_keys, shared_data
+        )
+
+        args = []
+        for w_interaction in wannier_interactions:
+            args.append(
+                (
+                    w_interaction,
+                    self._num_wann,
+                    self._nspin,
+                    calc_p_ij,
+                    resolve_k,
+                    memory_metadata,
+                )
+            )
+
+        pool = Pool(processes=n_proc)
+
+        updated_wannier_interactions = tuple(
+            tqdm(pool.imap(self._parallel_wrapper, args), total=len(args))
+        )
+
+        pool.close()
+        for memory_handle in memory_handles:
+            memory_handle.unlink()
+
+        return updated_wannier_interactions
+
     @classmethod
-    def parallel_wrapper(cls, args) -> WannierInteraction:
+    def _parallel_wrapper(cls, args) -> WannierInteraction:
         """
         A simple wrapper for
         :py:meth:`~pengwann.descriptors.DescriptorCalculator.process_interaction`.
@@ -1049,12 +1013,12 @@ class DescriptorCalculator:
         This method exists primarily to enable proper :code:`tqdm` functionality with
         :code:`multiprocessing`.
         """
-        wannier_interaction = cls.process_interaction(*args)
+        wannier_interaction = cls._process_interaction(*args)
 
         return wannier_interaction
 
     @classmethod
-    def process_interaction(
+    def _process_interaction(
         cls,
         interaction: WannierInteraction,
         num_wann: int,
@@ -1092,7 +1056,7 @@ class DescriptorCalculator:
             The input `interaction` with the computed properties assigned to the
             relevant attributes.
         """
-        kwargs = {"num_wann": num_wann, "nspin": nspin}  # type: dict[str, Any]
+        dcalc_builder = {"num_wann": num_wann, "nspin": nspin}  # type: dict[str, Any]
         memory_handles = []
         for memory_key, metadata in memory_metadata.items():
             shape, dtype = metadata
@@ -1102,20 +1066,22 @@ class DescriptorCalculator:
                 shape, dtype=dtype, buffer=shared_memory.buf
             )  # type: NDArray
 
-            kwargs[memory_key] = buffered_data
+            dcalc_builder[memory_key] = buffered_data
             memory_handles.append(shared_memory)
 
-        dcalc = cls(**kwargs)
+        dcalc = cls(**dcalc_builder)
 
         c_star = np.conj(dcalc.get_coefficient_matrix(interaction.i, interaction.bl_1))
         c = dcalc.get_coefficient_matrix(interaction.j, interaction.bl_2)
 
-        interaction.dos_matrix = dcalc.get_dos_matrix(c_star, c, resolve_k)
+        new_values = {}
+
+        new_values["dos_matrix"] = dcalc.get_dos_matrix(c_star, c, resolve_k)
 
         if calc_wobi:
-            interaction.p_ij = dcalc.get_density_matrix_element(c_star, c).real
+            new_values["p_ij"] = dcalc.get_density_matrix_element(c_star, c).real
 
         for memory_handle in memory_handles:
             memory_handle.close()
 
-        return interaction
+        return interaction._replace(**new_values)
