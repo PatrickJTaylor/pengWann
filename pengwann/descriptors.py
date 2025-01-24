@@ -432,7 +432,7 @@ class DescriptorCalculator:
 
         Returns
         -------
-        interactions : tuple[AtomicInteraction, ...]
+        processed_interactions : tuple[AtomicInteraction, ...]
             A sequence of AtomicInteraction objects, each of which is associated with
             the pDOS for a given atom and its associated Wannier functions.
 
@@ -492,7 +492,7 @@ class DescriptorCalculator:
         if not interactions:
             raise ValueError(f"No atoms matching symbols in {symbols} found.")
 
-        updated_interactions = self.assign_descriptors(
+        processed_interactions = self.assign_descriptors(
             interactions,
             calc_wohp=False,
             calc_wobi=False,
@@ -500,7 +500,7 @@ class DescriptorCalculator:
             num_proc=num_proc,
         )
 
-        return updated_interactions
+        return processed_interactions
 
     def assign_descriptors(
         self,
@@ -532,7 +532,7 @@ class DescriptorCalculator:
 
         Returns
         -------
-        updated_interactions : tuple[AtomicInteraction, ...]
+        processed_interactions : tuple[AtomicInteraction, ...]
             A sequence of AtomicInteraction objects, each of which is associated with
             the bonding descriptors calculated for the overall interaction as well as
             its constituent WannierInteraction objects.
@@ -625,26 +625,26 @@ class DescriptorCalculator:
                 else:
                     wannier_interactions.append(w_interaction)
 
-        updated_wannier_interactions = self.parallelise(
+        processed_wannier_interactions = self.parallelise(
             wannier_interactions, calc_wobi, resolve_k, num_proc
         )
 
         running_count = 0
-        updated_interactions = []
+        processed_interactions = []
         for interaction in interactions:
-            associated_wannier_interactions = updated_wannier_interactions[
+            associated_wannier_interactions = processed_wannier_interactions[
                 running_count : running_count + len(interaction.wannier_interactions)
             ]
 
             intermediate_interaction = interaction._replace(
                 wannier_interactions=associated_wannier_interactions
             )
-            updated_interaction = intermediate_interaction.with_summed_descriptors()
+            processed_interaction = intermediate_interaction.with_summed_descriptors()
 
-            updated_interactions.append(updated_interaction)
-            running_count += len(updated_interaction.wannier_interactions)
+            processed_interactions.append(processed_interaction)
+            running_count += len(processed_interaction.wannier_interactions)
 
-        return tuple(updated_interactions)
+        return tuple(processed_interactions)
 
     def get_density_of_energy(
         self, interactions: Sequence[AtomicInteraction]
@@ -694,11 +694,11 @@ class DescriptorCalculator:
             WannierInteraction(i, i, self._bl_0, self._bl_0) for i in wannier_indices
         )
         diagonal_interaction = (AtomicInteraction(("D1", "D1"), diagonal_terms),)
-        updated_diagonal_interaction = self.assign_descriptors(
+        processed_diagonal_interaction = self.assign_descriptors(
             diagonal_interaction, calc_wobi=False
         )
 
-        all_interactions = tuple(interactions) + updated_diagonal_interaction
+        all_interactions = tuple(interactions) + processed_diagonal_interaction
 
         doe = sum([interaction.wohp for interaction in all_interactions])  # type: ignore[reportArgumentType]
 
@@ -810,6 +810,13 @@ class DescriptorCalculator:
             Whether or not to resolve the DOS matrix with respect to k-points.
         num_proc : int
             The number of processes to spawn when computing the pDOS in parallel.
+
+        Returns
+        -------
+        processed_wannier_interaction : tuple[WannierInteraction, ...]
+            A sequence of WannierInteraction objects, each of which is associated with
+            the DOS matrix and (if `calc_p_ij` = True) the relevant elements of the
+            Wannier density matrix.
         """
         memory_keys = ["dos_array", "kpoints", "u"]
         shared_data = [self._dos_array, self._kpoints, self._u]
@@ -839,7 +846,7 @@ class DescriptorCalculator:
 
         pool = Pool(processes=num_proc)
 
-        updated_wannier_interactions = tuple(
+        processed_wannier_interactions = tuple(
             tqdm(pool.imap(self._parallel_wrapper, args), total=len(args))
         )
 
@@ -847,7 +854,7 @@ class DescriptorCalculator:
         for memory_handle in memory_handles:
             memory_handle.unlink()
 
-        return updated_wannier_interactions
+        return processed_wannier_interactions
 
     @classmethod
     def _parallel_wrapper(cls, args) -> WannierInteraction:
