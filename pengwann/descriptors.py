@@ -531,7 +531,10 @@ class DescriptorCalculator:
 
         Returns
         -------
-        None
+        updated_interactions : tuple[AtomicInteraction, ...]
+            A sequence of AtomicInteraction objects, each of which is associated with
+            the bonding descriptors calculated for the overall interaction as well as
+            its constituent WannierInteraction objects.
 
         See Also
         --------
@@ -791,6 +794,22 @@ class DescriptorCalculator:
         resolve_k: bool,
         n_proc: int,
     ) -> tuple[WannierInteraction, ...]:
+        """
+        Compute DOS matrices and elements of the Wannier density matrix in parallel.
+
+        Parameters
+        ----------
+        wannier_interactions : sequence[WannierInteraction]
+            The WannierInteraction objects for which to compute the DOS matrix and
+            (optionally) the relevant elements of the Wannier density matrix.
+        calc_p_ij : bool
+            Whether or not to calculate the relevant elements of the Wannier density
+            matrix.
+        resolve_k : bool
+            Whether or not to resolve the DOS matrix with respect to k-points.
+        num_proc : int
+            The number of processes to spawn when computing the pDOS in parallel.
+        """
         memory_keys = ["dos_array", "kpoints", "u"]
         shared_data = [self._dos_array, self._kpoints, self._u]
         if calc_p_ij:
