@@ -24,10 +24,11 @@ descriptors.
 from __future__ import annotations
 
 import numpy as np
+from collections.abc import Sequence
 from numpy.typing import ArrayLike, NDArray
 from pengwann.utils import get_atom_indices, integrate_descriptor
 from pymatgen.core import Lattice, Molecule, Structure
-from typing import Iterable, NamedTuple
+from typing import NamedTuple
 
 
 class AtomicInteraction(NamedTuple):
@@ -72,7 +73,7 @@ class AtomicInteraction(NamedTuple):
     """
 
     pair_id: tuple[str, str]
-    wannier_interactions: Iterable[WannierInteraction]
+    wannier_interactions: Sequence[WannierInteraction]
 
     dos_matrix: NDArray[np.float64] | None = None
     wohp: NDArray[np.float64] | None = None
@@ -250,11 +251,13 @@ class WannierInteraction(NamedTuple):
 
         new_values["population"] = integrate_descriptor(energies, self.dos_matrix, mu)
 
-        if self.h_ij is not None:
-            new_values["iwohp"] = integrate_descriptor(energies, self.wohp, mu)
+        wohp = self.wohp
+        if wohp is not None:
+            new_values["iwohp"] = integrate_descriptor(energies, wohp, mu)
 
-        if self.p_ij is not None:
-            new_values["iwobi"] = integrate_descriptor(energies, self.wobi, mu)
+        wobi = self.wobi
+        if wobi is not None:
+            new_values["iwobi"] = integrate_descriptor(energies, wobi, mu)
 
         return self._replace(**new_values)
 
