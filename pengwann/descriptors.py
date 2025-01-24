@@ -778,7 +778,7 @@ class DescriptorCalculator:
                     bwdf[bond][bin_idx] += interaction.iwohp
                     break
 
-        return r, bwdf  # type: ignore[return-value]
+        return r, bwdf
 
     def parallelise(
         self,
@@ -891,7 +891,7 @@ class DescriptorCalculator:
             The input `interaction` with the computed properties assigned to the
             relevant attributes.
         """
-        dcalc_builder = {"num_wann": num_wann, "nspin": nspin}  # type: dict[str, Any]
+        dcalc_builder: dict[str, Any] = {"num_wann": num_wann, "nspin": nspin}
         memory_handles = []
         for memory_key, metadata in memory_metadata.items():
             shape, dtype = metadata
@@ -899,7 +899,7 @@ class DescriptorCalculator:
             shared_memory = SharedMemory(name=memory_key)
             buffered_data = np.ndarray(
                 shape, dtype=dtype, buffer=shared_memory.buf
-            )  # type: NDArray
+            )
 
             dcalc_builder[memory_key] = buffered_data
             memory_handles.append(shared_memory)
