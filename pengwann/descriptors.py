@@ -631,7 +631,7 @@ class DescriptorCalculator:
             intermediate_interaction = interaction._replace(
                 wannier_interactions=associated_wannier_interactions
             )
-            updated_interaction = intermediate_interaction.sum()
+            updated_interaction = interaction.with_summed_descriptors()
 
             updated_interactions.append(updated_interaction)
             running_count += len(updated_interaction.wannier_interactions)
@@ -897,9 +897,7 @@ class DescriptorCalculator:
             shape, dtype = metadata
 
             shared_memory = SharedMemory(name=memory_key)
-            buffered_data = np.ndarray(
-                shape, dtype=dtype, buffer=shared_memory.buf
-            )
+            buffered_data = np.ndarray(shape, dtype=dtype, buffer=shared_memory.buf)
 
             dcalc_builder[memory_key] = buffered_data
             memory_handles.append(shared_memory)

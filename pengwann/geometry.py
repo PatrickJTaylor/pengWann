@@ -83,7 +83,7 @@ class AtomicInteraction(NamedTuple):
     population: np.float64 | NDArray[np.float64] | None = None
     charge: np.float64 | NDArray[np.float64] | None = None
 
-    def sum(self) -> AtomicInteraction:
+    def with_summed_descriptors(self) -> AtomicInteraction:
         new_values = {}
 
         descriptor_keys = ("dos_matrix", "wohp", "wobi")
@@ -114,7 +114,7 @@ class AtomicInteraction(NamedTuple):
 
         return self._replace(**new_values)
 
-    def integrate(
+    def with_integrals(
         self,
         energies: NDArray[np.float64],
         mu: float,
