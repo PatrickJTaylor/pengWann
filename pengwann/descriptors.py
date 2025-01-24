@@ -30,6 +30,7 @@ from collections.abc import Sequence
 from multiprocessing import Pool
 from multiprocessing.shared_memory import SharedMemory
 from numpy.typing import NDArray
+from os import cpu_count
 from pengwann.geometry import AtomicInteraction, WannierInteraction
 from pengwann.utils import allocate_shared_memory, parse_id
 from pymatgen.core import Structure
@@ -411,7 +412,7 @@ class DescriptorCalculator:
         geometry: Structure,
         symbols: tuple[str, ...],
         resolve_k: bool = False,
-        n_proc: int = 4,
+        num_proc: int = 4,
     ) -> tuple[AtomicInteraction, ...]:
         r"""
         Compute the pDOS for a set of atoms (and their associated Wannier functions).
@@ -496,7 +497,7 @@ class DescriptorCalculator:
             calc_wohp=False,
             calc_wobi=False,
             resolve_k=resolve_k,
-            n_proc=n_proc,
+            num_proc=num_proc,
         )
 
         return updated_interactions
@@ -507,7 +508,7 @@ class DescriptorCalculator:
         calc_wohp: bool = True,
         calc_wobi: bool = True,
         resolve_k: bool = False,
-        n_proc: int = 4,
+        num_proc: int = 4,
     ) -> tuple[AtomicInteraction, ...]:
         r"""
         Compute WOHPs and/or WOBIs for a set of 2-body interactions.
@@ -625,7 +626,7 @@ class DescriptorCalculator:
                     wannier_interactions.append(w_interaction)
 
         updated_wannier_interactions = self.parallelise(
-            wannier_interactions, calc_wobi, resolve_k, n_proc
+            wannier_interactions, calc_wobi, resolve_k, num_proc
         )
 
         running_count = 0
@@ -792,7 +793,7 @@ class DescriptorCalculator:
         wannier_interactions: Sequence[WannierInteraction],
         calc_p_ij: bool,
         resolve_k: bool,
-        n_proc: int,
+        num_proc: int,
     ) -> tuple[WannierInteraction, ...]:
         """
         Compute DOS matrices and elements of the Wannier density matrix in parallel.
@@ -836,7 +837,7 @@ class DescriptorCalculator:
                 )
             )
 
-        pool = Pool(processes=n_proc)
+        pool = Pool(processes=num_proc)
 
         updated_wannier_interactions = tuple(
             tqdm(pool.imap(self._parallel_wrapper, args), total=len(args))
