@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import warnings
 import numpy as np
+from collections.abc import Iterable
 from multiprocessing import Pool
 from multiprocessing.shared_memory import SharedMemory
 from numpy.typing import NDArray
@@ -500,7 +501,7 @@ class DescriptorCalculator:
 
     def assign_descriptors(
         self,
-        interactions: tuple[AtomicInteraction, ...],
+        interactions: Iterable[AtomicInteraction],
         calc_wohp: bool = True,
         calc_wobi: bool = True,
         resolve_k: bool = False,
@@ -608,7 +609,7 @@ class DescriptorCalculator:
                             for component in w_interaction.bl_2 - w_interaction.bl_1
                         ]
                     )
-                    h_ij = self._h[bl_vector][w_interaction.i, w_interaction.j].real
+                    h_ij = self._h[bl_vector][w_interaction.i, w_interaction.j].real  # type: ignore[reportOptionalSubscript]
                     w_interaction_with_h = w_interaction._replace(h_ij=h_ij)
 
                     wannier_interactions.append(w_interaction_with_h)
@@ -623,12 +624,9 @@ class DescriptorCalculator:
         running_count = 0
         updated_interactions = []
         for interaction in interactions:
-            associated_wannier_interactions = tuple(
-                updated_wannier_interactions[
-                    running_count : running_count
-                    + len(interaction.wannier_interactions)
-                ]
-            )
+            associated_wannier_interactions = updated_wannier_interactions[
+                running_count : running_count + len(interaction.wannier_interactions)
+            ]
 
             intermediate_interaction = interaction._replace(
                 wannier_interactions=associated_wannier_interactions
@@ -786,7 +784,7 @@ class DescriptorCalculator:
         calc_p_ij: bool,
         resolve_k: bool,
         n_proc: int,
-    ) -> tuple[WannierInteraction]:
+    ) -> tuple[WannierInteraction, ...]:
         memory_keys = ["dos_array", "kpoints", "u"]
         shared_data = [self._dos_array, self._kpoints, self._u]
         if calc_p_ij:
