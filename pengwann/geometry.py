@@ -27,7 +27,7 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from pengwann.utils import get_atom_indices
 from pymatgen.core import Lattice, Molecule, Structure
-from typing import cast, Iterable, NamedTuple
+from typing import Iterable, NamedTuple
 
 
 class AtomicInteraction(NamedTuple):
@@ -81,6 +81,41 @@ class AtomicInteraction(NamedTuple):
     iwobi: np.float64 | NDArray[np.float64] | None = None
     population: np.float64 | NDArray[np.float64] | None = None
     charge: np.float64 | NDArray[np.float64] | None = None
+
+    def sum(self) -> AtomicInteraction:
+        interaction_builder = {
+            "pair_id": self.pair_id,
+            "wannier_interactions": self.wannier_interactions,
+        }
+
+        descriptor_keys = ("dos_matrix", "wohp", "wobi")
+        for descriptor_key in descriptor_keys:
+            calculated = True
+
+            for w_interaction in self.wannier_interactions:
+                if w_interaction.dos_matrix is None:
+                    calculated = False
+                    break
+
+                if descriptor_key == "wohp":
+                    if w_interaction.h_ij is None:
+                        calculated = False
+                        break
+
+                if descriptor_key == "wobi":
+                    if w_interaction.p_ij is None:
+                        calculated = False
+                        break
+
+            if calculated:
+                interaction_builder[descriptor_key] = sum(
+                    [
+                        getattr(w_interaction, descriptor_key)
+                        for w_interaction in self.wannier_interactions
+                    ]
+                )
+
+        return AtomicInteraction(**interaction_builder)
 
 
 class WannierInteraction(NamedTuple):
@@ -139,14 +174,15 @@ class WannierInteraction(NamedTuple):
     population: np.float64 | NDArray[np.float64] | None = None
 
     @property
-    def wohp(self) -> NDArray[np.float64]:
+    def wohp(self) -> NDArray[np.float64] | None:
         """
         The WOHP associated with the interaction.
 
         Returns
         -------
-        wohp : ndarray[float]
-            The WOHP.
+        wohp : ndarray[float] | None
+            The WOHP or None (in the case that the DOS matrix or the relevant element
+            of the Wannier Hamiltonian are not available).
 
         Notes
         -----
@@ -157,21 +193,20 @@ class WannierInteraction(NamedTuple):
         by far the most demanding step and this is only done once.
         """
         if self.h_ij is None or self.dos_matrix is None:
-            raise TypeError
+            return None
 
-        wohp = -self.h_ij * self.dos_matrix
-
-        return cast(NDArray[np.float64], wohp)
+        return -self.h_ij * self.dos_matrix
 
     @property
-    def wobi(self) -> NDArray[np.float64]:
+    def wobi(self) -> NDArray[np.float64] | None:
         """
         The WOBI associated with the interaction.
 
         Returns
         -------
-        wohp : ndarray[float]
-            The WOBI.
+        wohp : ndarray[float] | None
+            The WOBI or None (in the case that the DOS matrix or the relevant element
+            of the Wannier density matrix are not available).
 
         Notes
         -----
@@ -182,11 +217,9 @@ class WannierInteraction(NamedTuple):
         by far the most demanding step and this is only done once.
         """
         if self.p_ij is None or self.dos_matrix is None:
-            raise TypeError
+            return None
 
-        wobi = self.p_ij * self.dos_matrix
-
-        return cast(NDArray[np.float64], wobi)
+        return self.p_ij * self.dos_matrix
 
 
 def build_geometry(path: str, cell: ArrayLike) -> Structure:
