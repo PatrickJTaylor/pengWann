@@ -365,7 +365,59 @@ def assign_wannier_centres(geometry: Structure) -> None:
     geometry.add_site_property("wannier_centres", wannier_centres)
 
 
-def find_interactions(
+def identify_onsite_interactions(
+    geometry: Structure, symbols: tuple[str, ...]
+) -> list[AtomicInteraction]:
+    """
+    Identify all onsite interactions for a set of atomic species.
+
+    Parameters
+    ----------
+    geometry : Structure
+            A Pymatgen Structure object with a :code:`"wannier_centres"` site property
+            that associates each atom with the indices of its Wannier centres.
+    symbols : tuple[str, ...]
+            The atomic species to return interactions for. These should match one or
+            more of the species present in `geometry`.
+
+    Returns
+    -------
+    interactions : list[AtomicInteraction]
+            The on-site/diagonal AtomicInteraction objects associated with each symbol
+            in `symbols`.
+
+    Notes
+    -----
+    In the context of pengwann, an on-site/diagonal interaction is simply a 2-body
+    interaction between atoms or individual Wannier functions in which
+    atom_i == atom_j or wannier_function_i == wannier_function_j.
+    """
+    wannier_centres = geometry.site_properties["wannier_centres"]
+
+    interactions = []
+    for idx in range(len(geometry)):
+        symbol = geometry[idx].species_string
+        if symbol in symbols:
+            label = symbol + str(idx - self._num_wann + 1)
+            pair_id = (label, label)
+
+            wannier_interactions = []
+            for i in wannier_centres[idx]:
+                wannier_interaction = WannierInteraction(i, i, self._bl_0, self._bl_0)
+
+                wannier_interactions.append(wannier_interaction)
+
+            interaction = AtomicInteraction(pair_id, tuple(wannier_interactions))
+
+            interactions.append(interaction)
+
+    if not interactions:
+        raise ValueError(f"No atoms matching symbols in {symbols} found.")
+
+    return interactions
+
+
+def identify_interatomic_interactions(
     geometry: Structure, radial_cutoffs: dict[tuple[str, str], float]
 ) -> tuple[AtomicInteraction, ...]:
     """

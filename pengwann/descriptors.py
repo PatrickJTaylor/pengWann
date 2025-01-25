@@ -81,8 +81,8 @@ class DescriptorCalculator:
 
     Notes
     -----
-    Upon initialisation, the spilling factor will be calculated. The spilling factor is
-    defined as :footcite:p:`spilling, WOHP`
+    Upon initialisation, the spilling factor will be calculated, it is defined as
+    :footcite:p:`spilling, WOHP`
 
     .. math::
 
@@ -130,18 +130,12 @@ class DescriptorCalculator:
         self._occupation_matrix = occupation_matrix
         self._energies = energies
 
-        u_star = np.conj(self._u)
-        overlaps = (u_star * self._u).real
-
-        num_dp = 8
-        spilling_factor = abs(
-            round(1 - np.sum(overlaps) / len(self._kpoints) / self._num_wann, num_dp)
-        )
-
-        if spilling_factor > 0:
+        spilling_factor = self._get_spilling_factor()
+        rounded_spilling_factor = abs(round(spilling_factor, ndigits=8))
+        if rounded_spilling_factor > 0:
             warnings.warn(
                 f"""
-            The spilling factor = {spilling_factor}.
+            The spilling factor = {rounded_spilling_factor}.
 
             It is advisable to verify that the spilling factor is sufficiently low. For
             Wannier functions derived from energetically isolated bands, it should be
@@ -153,6 +147,20 @@ class DescriptorCalculator:
             any results derived from the Wannier basis should be analysed with caution.
             """
             )
+
+    def _get_spilling_factor(self) -> np.float64:
+        """
+        Compute the spilling factor for a set of Wannier functions.
+
+        Returns
+        -------
+        spilling_factor : np.float64
+            The spilling_factor.
+        """
+        u_star = np.conj(self._u)
+        overlaps = (u_star * self._u).real
+
+        return 1 - np.sum(overlaps) / len(self._kpoints) / self._num_wann
 
     @classmethod
     def from_eigenvalues(
@@ -407,101 +415,6 @@ class DescriptorCalculator:
 
         return element
 
-    def get_pdos(
-        self,
-        geometry: Structure,
-        symbols: tuple[str, ...],
-        resolve_k: bool = False,
-        num_proc: int = 4,
-    ) -> tuple[AtomicInteraction, ...]:
-        r"""
-        Compute the pDOS for a set of atoms (and their associated Wannier functions).
-
-        Parameters
-        ----------
-        geometry : Structure
-            A Pymatgen Structure object with a :code:`"wannier_centres"` site property
-            that associates each atom with the indices of its Wannier centres.
-        symbols : tuple[str, ...]
-            The atomic species to compute the pDOS for. These should match one or more
-            of the species present in `geometry`.
-        resolve_k : bool, optional
-            Whether or not to resolve the pDOS with respect to k-points.
-        num_proc : int, optional
-            The number of processes to spawn when computing the pDOS in parallel.
-
-        Returns
-        -------
-        processed_interactions : tuple[AtomicInteraction, ...]
-            A sequence of AtomicInteraction objects, each of which is associated with
-            the pDOS for a given atom and its associated Wannier functions.
-
-        See Also
-        --------
-        get_dos_matrix
-        pengwann.geometry.build_geometry
-
-        Notes
-        -----
-        The k-resolved pDOS for a given Wannier function :math:`\ket{w_{\alpha}}` is
-        just the on-site DOS matrix :footcite:p:`WOHP`
-
-        .. math::
-
-            \mathrm{pDOS}_{\alpha}(E, k) = D_{\alpha\alpha}(E, k).
-
-        For `resolve_k` = False, summing over :math:`k` yields the total pDOS for
-        :math:`\ket{w_{\alpha}}`
-
-        .. math::
-
-            \mathrm{pDOS}_{\alpha}(E) = \sum_{k} D_{\alpha\alpha}(E, k).
-
-        The total pDOS for a given atom :math:`A` is computed simply by summing over all
-        of its associated Wannier functions
-
-        .. math::
-
-            \mathrm{pDOS}_{A}(E) = \sum_{\alpha \in A} \mathrm{pDOS}_{\alpha}(E).
-
-        References
-        ----------
-        .. footbibliography::
-        """
-        wannier_centres = geometry.site_properties["wannier_centres"]
-
-        interactions = []
-        for idx in range(len(geometry)):
-            symbol = geometry[idx].species_string
-            if symbol in symbols:
-                label = symbol + str(idx - self._num_wann + 1)
-                pair_id = (label, label)
-
-                wannier_interactions = []
-                for i in wannier_centres[idx]:
-                    wannier_interaction = WannierInteraction(
-                        i, i, self._bl_0, self._bl_0
-                    )
-
-                    wannier_interactions.append(wannier_interaction)
-
-                interaction = AtomicInteraction(pair_id, tuple(wannier_interactions))
-
-                interactions.append(interaction)
-
-        if not interactions:
-            raise ValueError(f"No atoms matching symbols in {symbols} found.")
-
-        processed_interactions = self.assign_descriptors(
-            interactions,
-            calc_wohp=False,
-            calc_wobi=False,
-            resolve_k=resolve_k,
-            num_proc=num_proc,
-        )
-
-        return processed_interactions
-
     def assign_descriptors(
         self,
         interactions: Sequence[AtomicInteraction],
@@ -611,14 +524,7 @@ class DescriptorCalculator:
         for interaction in interactions:
             for w_interaction in interaction.wannier_interactions:
                 if calc_wohp:
-                    bl_vector = tuple(
-                        [
-                            int(component)
-                            for component in w_interaction.bl_2 - w_interaction.bl_1
-                        ]
-                    )
-                    h_ij = self._h[bl_vector][w_interaction.i, w_interaction.j].real  # type: ignore[reportOptionalSubscript]
-                    w_interaction_with_h = w_interaction._replace(h_ij=h_ij)
+                    w_interaction_with_h = self._assign_h_ij(w_interaction)
 
                     wannier_interactions.append(w_interaction_with_h)
 
@@ -629,10 +535,63 @@ class DescriptorCalculator:
             wannier_interactions, calc_wobi, resolve_k, num_proc
         )
 
+        return self._reconstruct_atomic_interactions(
+            interactions, processed_wannier_interactions
+        )
+
+    def _assign_h_ij(self, interaction: WannierInteraction) -> WannierInteraction:
+        """
+        Assign the relevant element of the Wannier Hamiltonian to an interaction.
+
+        Parameters
+        ----------
+        interaction : WannierInteraction
+            The interaction to which the element of the Wannier Hamiltonian is to be
+            assigned.
+
+        Returns
+        -------
+        interaction_with_h : WannierInteraction
+            The input `interaction` with the relevant element of the Wannier Hamiltonian
+            assigned.
+        """
+        bl_vector = tuple(
+            [int(component) for component in interaction.bl_2 - interaction.bl_1]
+        )
+
+        assert self._h is not None
+        h_ij = self._h[bl_vector][interaction.i, interaction.j].real
+
+        return interaction._replace(h_ij=h_ij)
+
+    def _reconstruct_atomic_interactions(
+        self,
+        atomic_interactions: Sequence[AtomicInteraction],
+        wannier_interactions: tuple[WannierInteraction, ...],
+    ) -> tuple[AtomicInteraction, ...]:
+        """
+        Reconstruct a set of AtomicInteraction objects with updated descriptors.
+
+        Parameters
+        ----------
+        atomic_interactions : Sequence[AtomicInteraction]
+            The original interactions which are to be reconstructed.
+        wannier_interactions : tuple[WannierInteraction, ...]
+            The WannierInteraction objects that will be associated with the output
+            AtomicInteraction objects and summed over to update the overall atomic
+            descriptors.
+
+        Returns
+        -------
+        processed_interactions : tuple[AtomicInteraction, ...]
+            The reconstructed interactions which are associated with the
+            input `wannier_interactions` and contain the total atomic descriptors
+            derived by summing over the relevant Wannier functions.
+        """
         running_count = 0
         processed_interactions = []
-        for interaction in interactions:
-            associated_wannier_interactions = processed_wannier_interactions[
+        for interaction in atomic_interactions:
+            associated_wannier_interactions = wannier_interactions[
                 running_count : running_count + len(interaction.wannier_interactions)
             ]
 
@@ -688,19 +647,7 @@ class DescriptorCalculator:
                 not been computed. This is required to calculate the DOE."""
                 )
 
-        wannier_indices = range(self._num_wann)
-
-        diagonal_terms = tuple(
-            WannierInteraction(i, i, self._bl_0, self._bl_0) for i in wannier_indices
-        )
-        diagonal_interaction = (AtomicInteraction(("D1", "D1"), diagonal_terms),)
-        processed_diagonal_interaction = self.assign_descriptors(
-            diagonal_interaction, calc_wobi=False
-        )
-
-        all_interactions = tuple(interactions) + processed_diagonal_interaction
-
-        doe = sum([interaction.wohp for interaction in all_interactions])  # type: ignore[reportArgumentType]
+        doe = sum([interaction.wohp for interaction in interactions])  # type: ignore[reportArgumentType]
 
         return doe
 
