@@ -226,6 +226,13 @@ def get_occupation_matrix(
     function can be defined and passed as `occupation_function` (so long as it takes
     `eigenvalues` and `mu` as the first two positional arguments).
     """
+    if nspin not in (1, 2):
+        raise ValueError(
+            f"""nspin can only be 1 (spin-polarised) or 2 (non-spin-polarised), not
+            {nspin}.
+        """
+        )
+
     occupation_matrix = occupation_function(eigenvalues, mu, **function_kwargs)
 
     occupation_matrix *= nspin
