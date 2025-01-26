@@ -15,71 +15,22 @@
 
 import json
 import pytest
-from pengwann.geometry import assign_wannier_centres, build_geometry, find_interactions
+import numpy as np
+from pengwann.geometry import (
+    AtomicInteraction,
+    assign_wannier_centres,
+    build_geometry,
+    identify_interatomic_interactions,
+    identify_onsite_interactions,
+)
 from pymatgen.analysis.structure_matcher import StructureMatcher
 from pymatgen.core import Structure
 
 
-@pytest.fixture
-def ref_geometry(shared_datadir) -> Structure:
-    with open(f"{shared_datadir}/geometry.json", "r") as stream:
-        serial = json.load(stream)
-
-    geometry = Structure.from_dict(serial)
-
-    return geometry
-
-
-def test_build_geometry(ref_geometry, shared_datadir) -> None:
-    cell = (
-        (-1.7803725545451619, -1.7803725545451616, 0.0000000000000000),
-        (-1.7803725545451616, 0.0000000000000000, -1.7803725545451616),
-        (-0.0000000000000003, -1.7803725545451616, -1.7803725545451616),
-    )
-    test_geometry = build_geometry(f"{shared_datadir}/centres.xyz", cell)
-    num_wann = len([site for site in test_geometry if site.species_string == "X0+"])
-
-    sm = StructureMatcher()
-
-    assert num_wann == 8
-    assert sm.fit(test_geometry, ref_geometry)
-
-
-def test_assign_wannier_centres(shared_datadir, data_regression) -> None:
-    geometry = Structure.from_file(f"{shared_datadir}/structure.vasp")
-
-    assign_wannier_centres(geometry)
-
-    data_regression.check(
-        {"wannier_centres": geometry.site_properties["wannier_centres"]}
-    )
-
-
-def test_assign_wannier_centres_invalid_structure(shared_datadir) -> None:
-    geometry = Structure.from_file(f"{shared_datadir}/invalid_structure.vasp")
-
-    with pytest.raises(ValueError):
-        assign_wannier_centres(geometry)
-
-
-@pytest.mark.parametrize("binary", (False, True), ids=("element", "binary"))
-def test_find_interactions(ref_geometry, binary, data_regression) -> None:
-    if binary:
-        ref_geometry.replace(9, "O", properties={"wannier_centres": (0, 3, 4, 6)})
-        cutoffs = {("C", "O"): 1.6}
-
-    else:
-        cutoffs = {("C", "C"): 1.6}
-
-    interactions = find_interactions(ref_geometry, cutoffs)
-
-    serialised_interactions = {
-        "pair_ids": [],
-        "i": [],
-        "j": [],
-        "bl_1": [],
-        "bl_2": [],
-    }  # type: dict[str, list]
+def serialise_interactions(
+    interactions: tuple[AtomicInteraction, ...]
+) -> dict[str, int | tuple[str, str] | list[int]]:
+    serialised_interactions = {"pair_ids": [], "i": [], "j": [], "bl_1": [], "bl_2": []}
     for interaction in interactions:
         serialised_interactions["pair_ids"].append(interaction.pair_id)
 
@@ -93,20 +44,107 @@ def test_find_interactions(ref_geometry, binary, data_regression) -> None:
             serialised_interactions["bl_1"].append(serial_bl_1)
             serialised_interactions["bl_2"].append(serial_bl_2)
 
+    return serialised_interactions
+
+
+@pytest.fixture
+def geometry() -> Structure:
+    cell = np.diag([5, 5, 5])
+    species = ["X0+", "X0+", "C", "O"]
+    coords = [[0.1, 0.1, 0.1], [0.6, 0.6, 0.6], [0.25, 0.25, 0.25], [0.75, 0.75, 0.75]]
+    geometry = Structure(cell, species, coords)
+
+    wannier_centres = ((2,), (3,), (0,), (1,))
+    geometry.add_site_property("wannier_centres", wannier_centres)
+
+    return geometry
+
+
+def test_build_geometry(shared_datadir) -> None:
+    cell = (
+        (-1.7803725545451619, -1.7803725545451616, 0.0000000000000000),
+        (-1.7803725545451616, 0.0000000000000000, -1.7803725545451616),
+        (-0.0000000000000003, -1.7803725545451616, -1.7803725545451616),
+    )
+    test_geometry = build_geometry(f"{shared_datadir}/centres.xyz", cell)
+    num_wann = len([site for site in test_geometry if site.species_string == "X0+"])
+
+    with open(f"{shared_datadir}/geometry.json", "r") as stream:
+        serial = json.load(stream)
+
+    ref_geometry = Structure.from_dict(serial)
+
+    sm = StructureMatcher()
+
+    assert num_wann == 8
+    assert sm.fit(test_geometry, ref_geometry)
+
+
+def test_assign_wannier_centres(geometry, data_regression) -> None:
+    geometry.remove_site_property("wannier_centres")
+
+    assign_wannier_centres(geometry)
+
+    data_regression.check(
+        {"wannier_centres": geometry.site_properties["wannier_centres"]}
+    )
+
+
+def test_assign_wannier_centres_invalid_structure(geometry) -> None:
+    geometry.remove_species(["X0+"])
+
+    with pytest.raises(ValueError):
+        assign_wannier_centres(geometry)
+
+
+@pytest.mark.parametrize("elemental", (True, False), ids=("elemental", "binary"))
+def test_identify_interatomic_interactions(
+    geometry, elemental, data_regression
+) -> None:
+    if elemental:
+        geometry.replace(3, "C")
+        cutoffs = {("C", "C"): 1.5}
+
+    else:
+        cutoffs = {("C", "O"): 1.5}
+
+    interactions = identify_interatomic_interactions(geometry, cutoffs)
+
+    serialised_interactions = serialise_interactions(interactions)
+
     data_regression.check(serialised_interactions)
 
 
-def test_find_interactions_no_site_property(ref_geometry) -> None:
-    ref_geometry.remove_site_property("wannier_centres")
-    cutoffs = {("C", "C"): 1.6}
+def test_find_interactions_no_site_property(geometry) -> None:
+    geometry.remove_site_property("wannier_centres")
+
+    cutoffs = {("C", "O"): 1.5}
 
     with pytest.raises(ValueError):
-        find_interactions(ref_geometry, cutoffs)
+        identify_interatomic_interactions(geometry, cutoffs)
 
 
-def test_find_interactions_no_wann(ref_geometry) -> None:
-    ref_geometry.remove_species(["X0+"])
-    cutoffs = {("C", "C"): 1.6}
+def test_find_interactions_no_wann(geometry) -> None:
+    geometry.remove_species(["X0+"])
+
+    cutoffs = {("C", "C"): 1.5}
 
     with pytest.raises(ValueError):
-        find_interactions(ref_geometry, cutoffs)
+        identify_interatomic_interactions(geometry, cutoffs)
+
+
+def test_identify_onsite_interactions(geometry, data_regression) -> None:
+    symbols = ("C", "O")
+
+    interactions = identify_onsite_interactions(geometry, symbols)
+
+    serialised_interactions = serialise_interactions(interactions)
+
+    data_regression.check(serialised_interactions)
+
+
+def test_identify_onsite_interactions_no_symbols(geometry) -> None:
+    symbols = ("B", "N")
+
+    with pytest.raises(ValueError):
+        identify_onsite_interactions(geometry, symbols)

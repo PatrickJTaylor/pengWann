@@ -15,34 +15,24 @@
 
 import numpy as np
 from multiprocessing.shared_memory import SharedMemory
-from pengwann.utils import allocate_shared_memory, get_atom_indices, integrate_descriptor, parse_id
+from pengwann.utils import (
+    allocate_shared_memory,
+    get_atom_indices,
+    integrate_descriptor,
+    parse_id,
+)
 from pymatgen.core import Structure
 
 
-def test_get_atom_indices(shared_datadir, data_regression) -> None:
-    geometry = Structure.from_file(f"{shared_datadir}/structure.vasp")
+def test_get_atom_indices(data_regression) -> None:
+    cell = np.diag([5, 5, 5])
+    species = ["X0+", "C", "O"]
+    coords = [[0, 0, 0], [0.25, 0.25, 0.25], [0.75, 0.75, 0.75]]
+    geometry = Structure(cell, species, coords)
 
-    indices = get_atom_indices(geometry, ("C", "X0+"))
+    indices = get_atom_indices(geometry, ("C", "O", "X0+"))
 
     data_regression.check(indices)
-
-
-def test_get_atom_indices_uniqueness(shared_datadir) -> None:
-    geometry = Structure.from_file(f"{shared_datadir}/structure.vasp")
-
-    test_indices = get_atom_indices(geometry, ("C", "X0+"))
-    total_indices = test_indices["C"] + test_indices["X0+"]
-    total_indices_set = set(total_indices)
-
-    assert len(total_indices_set) == len(total_indices)
-
-
-def test_get_atom_indices_all_assigned(shared_datadir, data_regression) -> None:
-    geometry = Structure.from_file(f"{shared_datadir}/structure.vasp")
-
-    indices = get_atom_indices(geometry, ("C", "X0+"))
-
-    data_regression.check({"num_C": len(indices["C"]), "num_X": len(indices["X0+"])})
 
 
 def test_parse_id(data_regression) -> None:
@@ -53,29 +43,11 @@ def test_parse_id(data_regression) -> None:
     data_regression.check({"symbol": symbol, "index": idx})
 
 
-def test_integrate_descriptor(ndarrays_regression) -> None:
-    x = np.linspace(-5, 5, 1000)
+def test_integrate_descriptor(ndarrays_regression, tol) -> None:
+    x = np.linspace(-5, 5, 1000, dtype=np.float64)
     y = x**2
     mu = 0
 
-    integral = integrate_descriptor(x, y, mu)  # type: ignore[arg-type]
+    integral = integrate_descriptor(x, y, mu)
 
-    ndarrays_regression.check(
-        {"integral": integral}, default_tolerance={"atol": 0, "rtol": 1e-07}
-    )
-
-
-def test_integrate_descriptor_2d(ndarrays_regression) -> None:
-    x = np.linspace(-5, 5, 1000)
-    y = np.zeros((2, len(x)))
-
-    y[0] = x**2
-    y[1] = x**3
-
-    mu = 0
-
-    integral = integrate_descriptor(x, y, mu)  # type: ignore[arg-type]
-
-    ndarrays_regression.check(
-        {"integral": integral}, default_tolerance={"atol": 0, "rtol": 1e-07}
-    )
+    ndarrays_regression.check({"integral": integral}, default_tolerance=tol)

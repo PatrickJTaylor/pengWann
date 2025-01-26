@@ -15,6 +15,7 @@
 
 import pytest
 import numpy as np
+from numpy.typing import NDArray
 from pengwann.occupation_functions import (
     cold,
     fermi_dirac,
@@ -24,70 +25,93 @@ from pengwann.occupation_functions import (
 )
 
 
-def test_fixed_occupation_function(ndarrays_regression) -> None:
-    eigenvalues = np.array([-4, -3, -2, -1, 1, 2, 3, 4])
-    mu = 0
+@pytest.fixture
+def eigenvalues() -> NDArray[np.float64]:
+    return np.array(
+        [
+            [-1.00, -0.75, -0.50, -0.25, 0.25, 0.50, 0.75, 1.00],
+            [-1.20, -0.66, -0.47, -0.30, 0.34, 0.44, 0.67, 0.98],
+        ]
+    )
 
+
+@pytest.fixture
+def mu() -> int:
+    return 0
+
+
+@pytest.fixture
+def sigma() -> float:
+    return 0.2
+
+
+@pytest.fixture
+def nspin() -> int:
+    return 2
+
+
+def test_fixed_occupation_function(eigenvalues, mu, ndarrays_regression, tol) -> None:
     occupations = fixed(eigenvalues, mu)
 
-    ndarrays_regression.check(
-        {"occupations": occupations}, default_tolerance={"atol": 0, "rtol": 1e-07}
-    )
+    ndarrays_regression.check({"occupations": occupations}, default_tolerance=tol)
 
 
-@pytest.mark.parametrize(
-    "occupation_function",
-    (fermi_dirac, gaussian, cold),
-    ids=("fermi_dirac", "gaussian", "cold"),
-)
-def test_occupation_function(occupation_function, ndarrays_regression) -> None:
-    eigenvalues = np.array([-1, -0.75, -0.5, -0.25, 0.25, 0.5, 0.75, 1])
-    mu = 0
-    sigma = 0.2
-
-    occupations = occupation_function(eigenvalues, mu, sigma)
-
-    ndarrays_regression.check(
-        {"occupations": occupations}, default_tolerance={"atol": 0, "rtol": 1e-07}
-    )
-
-
-@pytest.mark.parametrize(
-    "occupation_function",
-    (fermi_dirac, gaussian, cold),
-    ids=("fermi_dirac", "gaussian", "cold"),
-)
-def test_occupation_function_invalid_sigma(occupation_function) -> None:
-    eigenvalues = np.array([-1, -0.75, -0.5, -0.25, 0.25, 0.5, 0.75, 1])
-    mu = 0
-    sigma = -0.2
-
-    with pytest.raises(ValueError):
-        occupation_function(eigenvalues, mu, sigma)
-
-
-def test_get_occupation_matrix_default(ndarrays_regression) -> None:
-    eigenvalues = np.array([-4, -3, -2, -1, 1, 2, 3, 4])
-    mu = 0
-    nspin = 2
-
+def test_get_occupation_matrix_default(
+    eigenvalues, mu, nspin, ndarrays_regression, tol
+) -> None:
     occupations = get_occupation_matrix(eigenvalues, mu, nspin)
 
-    ndarrays_regression.check(
-        {"occupations": occupations}, default_tolerance={"atol": 0, "rtol": 1e-07}
-    )
+    ndarrays_regression.check({"occupations": occupations}, default_tolerance=tol)
 
 
-def test_get_occupation_matrix_custom(ndarrays_regression) -> None:
-    eigenvalues = np.array([-1, -0.75, -0.5, -0.25, 0.25, 0.5, 0.75, 1])
-    mu = 0
-    nspin = 2
-    sigma = 0.2
+@pytest.mark.parametrize(
+    "occupation_function",
+    (fermi_dirac, gaussian, cold),
+    ids=("fermi_dirac", "gaussian", "cold"),
+)
+class TestOccupationFunctions:
 
-    occupations = get_occupation_matrix(
-        eigenvalues, mu, nspin, occupation_function=fermi_dirac, sigma=sigma
-    )
+    def test_occupation_function(
+        self, occupation_function, eigenvalues, mu, sigma, ndarrays_regression, tol
+    ) -> None:
+        occupations = occupation_function(eigenvalues, mu, sigma)
 
-    ndarrays_regression.check(
-        {"occupations": occupations}, default_tolerance={"atol": 0, "rtol": 1e-07}
-    )
+        ndarrays_regression.check({"occupations": occupations}, default_tolerance=tol)
+
+    def test_occupation_function_invalid_sigma(
+        self, occupation_function, eigenvalues, mu
+    ) -> None:
+        sigma = -0.2
+
+        with pytest.raises(ValueError):
+            occupation_function(eigenvalues, mu, sigma)
+
+    def test_get_occupation_matrix_custom(
+        self,
+        occupation_function,
+        eigenvalues,
+        mu,
+        nspin,
+        sigma,
+        ndarrays_regression,
+        tol,
+    ) -> None:
+        occupations = get_occupation_matrix(
+            eigenvalues, mu, nspin, occupation_function=occupation_function, sigma=sigma
+        )
+
+        ndarrays_regression.check({"occupations": occupations}, default_tolerance=tol)
+
+    def test_get_occupation_matrix_invalid_nspin(
+        self, occupation_function, eigenvalues, mu, sigma
+    ) -> None:
+        nspin = 0.5
+
+        with pytest.raises(ValueError):
+            get_occupation_matrix(
+                eigenvalues,
+                mu,
+                nspin,
+                occupation_function=occupation_function,
+                sigma=sigma,
+            )
