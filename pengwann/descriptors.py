@@ -639,19 +639,18 @@ class DescriptorCalculator:
         ----------
         .. footbibliography::
         """
+        wohps = []
         for interaction in interactions:
-            if interaction.wohp is None:
+            wohp = interaction.wohp
+
+            if wohp is None:
                 raise TypeError(
                     f"""The WOHP for interaction {interaction.pair_id} has 
                 not been computed. This is required to calculate the DOE."""
                 )
 
-        # This conditional is redundant but required for proper type inference.
-        wohps = [
-            interaction.wohp
-            for interaction in interactions
-            if interaction.wohp is not None
-        ]
+            else:
+                wohps.append(wohp)
 
         return np.sum(wohps, axis=0)
 
