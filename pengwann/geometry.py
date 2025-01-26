@@ -298,8 +298,10 @@ def build_geometry(path: str, cell: ArrayLike) -> Structure:
     lattice = Lattice(cell)
 
     xyz = Molecule.from_file(path)
+
+    assert xyz is not None
     species, coords = [], []
-    for site in xyz:  # type: ignore[reportOptionalIterable]
+    for site in xyz:
         symbol = site.species_string.capitalize()
         species.append(symbol)
         coords.append(site.coords)
@@ -392,18 +394,20 @@ def identify_onsite_interactions(
     interaction between atoms or individual Wannier functions in which
     atom_i == atom_j or wannier_function_i == wannier_function_j.
     """
+    bl_0 = np.array([0, 0, 0])
     wannier_centres = geometry.site_properties["wannier_centres"]
+    num_wann = len([site for site in geometry if site.species_string == "X0+"])
 
     interactions = []
     for idx in range(len(geometry)):
         symbol = geometry[idx].species_string
         if symbol in symbols:
-            label = symbol + str(idx - self._num_wann + 1)
+            label = symbol + str(idx - num_wann + 1)
             pair_id = (label, label)
 
             wannier_interactions = []
             for i in wannier_centres[idx]:
-                wannier_interaction = WannierInteraction(i, i, self._bl_0, self._bl_0)
+                wannier_interaction = WannierInteraction(i, i, bl_0, bl_0)
 
                 wannier_interactions.append(wannier_interaction)
 
