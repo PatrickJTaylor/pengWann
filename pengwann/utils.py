@@ -110,12 +110,10 @@ def integrate_descriptor(
     integral : float | ndarray[float]
         The integrated descriptor.
     """
-    for idx, energy in enumerate(energies):
-        if energy > mu:
-            fermi_idx = idx
-            break
+    energies_to_mu = energies[energies <= mu]
+    descriptor_to_mu = descriptor[:len(energies_to_mu)]
 
-    integral = trapezoid(descriptor[:fermi_idx], energies[:fermi_idx], axis=0)
+    integral = trapezoid(descriptor_to_mu, energies_to_mu, axis=0)
 
     return np.float64(integral)
 
