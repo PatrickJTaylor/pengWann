@@ -30,7 +30,6 @@ from collections.abc import Sequence
 from multiprocessing import Pool
 from multiprocessing.shared_memory import SharedMemory
 from numpy.typing import NDArray
-from os import cpu_count
 from pengwann.geometry import AtomicInteraction, WannierInteraction
 from pengwann.utils import allocate_shared_memory, parse_id
 from pymatgen.core import Structure
@@ -647,9 +646,14 @@ class DescriptorCalculator:
                 not been computed. This is required to calculate the DOE."""
                 )
 
-        doe = sum([interaction.wohp for interaction in interactions])  # type: ignore[reportArgumentType]
+        # This conditional is redundant but required for proper type inference.
+        wohps = [
+            interaction.wohp
+            for interaction in interactions
+            if interaction.wohp is not None
+        ]
 
-        return doe
+        return np.sum(wohps, axis=0)
 
     def get_bwdf(
         self,
