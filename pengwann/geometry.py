@@ -369,7 +369,7 @@ def assign_wannier_centres(geometry: Structure) -> None:
 
 def identify_onsite_interactions(
     geometry: Structure, symbols: tuple[str, ...]
-) -> list[AtomicInteraction]:
+) -> tuple[AtomicInteraction, ...]:
     """
     Identify all onsite interactions for a set of atomic species.
 
@@ -384,7 +384,7 @@ def identify_onsite_interactions(
 
     Returns
     -------
-    interactions : list[AtomicInteraction]
+    interactions : tuple[AtomicInteraction, ...]
             The on-site/diagonal AtomicInteraction objects associated with each symbol
             in `symbols`.
 
@@ -418,7 +418,7 @@ def identify_onsite_interactions(
     if not interactions:
         raise ValueError(f"No atoms matching symbols in {symbols} found.")
 
-    return interactions
+    return tuple(interactions)
 
 
 def identify_interatomic_interactions(
