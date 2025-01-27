@@ -87,7 +87,7 @@ def parse_id(identifier: str) -> tuple[str, int]:
             index = int(identifier[i:])
             break
 
-    return symbol, index
+    return symbol, index  # type: ignore
 
 
 def integrate_descriptor(
