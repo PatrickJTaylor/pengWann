@@ -49,7 +49,7 @@ def get_atom_indices(
     atom_indices : dict[str, tuple[int, ...]]
         The site indices categorised by atomic species.
     """
-    atom_indices_list: dict[str, list[int]] = {}
+    atom_indices_list = {}
     for symbol in symbols:
         atom_indices_list[symbol] = []
 
