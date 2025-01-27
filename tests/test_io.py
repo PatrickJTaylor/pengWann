@@ -24,15 +24,13 @@ def test_read_eigenvalues(shared_datadir, ndarrays_regression, tol) -> None:
         f"{shared_datadir}/wannier90.eig", num_bands, num_kpoints
     )
 
-    ndarrays_regression.check(
-        {"eigenvalues": eigenvalues}, default_tolerance=tol)
+    ndarrays_regression.check({"eigenvalues": eigenvalues}, default_tolerance=tol)
 
 
 def test_read_u(shared_datadir, ndarrays_regression, tol) -> None:
     u, kpoints = read_u(f"{shared_datadir}/wannier90_u.mat")
 
-    ndarrays_regression.check(
-        {"U": u, "kpoints": kpoints}, default_tolerance=tol)
+    ndarrays_regression.check({"U": u, "kpoints": kpoints}, default_tolerance=tol)
 
 
 def test_read_hamiltonian(shared_datadir, ndarrays_regression, tol) -> None:
@@ -43,8 +41,7 @@ def test_read_hamiltonian(shared_datadir, ndarrays_regression, tol) -> None:
 
     h_000 = test_h[(0, 0, 0)]
 
-    ndarrays_regression.check(
-        {"H_000": h_000}, default_tolerance=tol)
+    ndarrays_regression.check({"H_000": h_000}, default_tolerance=tol)
 
 
 def test_read_u_dis(shared_datadir, ndarrays_regression, tol) -> None:

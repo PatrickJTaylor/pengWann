@@ -22,6 +22,7 @@ from pengwann.geometry import (
     build_geometry,
     identify_interatomic_interactions,
     identify_onsite_interactions,
+    WannierInteraction,
 )
 from pymatgen.analysis.structure_matcher import StructureMatcher
 from pymatgen.core import Structure
@@ -58,6 +59,47 @@ def geometry() -> Structure:
     geometry.add_site_property("wannier_centres", wannier_centres)
 
     return geometry
+
+
+@pytest.fixture
+def wannier_interaction() -> WannierInteraction:
+    i = 0
+    j = 1
+    bl_1 = np.array([0, 0, 0])
+    bl_2 = np.array([0, 0, 0])
+    dos_matrix = np.linspace(0, 50, 100)
+    h_ij = 2
+    p_ij = 0.5
+
+    return WannierInteraction(
+        i=i, j=j, bl_1=bl_1, bl_2=bl_2, dos_matrix=dos_matrix, h_ij=h_ij, p_ij=p_ij
+    )
+
+
+@pytest.fixture
+def atomic_interaction(wannier_interaction) -> AtomicInteraction:
+    i = 2
+    j = 3
+    bl_1 = np.array([0, 0, 0])
+    bl_2 = np.array([0, 0, 0])
+    dos_matrix = np.linspace(0, 25, 100)
+    h_ij = 2.5
+    p_ij = 0.7
+
+    second_interaction = WannierInteraction(
+        i=i,
+        j=j,
+        bl_1=bl_1,
+        bl_2=bl_2,
+        dos_matrix=dos_matrix,
+        h_ij=h_ij,
+        p_ij=p_ij,
+    )
+    wannier_interactions = (wannier_interaction, second_interaction)
+
+    pair_id = ("Ga1", "As2")
+
+    return AtomicInteraction(pair_id=pair_id, wannier_interactions=wannier_interactions)
 
 
 def test_build_geometry(shared_datadir) -> None:
@@ -148,3 +190,139 @@ def test_identify_onsite_interactions_no_symbols(geometry) -> None:
 
     with pytest.raises(ValueError):
         identify_onsite_interactions(geometry, symbols)
+
+
+def test_WannierInteraction_wohp(wannier_interaction, ndarrays_regression, tol) -> None:
+    ndarrays_regression.check({"WOHP": wannier_interaction.wohp}, default_tolerance=tol)
+
+
+def test_WannierInteraction_wobi(wannier_interaction, ndarrays_regression, tol) -> None:
+    ndarrays_regression.check({"WOBI": wannier_interaction.wobi}, default_tolerance=tol)
+
+
+@pytest.mark.parametrize(
+    "dos_matrix_none, h_ij_none",
+    ((True, False), (False, True), (True, True)),
+    ids=(
+        "dos_matrix_none, h_ij_set",
+        "dos_matrix_set, h_ij_none",
+        "dos_matrix_none, h_ij_none",
+    ),
+)
+def test_WannierInteraction_wohp_none(wannier_interaction, dos_matrix_none, h_ij_none):
+    if dos_matrix_none:
+        wannier_interaction = wannier_interaction._replace(dos_matrix=None)
+
+    if h_ij_none:
+        wannier_interaction = wannier_interaction._replace(h_ij=None)
+
+    assert wannier_interaction.wohp is None
+
+
+@pytest.mark.parametrize(
+    "dos_matrix_none, p_ij_none",
+    ((True, False), (False, True), (True, True)),
+    ids=(
+        "dos_matrix_none, p_ij_set",
+        "dos_matrix_set, p_ij_none",
+        "dos_matrix_none, p_ij_none",
+    ),
+)
+def test_WannierInteraction_wobi_none(wannier_interaction, dos_matrix_none, p_ij_none):
+    if dos_matrix_none:
+        wannier_interaction = wannier_interaction._replace(dos_matrix=None)
+
+    if p_ij_none:
+        wannier_interaction = wannier_interaction._replace(p_ij=None)
+
+    assert wannier_interaction.wobi is None
+
+
+def test_WannierInteraction_with_integrals(
+    wannier_interaction, ndarrays_regression, tol
+) -> None:
+    energies = np.linspace(-20, 10, 100)
+    mu = 0
+
+    wannier_interaction = wannier_interaction.with_integrals(energies, mu)
+
+    ndarrays_regression.check(
+        {
+            "population": wannier_interaction.population,
+            "IWOHP": wannier_interaction.iwohp,
+            "IWOBI": wannier_interaction.iwobi,
+        },
+        default_tolerance=tol,
+    )
+
+
+def test_WannierInteraction_with_integrals_no_dos_matrix(wannier_interaction) -> None:
+    energies = np.linspace(-20, 10, 100)
+    mu = 0
+
+    wannier_interaction = wannier_interaction._replace(dos_matrix=None)
+
+    with pytest.raises(TypeError):
+        wannier_interaction.with_integrals(energies, mu)
+
+
+def test_WannierInteraction_with_integrals_no_elements(wannier_interaction) -> None:
+    energies = np.linspace(-20, 10, 100)
+    mu = 0
+
+    wannier_interaction = wannier_interaction._replace(h_ij=None, p_ij=None)
+    wannier_interaction = wannier_interaction.with_integrals(energies, mu)
+
+    assert wannier_interaction.iwohp is None and wannier_interaction.iwobi is None
+
+
+def test_AtomicInteraction_with_summed_descriptors(
+    atomic_interaction, ndarrays_regression, tol
+) -> None:
+    atomic_interaction = atomic_interaction.with_summed_descriptors()
+
+    ndarrays_regression.check(
+        {"WOHP": atomic_interaction.wohp, "WOBI": atomic_interaction.wobi},
+        default_tolerance=tol,
+    )
+
+
+def test_AtomicInteraction_with_summed_descriptors_no_dos_matrix(
+    atomic_interaction,
+) -> None:
+    base_interaction = atomic_interaction.wannier_interactions[0]
+    new_interaction = (base_interaction._replace(dos_matrix=None),)
+    wannier_interactions = atomic_interaction.wannier_interactions + new_interaction
+
+    atomic_interaction = atomic_interaction._replace(
+        wannier_interactions=wannier_interactions
+    )
+
+    with pytest.raises(TypeError):
+        atomic_interaction.with_summed_descriptors()
+
+
+def test_AtomicInteraction_with_summed_descriptors_no_wohp(atomic_interaction) -> None:
+    base_interaction = atomic_interaction.wannier_interactions[0]
+    new_interaction = (base_interaction._replace(h_ij=None),)
+    wannier_interactions = atomic_interaction.wannier_interactions + new_interaction
+
+    atomic_interaction = atomic_interaction._replace(
+        wannier_interactions=wannier_interactions
+    )
+    atomic_interaction = atomic_interaction.with_summed_descriptors()
+
+    assert atomic_interaction.wohp is None
+
+
+def test_AtomicInteraction_with_summed_descriptors_no_wobi(atomic_interaction) -> None:
+    base_interaction = atomic_interaction.wannier_interactions[0]
+    new_interaction = (base_interaction._replace(p_ij=None),)
+    wannier_interactions = atomic_interaction.wannier_interactions + new_interaction
+
+    atomic_interaction = atomic_interaction._replace(
+        wannier_interactions=wannier_interactions
+    )
+    atomic_interaction = atomic_interaction.with_summed_descriptors()
+
+    assert atomic_interaction.wobi is None
