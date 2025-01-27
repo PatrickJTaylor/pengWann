@@ -140,7 +140,7 @@ class AtomicInteraction(NamedTuple):
         if resolve_orbitals:
             new_values["wannier_interactions"] = []
             for w_interaction in self.wannier_interactions:
-                updated_wannier_interaction = w_interaction.integrate(energies, mu)
+                updated_wannier_interaction = w_interaction.with_integrals(energies, mu)
 
                 new_values["wannier_interactions"].append(updated_wannier_interaction)
 
@@ -250,7 +250,9 @@ class WannierInteraction(NamedTuple):
 
         return self.p_ij * self.dos_matrix
 
-    def integrate(self, energies: NDArray[np.float64], mu: float) -> WannierInteraction:
+    def with_integrals(
+        self, energies: NDArray[np.float64], mu: float
+    ) -> WannierInteraction:
         if self.dos_matrix is None:
             raise TypeError
 
