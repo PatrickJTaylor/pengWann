@@ -27,7 +27,7 @@ from __future__ import annotations
 import warnings
 import numpy as np
 from collections.abc import Sequence
-from multiprocessing import Pool
+from multiprocessing import cpu_count, Pool
 from multiprocessing.shared_memory import SharedMemory
 from numpy.typing import NDArray
 from pengwann.geometry import AtomicInteraction, WannierInteraction
@@ -797,7 +797,10 @@ class DescriptorCalculator:
                 )
             )
 
-        pool = Pool(processes=num_proc)
+        max_proc = cpu_count()
+        processes = min(max_proc, num_proc) if max_proc is not None else num_proc
+
+        pool = Pool(processes=processes)
 
         processed_wannier_interactions = tuple(
             tqdm(pool.imap(self._parallel_wrapper, args), total=len(args))
