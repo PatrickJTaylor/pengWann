@@ -129,23 +129,26 @@ class DescriptorCalculator:
         self._occupation_matrix = occupation_matrix
         self._energies = energies
 
-        spilling_factor = self._get_spilling_factor()
-        rounded_spilling_factor = abs(round(spilling_factor, ndigits=8))
-        if rounded_spilling_factor > 0:
-            warnings.warn(
-                f"""
-            The spilling factor = {rounded_spilling_factor}.
+        if __name__ == "__main__":
+            spilling_factor = self._get_spilling_factor()
+            rounded_spilling_factor = abs(round(spilling_factor, ndigits=8))
+            if rounded_spilling_factor > 0:
+                warnings.warn(
+                    f"""
+                The spilling factor = {rounded_spilling_factor}.
 
-            It is advisable to verify that the spilling factor is sufficiently low. For
-            Wannier functions derived from energetically isolated bands, it should be
-            (within machine precision) strictly 0. For Wannier functions derived using
-            disentanglement, the spilling factor should still be very close to 0.
+                It is advisable to verify that the spilling factor is sufficiently low.
+                For Wannier functions derived from energetically isolated bands, it
+                should be (within machine precision) strictly 0. For Wannier functions
+                derived using disentanglement, the spilling factor should still be very
+                close to 0.
 
-            If the spilling factor is significantly > 0, this implies that there are
-            parts of the Bloch subspace that the Wannier basis does not span and thus
-            any results derived from the Wannier basis should be analysed with caution.
-            """
-            )
+                If the spilling factor is significantly > 0, this implies that there are
+                parts of the Bloch subspace that the Wannier basis does not span and
+                thus any results derived from the Wannier basis should be analysed with
+                caution.
+                """
+                )
 
     def _get_spilling_factor(self) -> np.float64:
         """
