@@ -137,7 +137,8 @@ def read_u(path: str) -> tuple[NDArray[np.complex128], NDArray[np.float64]]:
 
     num_kpoints, num_wann, num_bands = [int(string) for string in lines[1].split()]
 
-    block_indices = [idx * (num_wann * num_bands + 2) + 4 for idx in range(num_kpoints)]
+    block_indices = (idx * (num_wann * num_bands + 2) + 4 for idx in range(num_kpoints))
+    row_indices = [idx for idx in range(num_bands)]
     column_indices = [idx * num_bands for idx in range(num_wann)]
 
     for block_idx in block_indices:
@@ -146,7 +147,7 @@ def read_u(path: str) -> tuple[NDArray[np.complex128], NDArray[np.float64]]:
         kpoint = [float(string) for string in lines[block_idx - 1].split()]
         kpoints_list.append(kpoint)
 
-        for row_idx in range(num_bands):
+        for row_idx in row_indices:
             row = []
 
             for column_idx in column_indices:
