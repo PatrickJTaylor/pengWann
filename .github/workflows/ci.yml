@@ -19,14 +19,16 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install '.[dev]'
-    - name: Run static type checking
-      run: |
-        mypy pengwann
-        mypy --no-incremental tests
     - name: Enforce black formatting
       run: |
         black --check pengwann
         black --check tests
+    - name: Run static type checking
+      run: |
+        pyright pengwann
+    - name: Lint
+      run: |
+        ruff check pengwann
     - name: Generate test coverage report
       run: |
         pytest --cov-report xml --cov=pengwann tests

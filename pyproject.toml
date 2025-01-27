@@ -38,12 +38,12 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   'black',
-  'mypy',
-  'mypy-extensions',
+  'pyright',
   'pytest',
   'pytest-cov',
   'pytest-datadir',
   'pytest-regressions',
+  'ruff',
   'scipy-stubs',
   'types-tqdm'
 ]
