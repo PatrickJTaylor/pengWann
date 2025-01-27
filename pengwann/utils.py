@@ -111,7 +111,7 @@ def integrate_descriptor(
         The integrated descriptor.
     """
     energies_to_mu = energies[energies <= mu]
-    descriptor_to_mu = descriptor[:len(energies_to_mu)]
+    descriptor_to_mu = descriptor[: len(energies_to_mu)]
 
     integral = trapezoid(descriptor_to_mu, energies_to_mu, axis=0)
 
