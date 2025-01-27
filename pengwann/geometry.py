@@ -28,7 +28,7 @@ from collections.abc import Sequence
 from numpy.typing import ArrayLike, NDArray
 from pengwann.io import read_xyz
 from pengwann.utils import get_atom_indices, integrate_descriptor
-from pymatgen.core import Lattice, Structure
+from pymatgen.core import Structure
 from typing import NamedTuple
 
 
@@ -298,11 +298,9 @@ def build_geometry(path: str, cell: ArrayLike) -> Structure:
     to several methods of the :py:class:`~pengwann.descriptors.DescriptorCalculator`
     class.
     """
-    lattice = Lattice(cell)
-
     symbols, coords = read_xyz(path)
 
-    geometry = Structure(lattice, symbols, coords, coords_are_cartesian=True)
+    geometry = Structure(cell, symbols, coords, coords_are_cartesian=True)
 
     assign_wannier_centres(geometry)
 
