@@ -351,7 +351,7 @@ def assign_wannier_centres(geometry: Structure) -> None:
 
     distance_matrix = geometry.distance_matrix
 
-    wannier_centres_list: list[list[int]] = [[] for idx in range(len(geometry))]
+    wannier_centres_list = [[] for site in geometry]
     for i in wannier_indices:
         min_distance, min_idx = np.inf, 2 * len(geometry)
 
