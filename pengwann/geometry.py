@@ -26,8 +26,9 @@ from __future__ import annotations
 import numpy as np
 from collections.abc import Sequence
 from numpy.typing import ArrayLike, NDArray
+from pengwann.io import read_xyz
 from pengwann.utils import get_atom_indices, integrate_descriptor
-from pymatgen.core import Lattice, Molecule, Structure
+from pymatgen.core import Lattice, Structure
 from typing import NamedTuple
 
 
@@ -299,16 +300,9 @@ def build_geometry(path: str, cell: ArrayLike) -> Structure:
     """
     lattice = Lattice(cell)
 
-    xyz = Molecule.from_file(path)
+    symbols, coords = read_xyz(path)
 
-    assert xyz is not None
-    species, coords = [], []
-    for site in xyz:
-        symbol = site.species_string.capitalize()
-        species.append(symbol)
-        coords.append(site.coords)
-
-    geometry = Structure(lattice, species, coords, coords_are_cartesian=True)
+    geometry = Structure(lattice, symbols, coords, coords_are_cartesian=True)
 
     assign_wannier_centres(geometry)
 

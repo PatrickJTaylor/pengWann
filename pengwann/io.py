@@ -205,3 +205,38 @@ def read_hamiltonian(path: str) -> dict[tuple[int, ...], NDArray[np.complex128]]
         h[bl][m, n] = complex(real, imaginary)
 
     return h
+
+
+def read_xyz(path: str) -> tuple[list[str], list[tuple[float, ...]]]:
+    """
+    Parse the symbols and coordinates from a Wannier90 seedname_centres.xyz file.
+
+    Parameters
+    ----------
+    path : str
+        The filepath to seedname_centres.xyz
+
+    Returns
+    -------
+    symbols : list[str]
+        The elemental symbol for each Wannier centre or atom in the xyz file.
+
+    coords : list[tuple[float, ...]]:
+        The coordinates for each Wannier centre or atom in the xyz file.
+    """
+    with open(path, "r") as stream:
+        lines = stream.readlines()
+
+    start_idx = 2
+
+    symbols, coords = [], []
+    for line in lines[start_idx:]:
+        data = line.split()
+
+        symbol = str(data[0]).capitalize()
+        cart_coords = tuple(float(coord) for coord in data[1:])
+
+        symbols.append(symbol)
+        coords.append(cart_coords)
+
+    return symbols, coords
