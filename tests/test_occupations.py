@@ -16,7 +16,7 @@
 import pytest
 import numpy as np
 from numpy.typing import NDArray
-from pengwann.occupation_functions import (
+from pengwann.occupations import (
     cold,
     fermi_dirac,
     fixed,
