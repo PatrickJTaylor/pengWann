@@ -19,7 +19,6 @@ from pengwann.utils import (
     allocate_shared_memory,
     get_atom_indices,
     integrate_descriptor,
-    parse_id,
 )
 from pymatgen.core import Structure
 
@@ -33,14 +32,6 @@ def test_get_atom_indices(data_regression) -> None:
     indices = get_atom_indices(geometry, ("C", "O", "X0+"))
 
     data_regression.check(indices)
-
-
-def test_parse_id(data_regression) -> None:
-    test_id = "Ga1"
-
-    symbol, idx = parse_id(test_id)
-
-    data_regression.check({"symbol": symbol, "index": idx})
 
 
 def test_integrate_descriptor(ndarrays_regression, tol) -> None:

@@ -16,9 +16,13 @@
 import json
 import pytest
 import numpy as np
+from dataclasses import replace
 from pengwann.descriptors import DescriptorCalculator
-from pengwann.io import read_hamiltonian
-from pengwann.geometry import AtomicInteraction, WannierInteraction
+from pengwann.geometry import (
+    AtomicInteractionContainer,
+    AtomicInteraction,
+    WannierInteraction,
+)
 from pymatgen.core import Structure
 from typing import Any
 
@@ -64,12 +68,15 @@ def interactions() -> tuple[AtomicInteraction, ...]:
     )
     interactions = (
         AtomicInteraction(
-            pair_id=("C1", "C2"),
-            wannier_interactions=(w_interaction_1, w_interaction_2),
+            i=1,
+            j=2,
+            symbol_i="C",
+            symbol_j="C",
+            sub_interactions=(w_interaction_1, w_interaction_2),
         ),
     )
 
-    return interactions
+    return AtomicInteractionContainer(sub_interactions=interactions)
 
 
 @pytest.fixture
@@ -152,19 +159,18 @@ class TestkResolvedMethods:
 
         descriptors = {}
         for interaction in processed_interactions:
-            id_i, id_j = interaction.pair_id
-            label = id_i + id_j
+            tag = interaction.tag
 
-            descriptors[label + "_dos_matrix"] = interaction.dos_matrix
-            descriptors[label + "_WOHP"] = none_to_nan(interaction.wohp)
-            descriptors[label + "_WOBI"] = none_to_nan(interaction.wobi)
+            descriptors[tag + "_dos_matrix"] = interaction.dos_matrix
+            descriptors[tag + "_WOHP"] = none_to_nan(interaction.wohp)
+            descriptors[tag + "_WOBI"] = none_to_nan(interaction.wobi)
 
-            for w_interaction in interaction.wannier_interactions:
-                w_label = str(w_interaction.i) + str(w_interaction.j)
+            for w_interaction in interaction.sub_interactions:
+                w_tag = w_interaction.tag
 
-                descriptors[w_label + "_dos_matrix"] = w_interaction.dos_matrix
-                descriptors[w_label + "_WOHP"] = none_to_nan(w_interaction.wohp)
-                descriptors[w_label + "_WOBI"] = none_to_nan(w_interaction.wobi)
+                descriptors[w_tag + "_dos_matrix"] = w_interaction.dos_matrix
+                descriptors[w_tag + "_WOHP"] = none_to_nan(w_interaction.wohp)
+                descriptors[w_tag + "_WOBI"] = none_to_nan(w_interaction.wobi)
 
         ndarrays_regression.check(descriptors, default_tolerance=tol)
 
@@ -172,7 +178,7 @@ class TestkResolvedMethods:
     def test_DescriptorCalculator_parallelise(
         self, dcalc, interactions, resolve_k, calc_p_ij, ndarrays_regression, tol
     ) -> None:
-        wannier_interactions = interactions[0].wannier_interactions
+        wannier_interactions = interactions.sub_interactions[0].sub_interactions
 
         processed_wannier_interactions = dcalc.parallelise(
             wannier_interactions, calc_p_ij=calc_p_ij, resolve_k=resolve_k, num_proc=4
@@ -242,42 +248,24 @@ def test_DescriptorCalculator_assign_descriptors_no_occupation_matrix(
         dcalc.assign_descriptors(interactions)
 
 
-def test_DescriptorCalculator_get_density_of_energy(
-    dcalc, interactions, ndarrays_regression, tol
-) -> None:
-    base_interaction = interactions[0]
-    processed_interactions = (
-        base_interaction._replace(wohp=np.ones(10)),
-        base_interaction._replace(wohp=np.ones(10) / 2),
-    )
-
-    doe = dcalc.get_density_of_energy(processed_interactions)
-
-    ndarrays_regression.check({"DOE": doe}, default_tolerance=tol)
-
-
-def test_DescriptorCalculator_get_density_of_energy_no_wohp(
-    dcalc, interactions
-) -> None:
-    with pytest.raises(TypeError):
-        dcalc.get_density_of_energy(interactions)
-
-
 def test_DescriptorCalculator_get_bwdf(
     shared_datadir, dcalc, interactions, geometry, ndarrays_regression, tol
 ) -> None:
-    base_interaction = interactions[0]
-    processed_interactions = (base_interaction._replace(iwohp=10),)
+    base_interaction = interactions.sub_interactions[0]
+    processed_interactions = (replace(base_interaction, iwohp=10),)
+    processed_interaction_container = replace(
+        interactions, sub_interactions=processed_interactions
+    )
 
     r_range = (0, 5)
     nbins = 500
 
-    r, bwdf = dcalc.get_bwdf(processed_interactions, geometry, r_range, nbins)
+    r, bwdf = dcalc.get_bwdf(processed_interaction_container, geometry, r_range, nbins)
 
     ndarrays_regression.check({"r": r, "BWDF": bwdf[("C", "C")]}, default_tolerance=tol)
 
 
-def test_DescriptorCalculator_get_bwdf(
+def test_DescriptorCalculator_get_bwdf_no_iwohp(
     shared_datadir, dcalc, interactions, geometry
 ) -> None:
     r_range = (0, 5)

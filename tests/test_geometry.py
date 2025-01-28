@@ -16,6 +16,7 @@
 import json
 import pytest
 import numpy as np
+from dataclasses import replace
 from pengwann.geometry import (
     AtomicInteraction,
     assign_wannier_centres,
@@ -31,11 +32,11 @@ from pymatgen.core import Structure
 def serialise_interactions(
     interactions: tuple[AtomicInteraction, ...]
 ) -> dict[str, int | tuple[str, str] | list[int]]:
-    serialised_interactions = {"pair_ids": [], "i": [], "j": [], "bl_1": [], "bl_2": []}
+    serialised_interactions = {"tags": [], "i": [], "j": [], "bl_1": [], "bl_2": []}
     for interaction in interactions:
-        serialised_interactions["pair_ids"].append(interaction.pair_id)
+        serialised_interactions["tags"].append(interaction.tag)
 
-        for w_interaction in interaction.wannier_interactions:
+        for w_interaction in interaction.sub_interactions:
             serialised_interactions["i"].append(w_interaction.i)
             serialised_interactions["j"].append(w_interaction.j)
 
@@ -97,9 +98,15 @@ def atomic_interaction(wannier_interaction) -> AtomicInteraction:
     )
     wannier_interactions = (wannier_interaction, second_interaction)
 
-    pair_id = ("Ga1", "As2")
+    i, j, symbol_i, symbol_j = 1, 2, "Ga", "As"
 
-    return AtomicInteraction(pair_id=pair_id, wannier_interactions=wannier_interactions)
+    return AtomicInteraction(
+        i=i,
+        j=j,
+        symbol_i=symbol_i,
+        symbol_j=symbol_j,
+        sub_interactions=wannier_interactions,
+    )
 
 
 def test_build_geometry(shared_datadir) -> None:
@@ -145,10 +152,12 @@ def test_identify_interatomic_interactions(
 ) -> None:
     if elemental:
         geometry.replace(3, "C")
-        cutoffs = {("C", "C"): 1.5}
+        wannier_centres = ((2,), (3,), (0,), (1,))
+        geometry.add_site_property("wannier_centres", wannier_centres)
+        cutoffs = {("C", "C"): 4.5}
 
     else:
-        cutoffs = {("C", "O"): 1.5}
+        cutoffs = {("C", "O"): 4.5}
 
     interactions = identify_interatomic_interactions(geometry, cutoffs)
 
@@ -290,12 +299,12 @@ def test_AtomicInteraction_with_summed_descriptors(
 def test_AtomicInteraction_with_summed_descriptors_no_dos_matrix(
     atomic_interaction,
 ) -> None:
-    base_interaction = atomic_interaction.wannier_interactions[0]
+    base_interaction = atomic_interaction.sub_interactions[0]
     new_interaction = (base_interaction._replace(dos_matrix=None),)
-    wannier_interactions = atomic_interaction.wannier_interactions + new_interaction
+    wannier_interactions = atomic_interaction.sub_interactions + new_interaction
 
-    atomic_interaction = atomic_interaction._replace(
-        wannier_interactions=wannier_interactions
+    atomic_interaction = replace(
+        atomic_interaction, sub_interactions=wannier_interactions
     )
 
     with pytest.raises(TypeError):
@@ -303,12 +312,12 @@ def test_AtomicInteraction_with_summed_descriptors_no_dos_matrix(
 
 
 def test_AtomicInteraction_with_summed_descriptors_no_wohp(atomic_interaction) -> None:
-    base_interaction = atomic_interaction.wannier_interactions[0]
+    base_interaction = atomic_interaction.sub_interactions[0]
     new_interaction = (base_interaction._replace(h_ij=None),)
-    wannier_interactions = atomic_interaction.wannier_interactions + new_interaction
+    wannier_interactions = atomic_interaction.sub_interactions + new_interaction
 
-    atomic_interaction = atomic_interaction._replace(
-        wannier_interactions=wannier_interactions
+    atomic_interaction = replace(
+        atomic_interaction, sub_interactions=wannier_interactions
     )
     atomic_interaction = atomic_interaction.with_summed_descriptors()
 
@@ -316,12 +325,12 @@ def test_AtomicInteraction_with_summed_descriptors_no_wohp(atomic_interaction) -
 
 
 def test_AtomicInteraction_with_summed_descriptors_no_wobi(atomic_interaction) -> None:
-    base_interaction = atomic_interaction.wannier_interactions[0]
+    base_interaction = atomic_interaction.sub_interactions[0]
     new_interaction = (base_interaction._replace(p_ij=None),)
-    wannier_interactions = atomic_interaction.wannier_interactions + new_interaction
+    wannier_interactions = atomic_interaction.sub_interactions + new_interaction
 
-    atomic_interaction = atomic_interaction._replace(
-        wannier_interactions=wannier_interactions
+    atomic_interaction = replace(
+        atomic_interaction, sub_interactions=wannier_interactions
     )
     atomic_interaction = atomic_interaction.with_summed_descriptors()
 
