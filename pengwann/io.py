@@ -29,7 +29,9 @@ import numpy as np
 from numpy.typing import NDArray
 
 
-def read(seedname: str, path: str = ".") -> tuple[
+def read(
+    seedname: str, path: str = "."
+) -> tuple[
     NDArray[np.float64],
     NDArray[np.float64],
     NDArray[np.complex128],
@@ -49,14 +51,14 @@ def read(seedname: str, path: str = ".") -> tuple[
 
     Returns
     -------
-    kpoints : ndarray[float]
+    kpoints : ndarray of float
         The k-point mesh used in the ab-initio calculation.
-    eigenvalues : ndarray[float]
+    eigenvalues : ndarray of float
         The Kohn-Sham eigenvalues.
-    u : ndarray[complex]
+    u : ndarray of complex
         The unitary matrices U^k that define the Wannier functions in terms of the
         canonical Bloch states.
-    h : dict[tuple[int, ...], ndarray[complex]]
+    h : dict of {3-length tuple of int : ndarray of complex} pairs.
         The Hamiltonian in the Wannier basis.
     """
     u, kpoints = read_u(f"{path}/{seedname}_u.mat")
@@ -89,7 +91,7 @@ def read_eigenvalues(
 
     Returns
     -------
-    eigenvalues : ndarray[float]
+    eigenvalues : ndarray of float
         The Kohn-Sham eigenvalues.
     """
     eigenvalues_list = []
@@ -125,9 +127,9 @@ def read_u(path: str) -> tuple[NDArray[np.complex128], NDArray[np.float64]]:
 
     Returns
     -------
-    u : ndarray[complex]
+    u : ndarray of complex
         The unitary matrices U^k.
-    kpoints : ndarray[float]
+    kpoints : ndarray of float
         The k-point mesh used in the Wannier90 calculation.
     """
     u_list, kpoints_list = [], []
@@ -179,7 +181,7 @@ def read_hamiltonian(path: str) -> dict[tuple[int, ...], NDArray[np.complex128]]
 
     Returns
     -------
-    h : dict[tuple[int, ...], ndarray[complex]]
+    h : dict of {3-length tuple of int : ndarray of complex} pairs.
         The Wannier Hamiltonian.
     """
     with open(path, "r") as stream:
@@ -218,10 +220,10 @@ def read_xyz(path: str) -> tuple[list[str], list[tuple[float, ...]]]:
 
     Returns
     -------
-    symbols : list[str]
+    symbols : list of str
         The elemental symbol for each Wannier centre or atom in the xyz file.
 
-    coords : list[tuple[float, ...]]:
+    coords : list of tuple of float
         The coordinates for each Wannier centre or atom in the xyz file.
     """
     with open(path, "r") as stream:

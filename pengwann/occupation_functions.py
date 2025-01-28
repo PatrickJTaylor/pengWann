@@ -37,14 +37,14 @@ def fixed(eigenvalues: NDArray[np.float64], mu: float) -> NDArray[np.float64]:
 
     Parameters
     ----------
-    eigenvalues : ndarray[float]
+    eigenvalues : ndarray of float
         The Kohn-Sham eigenvalues.
     mu : float
         The Fermi level.
 
     Returns
     -------
-    occupation_matrix : ndarray[float]
+    occupation_matrix : ndarray of float
         The occupation matrix.
 
     Notes
@@ -71,7 +71,7 @@ def fermi_dirac(
 
     Parameters
     ----------
-    eigenvalues : ndarray[float]
+    eigenvalues : ndarray of float
         The Kohn-Sham eigenvalues.
     mu : float
         The Fermi level.
@@ -80,7 +80,7 @@ def fermi_dirac(
 
     Returns
     -------
-    occupation_matrix : ndarray[float]
+    occupation_matrix : ndarray of float
         The occupation matrix.
 
     Notes
@@ -109,7 +109,7 @@ def gaussian(
 
     Parameters
     ----------
-    eigenvalues : ndarray[float]
+    eigenvalues : ndarray of float
         The Kohn-Sham eigenvalues.
     mu : float
         The Fermi level.
@@ -118,7 +118,7 @@ def gaussian(
 
     Returns
     -------
-    occupation_matrix : ndarray[float]
+    occupation_matrix : ndarray of float
         The occupation matrix.
 
     Notes
@@ -146,7 +146,7 @@ def cold(
 
     Parameters
     ----------
-    eigenvalues : ndarray[float]
+    eigenvalues : ndarray of float
         The Kohn-Sham eigenvalues.
     mu : float
         The Fermi level.
@@ -155,7 +155,7 @@ def cold(
 
     Returns
     -------
-    occupation_matrix : ndarray[float]
+    occupation_matrix : ndarray of float
         The occupation matrix.
 
     Notes
@@ -195,7 +195,7 @@ def get_occupation_matrix(
 
     Parameters
     ----------
-    eigenvalues : ndarray[float]
+    eigenvalues : ndarray of float
         The Kohn-Sham eigenvalues.
     mu : float
         The Fermi level.
@@ -211,7 +211,7 @@ def get_occupation_matrix(
 
     Returns
     -------
-    occupation_matrix : ndarray[float]
+    occupation_matrix : ndarray of float
         The occupation matrix.
 
     Notes

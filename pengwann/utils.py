@@ -41,12 +41,12 @@ def get_atom_indices(
     ----------
     geometry : Structure
         A Pymatgen Structure object.
-    symbols : tuple[str, ...]
+    symbols : tuple of str
         The atomic species to associate site indices with.
 
     Returns
     -------
-    atom_indices : dict[str, tuple[int, ...]]
+    atom_indices : dict of {str : tuple of int} pairs.
         The site indices categorised by atomic species.
     """
     atom_indices_list = {}
@@ -65,31 +65,6 @@ def get_atom_indices(
     return atom_indices
 
 
-def parse_id(identifier: str) -> tuple[str, int]:
-    """
-    Parse an atom identifier (e.g. "Ga1") and return the symbol and index separately.
-
-    Parameters
-    ----------
-    identifier : str
-        The identifier to be parsed.
-
-    Returns
-    -------
-    symbol : str
-        The symbol from the id.
-    index : int
-        The index from the id.
-    """
-    for i, character in enumerate(identifier):
-        if character.isdigit():
-            symbol = identifier[:i]
-            index = int(identifier[i:])
-            break
-
-    return symbol, index  # type: ignore
-
-
 def integrate_descriptor(
     energies: NDArray[np.float64], descriptor: NDArray[np.float64], mu: float
 ) -> np.float64 | NDArray[np.float64]:
@@ -98,16 +73,16 @@ def integrate_descriptor(
 
     Parameters
     ----------
-    energies : ndarray[float]
+    energies : ndarray of float
         The discrete energies at which the descriptor has been evaluated.
-    descriptor : ndarray[float]
+    descriptor : ndarray of float
         The descriptor to be integrated.
     mu : float
         The Fermi level.
 
     Returns
     -------
-    integral : float | ndarray[float]
+    integral : float or ndarray of float
         The integrated descriptor.
     """
     energies_to_mu = energies[energies <= mu]
@@ -126,20 +101,20 @@ def allocate_shared_memory(
 
     Parameters
     ----------
-    keys : iterable[str]
+    keys : iterable of str
         A sequence of strings identifying each array to be put into shared memory.
-    data : iterable[ndarray]
+    data : iterable of ndarray
         The arrays to be put into shared memory.
 
     Returns
     -------
-    memory_metadata : dict[str, tuple[tuple[int, ...], np.dtype]]
+    memory_metadata : dict of {str : 2-length tuple of tuple of int and data-type} pairs.
         A dictionary containing metadata for each allocated block of shared memory. The
         keys are set by `keys` and the values are a tuple containing the shape and dtype
         of the corresponding array.
-    memory_handles : list[SharedMemory]
+    memory_handles : list of SharedMemory
         A sequence of SharedMemory objects (returned to allow easy access to the
-        :code:`unlink` method.
+        :code:`unlink` method).
     """
     memory_metadata = {}
     memory_handles = []
