@@ -118,7 +118,6 @@ def test_DescriptorCalculator_energies(dcalc, ndarrays_regression, tol) -> None:
 
 @pytest.mark.parametrize("resolve_k", (False, True), ids=("sum_k", "resolve_k"))
 class TestkResolvedMethods:
-
     def test_DescriptorCalculator_get_dos_matrix(
         self, dcalc, resolve_k, ndarrays_regression, tol
     ) -> None:

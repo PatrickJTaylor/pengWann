@@ -30,7 +30,7 @@ from pymatgen.core import Structure
 
 
 def serialise_interactions(
-    interactions: tuple[AtomicInteraction, ...]
+    interactions: tuple[AtomicInteraction, ...],
 ) -> dict[str, int | tuple[str, str] | list[int]]:
     serialised_interactions = {"tags": [], "i": [], "j": [], "bl_1": [], "bl_2": []}
     for interaction in interactions:

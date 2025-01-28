@@ -70,7 +70,6 @@ def test_get_occupation_matrix_default(
     ids=("fermi_dirac", "gaussian", "cold"),
 )
 class TestOccupationFunctions:
-
     def test_occupation_function(
         self, occupation_function, eigenvalues, mu, sigma, ndarrays_regression, tol
     ) -> None:

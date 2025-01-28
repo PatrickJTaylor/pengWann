@@ -29,7 +29,9 @@ import numpy as np
 from numpy.typing import NDArray
 
 
-def read(seedname: str, path: str = ".") -> tuple[
+def read(
+    seedname: str, path: str = "."
+) -> tuple[
     NDArray[np.float64],
     NDArray[np.float64],
     NDArray[np.complex128],
