@@ -1,3 +1,13 @@
+"""
+Data structures representing interactions between atoms and Wannier functions.
+
+This module contains several dataclasses/namedtuples that serve to store data relating
+to interactions between atoms and Wannier functions. It is generally expected that each
+of these data structures will be initialised with solely the data required to specify
+which atoms or Wannier functions are interacting, the remaining fields will usually be
+set by functions and methods in the :py:mod:`~pengwann.descriptors` module.
+"""
+
 # Copyright (C) 2024-2025 Patrick J. Taylor
 
 # This file is part of pengWann.
