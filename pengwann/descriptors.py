@@ -423,6 +423,7 @@ class DescriptorCalculator:
         calc_wobi: bool = True,
         resolve_k: bool = False,
         num_proc: int = 4,
+        show_progress: bool = True,
     ) -> AtomicInteractionContainer:
         r"""
         Compute WOHPs and/or WOBIs for a set of 2-body interactions.
@@ -445,6 +446,8 @@ class DescriptorCalculator:
             that if `num_proc` is less than the value reported by
             :py:func:`multiprocessing.cpu_count`, then the latter will be used instead.
             Defaults to 4.
+        show_progress : bool, optional
+            If True, display a :py:mod:`tqdm` progress bar. Defaults to True.
 
         Returns
         -------
@@ -532,7 +535,7 @@ class DescriptorCalculator:
                     wannier_interactions.append(w_interaction)
 
         processed_wannier_interactions = self.parallelise(
-            wannier_interactions, calc_wobi, resolve_k, num_proc
+            wannier_interactions, calc_wobi, resolve_k, num_proc, show_progress
         )
 
         return self._reconstruct_atomic_interactions(
@@ -691,7 +694,8 @@ class DescriptorCalculator:
         wannier_interactions: Sequence[WannierInteraction],
         calc_p_ij: bool,
         resolve_k: bool,
-        num_proc: int,
+        num_proc: int = 4,
+        show_progress: bool = True,
     ) -> tuple[WannierInteraction, ...]:
         """
         Compute DOS matrices and elements of the Wannier density matrix in parallel.
@@ -706,10 +710,13 @@ class DescriptorCalculator:
             matrix.
         resolve_k : bool
             Whether or not to resolve the DOS matrix with respect to k-points.
-        num_proc : int
+        num_proc : int, optional
             The number of processes to spawn when computing the pDOS in parallel. Note
             that if `num_proc` is less than the value reported by
             :py:func:`multiprocessing.cpu_count`, then the latter will be used instead.
+            Defaults to 4.
+        show_progress : bool, optional
+            If True, display a :py:mod:`tqdm` progress bar. Defaults to True.
 
         Returns
         -------
