@@ -3,8 +3,8 @@ Occupation functions for reconstructing the ab initio occupation matrix.
 
 This module contains a set of simple functions for calculating orbital occupation
 numbers from a set of Kohn-Sham eigenvalues. Any of these functions can be used together
-with the :py:func:`~pengwann.occupation_functions.get_occupation_matrix` function to
-build the occupation matrix needed to calculated WOBIs with the
+with the :py:func:`~pengwann.occupations.get_occupation_matrix` function to build the
+occupation matrix needed to calculated WOBIs with the
 :py:class:`~pengwann.descriptors.DescriptorCalculator` class.
 """
 

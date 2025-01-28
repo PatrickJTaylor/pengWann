@@ -11,3 +11,4 @@ Input/output (:code:`pengwann.io`)
    read_eigenvalues
    read_hamiltonian
    read_u
+   read_xyz

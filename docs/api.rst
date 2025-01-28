@@ -5,6 +5,7 @@ API reference
 
    descriptors
    geometry
+   interactions
    io
-   occupation_functions
+   occupations
    utils

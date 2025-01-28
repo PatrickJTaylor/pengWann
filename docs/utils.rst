@@ -9,5 +9,4 @@ Utilities (:code:`pengwann.utils`)
 
    allocate_shared_memory
    get_atom_indices
-   integrate
-   parse_id
+   integrate_descriptor

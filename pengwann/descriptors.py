@@ -2,7 +2,7 @@
 Chemical bonding descriptors from Wannier functions.
 
 This module contains a single class, the
-(:py:class:`~pengwann.descriptors.DescriptorCalculator`), which contains the core
+:py:class:`~pengwann.descriptors.DescriptorCalculator`, which contains the core
 functionality of :code:`pengwann`: computing various descriptors of chemical bonding
 from Wannier functions as output by Wannier90.
 """

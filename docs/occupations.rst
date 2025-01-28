@@ -1,8 +1,8 @@
-Occupation functions (:code:`pengwann.occupation_functions`)
+Occupation functions (:code:`pengwann.occupations`)
 ============================================================
-.. currentmodule:: pengwann.occupation_functions
+.. currentmodule:: pengwann.occupations
 
-.. automodule:: pengwann.occupation_functions
+.. automodule:: pengwann.occupations
 
 .. autosummary::
    :toctree: generated
