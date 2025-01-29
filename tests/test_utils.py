@@ -15,9 +15,11 @@
 
 import numpy as np
 from multiprocessing.shared_memory import SharedMemory
+from pengwann.io import read_u
 from pengwann.utils import (
     allocate_shared_memory,
     get_atom_indices,
+    get_spilling_factor,
     integrate_descriptor,
 )
 from pymatgen.core import Structure
@@ -32,6 +34,18 @@ def test_get_atom_indices(data_regression) -> None:
     indices = get_atom_indices(geometry, ("C", "O", "X0+"))
 
     data_regression.check(indices)
+
+
+def test_get_spilling_factor(shared_datadir, ndarrays_regression, tol) -> None:
+    u, _ = read_u(f"{shared_datadir}/wannier90_u.mat")
+
+    num_wann = 8
+
+    spilling_factor = get_spilling_factor(u, num_wann)
+
+    ndarrays_regression.check(
+        {"spilling_factor": spilling_factor}, default_tolerance=tol
+    )
 
 
 def test_integrate_descriptor(ndarrays_regression, tol) -> None:

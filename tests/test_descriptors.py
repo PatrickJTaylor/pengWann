@@ -17,6 +17,10 @@ import json
 import pytest
 import numpy as np
 from dataclasses import replace
+from multiprocessing import set_start_method
+
+# TODO: Figure out why multithreaded fork() occurs only when pytest is run.
+set_start_method("spawn", force=True)
 from pengwann.descriptors import DescriptorCalculator
 from pengwann.geometry import (
     AtomicInteractionContainer,
@@ -59,7 +63,7 @@ def dcalc(shared_datadir) -> DescriptorCalculator:
 
 
 @pytest.fixture
-def interactions() -> tuple[AtomicInteraction, ...]:
+def interactions() -> AtomicInteractionContainer:
     w_interaction_1 = WannierInteraction(
         i=1, j=0, bl_1=np.array([0, 1, 0]), bl_2=np.array([0, 0, 0])
     )
@@ -155,7 +159,6 @@ class TestkResolvedMethods:
         processed_interactions = dcalc.assign_descriptors(
             interactions, calc_wohp=calc_wohp, calc_wobi=calc_wobi, resolve_k=resolve_k
         )
-
         descriptors = {}
         for interaction in processed_interactions:
             tag = interaction.tag
@@ -247,6 +250,18 @@ def test_DescriptorCalculator_assign_descriptors_no_occupation_matrix(
         dcalc.assign_descriptors(interactions)
 
 
+def test_DescriptorCalculator_assign_h_ij(
+    dcalc, interactions, ndarrays_regression, tol
+) -> None:
+    wannier_interaction = interactions.sub_interactions[0].sub_interactions[0]
+
+    wannier_interaction_with_h = dcalc.assign_h_ij(wannier_interaction)
+
+    ndarrays_regression.check(
+        {"H_ij": wannier_interaction_with_h.h_ij}, default_tolerance=tol
+    )
+
+
 def test_DescriptorCalculator_get_bwdf(
     shared_datadir, dcalc, interactions, geometry, ndarrays_regression, tol
 ) -> None:
@@ -272,3 +287,16 @@ def test_DescriptorCalculator_get_bwdf_no_iwohp(
 
     with pytest.raises(TypeError):
         dcalc.get_bwdf(interactions, geometry, r_range, nbins)
+
+
+def test_DescriptorCalculator_parallelise_no_occupation_matrix(
+    dcalc, interactions
+) -> None:
+    dcalc._occupation_matrix = None
+    wannier_interactions = interactions.sub_interactions[0].sub_interactions
+
+    calc_p_ij = True
+    resolve_k = False
+
+    with pytest.raises(TypeError):
+        dcalc.parallelise(wannier_interactions, calc_p_ij, resolve_k)

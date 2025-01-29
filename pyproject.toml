@@ -66,7 +66,12 @@ include = ['pengwann']
 path = 'pengwann/version.py'
 
 [tool.pyright]
-include = ["pengwann"]
+include = ['pengwann']
+
+[tool.coverage.run]
+concurrency = ['multiprocessing']
+parallel = true
+sigterm = true
 
 [tool.coverage.report]
 omit = [
