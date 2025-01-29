@@ -66,7 +66,7 @@ def get_atom_indices(
 
 
 def get_spilling_factor(u: NDArray[np.complex128], num_wann: int) -> np.float64:
-    """
+    r"""
     Compute the spilling factor for a set of Wannier functions.
 
     Parameters
@@ -79,8 +79,25 @@ def get_spilling_factor(u: NDArray[np.complex128], num_wann: int) -> np.float64:
 
     Returns
     -------
-    spilling_factor : np.float64
+    spilling_factor : float
         The spilling factor.
+
+    Notes
+    -----
+    The spilling factor is calculated as :footcite:p:`spilling, WOHP`
+
+    .. math::
+
+        S = \frac{1}{N_{k}}\frac{1}{N_{w}}\sum_{nk} 1 - \sum_{\alpha}
+        |\braket{\psi_{nk}|w_{\alpha}}|^{2},
+
+    where :math:`N_{k}` is the total number of k-points, :math:`N_{w}` is the total
+    number of Wannier functions, :math:`n` labels bands, :math:`k` labels k-points and
+    :math:`\alpha` labels Wannier functions :math:`\ket{w_{\alpha}}`.
+
+        References
+        ----------
+    .. footbibliography::
     """
     u_star = np.conj(u)
     overlaps = (u_star * u).real

@@ -51,8 +51,10 @@ numpydoc_xref_param_type = True
 numpydoc_xref_ignore = "all"
 numpydoc_xref_aliases = {
     "complex": ":class:`python:complex`",
-    "AtomicInteraction": "pengwann.geometry.AtomicInteraction",
-    "WannierInteraction": "pengwann.geometry.WannierInteraction",
+    "DescriptorCalculator": "pengwann.descriptors.DescriptorCalculator",
+    "AtomicInteractionContainer": "pengwann.interactions.AtomicInteractionContainer",
+    "AtomicInteraction": "pengwann.interactions.AtomicInteraction",
+    "WannierInteraction": "pengwann.interactions.WannierInteraction",
     "np.dtype": "numpy.dtype",
     "np.int_": "numpy.int_",
     "Structure": "pymatgen.core.structure.Structure",

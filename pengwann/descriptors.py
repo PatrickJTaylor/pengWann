@@ -1,5 +1,5 @@
 """
-Chemical bonding descriptors from Wannier functions.
+Compute chemical bonding descriptors from Wannier functions.
 
 This module contains a single class, the
 :py:class:`~pengwann.descriptors.DescriptorCalculator`, which contains the core
@@ -77,33 +77,21 @@ class DescriptorCalculator:
     -------
     None
 
+    See Also
+    --------
+    pengwann.utils.get_spilling_factor
+
     Notes
     -----
-    Upon initialisation, the spilling factor will be calculated, it is defined as
-    :footcite:p:`spilling, WOHP`
-
-    .. math::
-
-        S = \frac{1}{N_{k}}\frac{1}{N_{w}}\sum_{nk} 1 - \sum_{\alpha}
-        |\braket{\psi_{nk}|w_{\alpha}}|^{2},
-
-    where :math:`N_{k}` is the total number of k-points, :math:`N_{w}` is the total
-    number of Wannier functions, :math:`n` labels bands, :math:`k` labels k-points and
-    :math:`\alpha` labels Wannier functions :math:`\ket{w_{\alpha}}`.
-
-    For Wannier functions derived from energetically isolated bands, the spilling
-    factor should be (within machine precision) strictly 0. For disentangled bands,
-    the spilling factor should still ideally be very close to 0. If the calculated
-    spilling factor is > 0, a warning will be printed to the console and all derived
-    results should be treated with caution.
+    Upon initialisation, the spilling factor will be calculated. For Wannier functions
+    derived from energetically isolated bands, the spilling factor should be (within
+    machine precision) strictly 0. For disentangled bands, the spilling factor should
+    still ideally be very close to 0. If the calculated spilling factor is > 0, a
+    warning will be raised and all derived results should be treated with caution.
 
     This class should not normally be initialised using the base constructor. See
     instead the :py:meth:`~pengwann.descriptors.DescriptorCalculator.from_eigenvalues`
     classmethod.
-
-    References
-    ----------
-    .. footbibliography::
     """
 
     _bl_0 = np.array((0, 0, 0))
@@ -166,6 +154,11 @@ class DescriptorCalculator:
         """
         Initialise a DescriptorCalculator object from a set of Kohn-Sham eigenvalues.
 
+        The input `eigenvalues` are used to calculate the DOS array: the density of
+        states at each k-point and band across a range of discretised energies as
+        specified by `energy_range` and `resolution`. This is required to compute
+        descriptors such as the WOHP in a vectorised manner.
+
         Parameters
         ----------
         eigenvalues : ndarray of float
@@ -181,7 +174,7 @@ class DescriptorCalculator:
         resolution : float
             The desired energy resolution of the density of states.
         sigma : float
-            The width of the Gaussian kernel used to smear the density of states (in eV).
+            The width of the Gaussian kernel used to smear the density of states.
         kpoints : ndarray of float
             The full k-point mesh used in the prior Wannier90 calculation.
         u : ndarray of complex
@@ -223,14 +216,14 @@ class DescriptorCalculator:
     @property
     def energies(self) -> NDArray[np.float64] | None:
         """
-        The discrete energies over which the DOS (and derived descriptors) has been evaluated.
+        The energies at which the DOS and all derived descriptors have been evaluated.
 
         Returns
         -------
         energies : ndarray of float or None
-            The energies over which the DOS (and all derived quantities such as WOHPs
-            or WOBIs) has been evaluated. If these energies were not provided when the
-            constructor was called, this property will simply return None.
+            The discrete energies at which the DOS and all derived quantities such as
+            WOHPs or WOBIs have been evaluated. If these energies were not provided
+            when the constructor was called, this property will simply return None.
         """
         return self._energies
 
@@ -292,8 +285,8 @@ class DescriptorCalculator:
         Parameters
         ----------
         c_star : ndarray of complex
-            The coefficient matrix for Wannier function i with Bravais lattice vector
-            R_1.
+            The complex conjugate of the coefficient matrix for Wannier function i witha
+            Bravais lattice vector R_1.
         c : ndarray of complex
             The coefficient matrix for Wannier function j with Bravais lattice vector
             R_2.
@@ -316,8 +309,8 @@ class DescriptorCalculator:
         of Wannier functions :math:`\ket{w_{\alpha}}` and :math:`\ket{w_{\beta}}` has
         dimensions of num_energy x num_kpoints, where num_energy refers to the number
         of discrete energies over which the density of states has been evaluated. For
-        `resolve_k` = False, it is no longer a DOS matrix but rather a DOS vector with
-        num_energy elements.
+        `resolve_k` = False, it is technically no longer a DOS matrix but rather a DOS
+        vector with num_energy elements.
 
         For the k-resolved case, each element of the DOS matrix is constructed as
         :footcite:p:`original_COHP`
@@ -325,10 +318,10 @@ class DescriptorCalculator:
         .. math::
 
             D_{\alpha\beta}(E, k) = \sum_{n} \mathrm{Re}\left[\left(C^{\alpha}_{nk}
-            \right)^{*}C^{\beta}_{nk}\right] \cdot \delta(\epsilon_{nk} - E),
+            \right)^{*}C^{\beta}_{nk}\right] \cdot \delta(E - \epsilon_{nk}),
 
         where :math:`\left(C^{\alpha}\right)^{*}` and :math:`C^{\beta}` reflect the
-        values of the `c_star` and `c` arguments and :math:`\delta(\epsilon_{nk} - E)`
+        values of the `c_star` and `c` arguments and :math:`\delta(E - \epsilon_{nk})`
         is the density of states evaluated for a particular band and k-point. Summing
         over :math:`k` (`resolve_k` = False) yields
 
@@ -363,8 +356,8 @@ class DescriptorCalculator:
         Parameters
         ----------
         c_star : ndarray of complex
-            The coefficient matrix for Wannier function i with Bravais lattice vector
-            R_1.
+            The complex conjugate of the coefficient matrix for Wannier function i with
+            Bravais lattice vector R_1.
         c : ndarray of complex
             The coefficient matrix for Wannier function j with Bravais lattice vector
             R_2.
@@ -377,6 +370,7 @@ class DescriptorCalculator:
         See Also
         --------
         get_coefficient_matrix
+        pengwann.occupations.get_occupation_matrix
 
         Notes
         -----
@@ -412,12 +406,16 @@ class DescriptorCalculator:
         show_progress: bool = True,
     ) -> AtomicInteractionContainer:
         r"""
-        Compute WOHPs and/or WOBIs for a set of 2-body interactions.
+        Compute DOS matrices, WOHPs and WOBIs for a set of AtomicInteraction objects.
+
+        If both `calc_wohp` and `calc_wobi` are both False, the DOS matrix will still
+        be calculated for each interaction.
 
         Parameters
         ----------
         interactions : AtomicInteractionContainer
-            The 2-body interactions for which to calculate WOHPs and/or WOBIs.
+            The 2-body interactions for which to calculate DOS matrices, WOHPs and
+            WOBIs.
         calc_wohp : bool, optional
             Whether or not to calculate WOHPs for the input `interactions`. Defaults to
             True.
@@ -428,8 +426,8 @@ class DescriptorCalculator:
             Whether or not to resolve the output WOHPs and/or WOBIs with respect to
             k-points. Defaults to False.
         num_proc : int, optional
-            The number of processes to spawn when computing the pDOS in parallel. Note
-            that if `num_proc` is less than the value reported by
+            The number of processes used to compute descriptors in parallel. Note that
+            if `num_proc` is less than the value reported by
             :py:func:`multiprocessing.cpu_count`, then the latter will be used instead.
             Defaults to 4.
         show_progress : bool, optional
@@ -437,28 +435,30 @@ class DescriptorCalculator:
 
         Returns
         -------
-        processed_interactions : AtomicInteractionContainer
+        interactions_with_descriptors : AtomicInteractionContainer
             An updated instance of the input `interactions`, with each of the
-            AtomicInteraction objects now being associated with the bonding descriptors
+            AtomicInteraction objects now being associated with the descriptors
             calculated for the overall interaction as well as its constituent
             WannierInteraction objects.
 
         See Also
         --------
-        pengwann.geometry.find_interactions
+        pengwann.geometry.identify_interatomic_interactions
+        pengwann.geometry.identify_onsite_interactions
+        get_dos_matrix
         get_density_matrix_element
 
         Notes
         -----
-        If both `calc_wohp` and `calc_wobi` are False, then the :code:`dos_matrix`
-        attribute of each AtomicInteraction and WannierInteraction will still be set.
-
         The WOHPs and WOBIs for the input `interactions` are computed using shared
         memory parallelism to avoid copying potentially very large arrays (such as the
-        full DOS array) between concurrent processes. Even with shared memory, very
-        small (low volume -> many k-points) and very large (many electrons -> many
-        bands/Wannier functions) systems can be problematic in terms of memory usage
-        if the energy resolution is too high.
+        density of states at each energy, k-point and band) between concurrent
+        processes. Even with shared memory, very small (low volume -> many k-points) and
+        very large (many electrons -> many bands/Wannier functions) systems can be
+        problematic in terms of memory usage if the energy resolution is too high. If
+        you find that you are running out of memory, you can either a) reduce `num_proc`
+        or b) reduce the energy resolution of the DOS by passing a smaller `resolution`
+        to :py:meth:`~pengwann.descriptors.DescriptorCalculator.from_eigenvalues`.
 
         For `resolve_k` = True and `calc_wohp` = True, the k-resolved WOHP for a given
         pair of Wannier functions is computed as :footcite:p:`WOHP, pCOHP`
@@ -530,7 +530,7 @@ class DescriptorCalculator:
 
     def assign_h_ij(self, interaction: WannierInteraction) -> WannierInteraction:
         """
-        Assign the relevant element of the Wannier Hamiltonian to an interaction.
+        Assign the relevant element of the Hamiltonian to a WannierInteraction object.
 
         Parameters
         ----------
@@ -628,8 +628,8 @@ class DescriptorCalculator:
 
         See Also
         --------
-        assign_descriptors
-        integrate_descriptors
+        assign_descriptors : Assign WOHPs to a set of AtomicInteraction objects.
+        integrate_descriptors : Integrate WOHPs to obtain IWOHPs.
 
         Notes
         -----
@@ -686,6 +686,14 @@ class DescriptorCalculator:
         """
         Compute DOS matrices and elements of the Wannier density matrix in parallel.
 
+        This method is called by
+        :py:meth:`~pengwann.descriptors.DescriptorCalculator.assign_descriptors`, but it
+        can also be utilised on its own for additional flexibility. To be more specific,
+        the assign_descriptors method takes AtomicInteraction objects as input, whereas
+        this method can be used to parallelise the computation of DOS matrices and
+        elements of the Wannier density matrix over any arbitrary set of
+        WannierInteraction objects.
+
         Parameters
         ----------
         wannier_interactions : sequence of WannierInteraction
@@ -697,10 +705,10 @@ class DescriptorCalculator:
         resolve_k : bool
             Whether or not to resolve the DOS matrix with respect to k-points.
         num_proc : int, optional
-            The number of processes to spawn when computing the pDOS in parallel. Note
-            that if `num_proc` is less than the value reported by
-            :py:func:`multiprocessing.cpu_count`, then the latter will be used instead.
-            Defaults to 4.
+            The number of processes to spawn when computing the DOS matrix and density
+            matrix elements in parallel. Note that if `num_proc` is less than the value
+            reported by :py:func:`multiprocessing.cpu_count`, then the latter will be
+            used instead. Defaults to 4.
         show_progress : bool, optional
             If True, display a :py:mod:`tqdm` progress bar. Defaults to True.
 
@@ -708,8 +716,18 @@ class DescriptorCalculator:
         -------
         processed_wannier_interaction : tuple of WannierInteraction
             A sequence of WannierInteraction objects, each of which is associated with
-            the DOS matrix and (if `calc_p_ij` = True) the relevant elements of the
+            the DOS matrix and (if `calc_p_ij` = True) the relevant element of the
             Wannier density matrix.
+
+        Notes
+        -----
+        This method is vulnerable to the same memory bottleneck as the
+        assign_descriptors method - the same advice follows if memory usage becomes
+        problematic.
+
+        See Also
+        --------
+        assign_descriptors
         """
         memory_keys = ["dos_array", "kpoints", "u"]
         shared_data = [self._dos_array, self._kpoints, self._u]
