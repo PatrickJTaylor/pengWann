@@ -41,6 +41,7 @@ dev = [
   'pytest',
   'pytest-cov',
   'pytest-datadir',
+  'pytest-random-order',
   'pytest-regressions',
   'ruff',
   'scipy-stubs',
@@ -64,8 +65,15 @@ include = ['pengwann']
 [tool.hatch.version]
 path = 'pengwann/version.py'
 
+[tool.pyright]
+include = ["pengwann"]
+
 [tool.coverage.report]
 omit = [
   'pengwann/__init__.py',
   'pengwann/version.py'
 ]
+
+[tool.pytest.ini_options]
+addopts = '--random-order --cov-report xml --cov=pengwann'
+testpaths = ['tests']

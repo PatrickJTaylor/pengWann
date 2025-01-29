@@ -28,10 +28,10 @@ jobs:
         ruff check pengwann
     - name: Run static type checking
       run: |
-        pyright pengwann
+        pyright
     - name: Generate test coverage report
       run: |
-        pytest --cov-report xml --cov=pengwann tests
+        pytest
     - name: Publish test coverage report
       uses: paambaati/codeclimate-action@v9.0.0
       env:
