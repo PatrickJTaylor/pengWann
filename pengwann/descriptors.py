@@ -129,9 +129,7 @@ class DescriptorCalculator:
         self._energies = energies
 
         if __name__ == "__main__":
-            spilling_factor = get_spilling_factor(
-                self._u, len(self._kpoints), self._num_wann
-            )
+            spilling_factor = get_spilling_factor(self._u, self._num_wann)
             rounded_spilling_factor = abs(round(spilling_factor, ndigits=8))
             if rounded_spilling_factor > 0:
                 warnings.warn(
