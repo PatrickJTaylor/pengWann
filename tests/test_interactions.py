@@ -349,6 +349,15 @@ def test_AtomicInteraction_with_integrals_no_descriptors(atomic_interaction) -> 
     assert atomic_interaction.iwobi is None
 
 
+def test_AtomicInteractionContainer_filter_by_species(interaction_container) -> None:
+    symbols = ("Ga", "As")
+    interactions = interaction_container.filter_by_species(symbols)
+
+    for interaction in interactions:
+        assert interaction.symbol_i in symbols
+        assert interaction.symbol_j in symbols
+
+
 def test_AtomicInteractionContainer_slice_2_indices(interaction_container) -> None:
     i = 1
     j = 2
@@ -357,6 +366,14 @@ def test_AtomicInteractionContainer_slice_2_indices(interaction_container) -> No
 
     assert atomic_interaction.i == i
     assert atomic_interaction.j == j
+
+
+def test_AtomicInteractionContainer_slice_no_indices(interaction_container) -> None:
+    i = 1
+    j = 3
+
+    with pytest.raises(ValueError):
+        interaction_container[i, j]
 
 
 def test_AtomicInteractionContainer_slice_1_index(interaction_container) -> None:
