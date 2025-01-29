@@ -32,7 +32,7 @@ from multiprocessing import cpu_count, Pool
 from multiprocessing.shared_memory import SharedMemory
 from numpy.typing import NDArray
 from pengwann.geometry import AtomicInteractionContainer, WannierInteraction
-from pengwann.utils import allocate_shared_memory
+from pengwann.utils import allocate_shared_memory, get_spilling_factor
 from pymatgen.core import Structure
 from tqdm.auto import tqdm
 from typing import Any
@@ -129,7 +129,9 @@ class DescriptorCalculator:
         self._energies = energies
 
         if __name__ == "__main__":
-            spilling_factor = self._get_spilling_factor()
+            spilling_factor = get_spilling_factor(
+                self._u, len(self._kpoints), self._num_wann
+            )
             rounded_spilling_factor = abs(round(spilling_factor, ndigits=8))
             if rounded_spilling_factor > 0:
                 warnings.warn(
@@ -148,20 +150,6 @@ class DescriptorCalculator:
                 caution.
                 """
                 )
-
-    def _get_spilling_factor(self) -> np.float64:
-        """
-        Compute the spilling factor for a set of Wannier functions.
-
-        Returns
-        -------
-        spilling_factor : np.float64
-            The spilling_factor.
-        """
-        u_star = np.conj(self._u)
-        overlaps = (u_star * self._u).real
-
-        return 1 - np.sum(overlaps) / len(self._kpoints) / self._num_wann
 
     @classmethod
     def from_eigenvalues(
@@ -527,7 +515,7 @@ class DescriptorCalculator:
         for interaction in interactions:
             for w_interaction in interaction:
                 if calc_wohp:
-                    w_interaction_with_h = self._assign_h_ij(w_interaction)
+                    w_interaction_with_h = self.assign_h_ij(w_interaction)
 
                     wannier_interactions.append(w_interaction_with_h)
 
@@ -542,7 +530,7 @@ class DescriptorCalculator:
             interactions, processed_wannier_interactions
         )
 
-    def _assign_h_ij(self, interaction: WannierInteraction) -> WannierInteraction:
+    def assign_h_ij(self, interaction: WannierInteraction) -> WannierInteraction:
         """
         Assign the relevant element of the Wannier Hamiltonian to an interaction.
 
@@ -754,13 +742,11 @@ class DescriptorCalculator:
         max_proc = cpu_count()
         processes = min(max_proc, num_proc) if max_proc is not None else num_proc
 
-        pool = Pool(processes=processes)
+        with Pool(processes=processes) as pool:
+            processed_wannier_interactions = tuple(
+                tqdm(pool.imap(self._parallel_wrapper, args), total=len(args))
+            )
 
-        processed_wannier_interactions = tuple(
-            tqdm(pool.imap(self._parallel_wrapper, args), total=len(args))
-        )
-
-        pool.close()
         for memory_handle in memory_handles:
             memory_handle.unlink()
 

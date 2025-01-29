@@ -65,6 +65,31 @@ def get_atom_indices(
     return atom_indices
 
 
+def get_spilling_factor(u: NDArray[np.complex128], num_wann: int) -> np.float64:
+    """
+    Compute the spilling factor for a set of Wannier functions.
+
+    Parameters
+    ----------
+    u : ndarray of complex
+        The U matrices that define the Wannier functions in terms of the canonical
+        Bloch states.
+    num_wann : int
+        The total number of Wannier functions.
+
+    Returns
+    -------
+    spilling_factor : np.float64
+        The spilling factor.
+    """
+    u_star = np.conj(u)
+    overlaps = (u_star * u).real
+
+    num_kpoints = u.shape[0]
+
+    return 1 - np.sum(overlaps) / num_kpoints / num_wann
+
+
 def integrate_descriptor(
     energies: NDArray[np.float64], descriptor: NDArray[np.float64], mu: float
 ) -> np.float64 | NDArray[np.float64]:
