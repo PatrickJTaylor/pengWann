@@ -383,7 +383,8 @@ class DescriptorCalculator:
         """
         if self._occupation_matrix is None:
             raise TypeError(
-                "The occupation matrix is required to calculate elements of the Wannier density matrix."
+                """The occupation matrix must be passed to the DescriptorCalculator
+                constructor to calculate elements of the Wannier density matrix"""
             )
 
         p_nk = self._occupation_matrix * c_star * c
@@ -499,11 +500,18 @@ class DescriptorCalculator:
         """
         if calc_wohp:
             if self._h is None:
-                raise TypeError
+                raise TypeError(
+                    """The Wannier Hamiltonian must be passed to the
+                    DescriptorCalculator constructor to calculate elements of the
+                    Wannier density matrix"""
+                )
 
         if calc_wobi:
             if self._occupation_matrix is None:
-                raise TypeError
+                raise TypeError(
+                    """The occupation_matrix must be passed to the DescriptorCalculator
+                    constructor to calculate elements of the Wannier density matrix"""
+                )
 
         wannier_interactions = []
         for interaction in interactions:
@@ -729,7 +737,10 @@ class DescriptorCalculator:
         shared_data = [self._dos_array, self._kpoints, self._u]
         if calc_p_ij:
             if self._occupation_matrix is None:
-                raise TypeError
+                raise TypeError(
+                    """The occupation_matrix must be passed to the DescriptorCalculator
+                    constructor to calculate elements of the Wannier density matrix"""
+                )
 
             memory_keys.append("occupation_matrix")
             shared_data.append(self._occupation_matrix)

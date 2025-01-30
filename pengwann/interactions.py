@@ -133,7 +133,7 @@ class AtomicInteractionContainer:
         )
 
         if not interactions:
-            raise ValueError
+            raise ValueError("No interactions involving {symbols} found.")
 
         return interactions
 
@@ -290,7 +290,10 @@ class AtomicInteraction:
 
             for w_interaction in self.sub_interactions:
                 if w_interaction.dos_matrix is None:
-                    raise TypeError
+                    raise TypeError(
+                        f"""The DOS matrix has not been calculated for interaction
+                        {w_interaction.tag}"""
+                    )
 
                 if descriptor_key == "wohp":
                     if w_interaction.h_ij is None:
@@ -513,7 +516,10 @@ class WannierInteraction(NamedTuple):
             relevant attributes.
         """
         if self.dos_matrix is None:
-            raise TypeError
+            raise TypeError(
+                """The DOS matrix must be calculated first to derive WOHPs, WOBIs and
+                integrated descriptors."""
+            )
 
         new_values = {}
 
@@ -558,7 +564,7 @@ def _slice_interaction_matrix(
         indices = interaction_matrix[i][j]
 
     if not indices:
-        raise ValueError
+        raise ValueError("No interactions found for indices {key}.")
 
     return indices
 
