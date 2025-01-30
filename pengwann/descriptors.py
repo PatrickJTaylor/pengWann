@@ -73,10 +73,6 @@ class DescriptorCalculator:
     energies : ndarray of float or None, optional
         The energies at which the `dos_array` has been evaluated. Defaults to None.
 
-    Returns
-    -------
-    None
-
     See Also
     --------
     pengwann.utils.get_spilling_factor

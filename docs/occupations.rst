@@ -4,6 +4,9 @@ Occupation functions (:code:`pengwann.occupations`)
 
 .. automodule:: pengwann.occupations
 
+Functions
+---------
+
 .. autosummary::
    :toctree: generated
 

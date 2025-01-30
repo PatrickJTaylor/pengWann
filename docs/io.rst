@@ -4,6 +4,9 @@ Input/output (:code:`pengwann.io`)
 
 .. automodule:: pengwann.io
 
+Functions
+---------
+
 .. autosummary::
    :toctree: generated
 

@@ -4,8 +4,9 @@ Geometry (:code:`pengwann.geometry`)
 
 .. automodule:: pengwann.geometry
 
-Geometry manipulation functions
--------------------------------
+Functions
+---------
+
 .. autosummary::
    :toctree: generated
 

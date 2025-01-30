@@ -4,8 +4,10 @@ Bonding descriptors (:code:`pengwann.descriptors`)
 
 .. automodule:: pengwann.descriptors
 
+Classes
+-------
+
 .. autosummary::
-   :template: class_template.rst
    :toctree: generated
 
    DescriptorCalculator

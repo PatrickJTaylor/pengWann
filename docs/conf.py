@@ -46,7 +46,7 @@ autodoc_typehints = "none"
 
 # numpydoc
 
-numpydoc_show_class_members = False
+numpydoc_show_inherited_class_members = False
 numpydoc_xref_param_type = True
 numpydoc_xref_ignore = "all"
 numpydoc_xref_aliases = {

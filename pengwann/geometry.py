@@ -37,16 +37,18 @@ from pymatgen.core import Structure
 
 def build_geometry(path: str, cell: ArrayLike) -> Structure:
     """
-    Return a Pymatgen Structure with a :code:`"wannier_centres"` site property.
+    Parse a seedname_centres.xyz file, add PBCs and assign Wannier centres.
 
-    The "wannier_centres" site property associates each atom in the structure with a
-    sequence of indices. These indices indicate the Wannier centres that have been
-    assigned to each atom.
+    This function will parse a Wannier90 seedname_centres.xyz file and by combining
+    this data with the `cell` vectors, generate a Pymatgen Structure object with
+    periodic boundary conditions and a :code:`wannier_centres` site property. This
+    latter data is required to identify interatomic and on-site interactions in terms
+    of Wannier functions.
 
     Parameters
     ----------
     path : str
-        Filepath to the xyz file output by Wannier90.
+        Filepath to the seedname_centres.xyz file output by Wannier90.
     cell : array_like
         The cell vectors associated with the structure.
 
@@ -55,11 +57,9 @@ def build_geometry(path: str, cell: ArrayLike) -> Structure:
     geometry : Structure
         The Pymatgen Structure with a :code:`"wannier_centres"` site property.
 
-    Notes
-    -----
-    The `geometry` returned by this function can be passed as the `geometry` argument
-    to several methods of the :py:class:`~pengwann.descriptors.DescriptorCalculator`
-    class.
+    See Also
+    --------
+    assign_wannier_centres
     """
     symbols, coords = read_xyz(path)
 
@@ -74,10 +74,10 @@ def assign_wannier_centres(geometry: Structure) -> None:
     """
     Assign Wannier centres to atoms based on a closest distance criterion.
 
-    A :code:`"wannier_centres"` site property will be added to the input `geometry`,
-    associating each atom in the structure with a sequence of indices. These indices
-    refer to the order of atoms in `geometry` and associate each atom with the Wannier
-    centres to which it is closer than any other atom.
+    A :code:`"wannier_centres"` site property will be assigned in-place to the input
+    `geometry`, associating each atom in the structure with a sequence of indices. These
+    indices refer to the order of atoms in `geometry` and associate each atom with the
+    Wannier centres to which it is closer than any other atom.
 
     Parameters
     ----------
@@ -128,7 +128,7 @@ def identify_onsite_interactions(
     geometry: Structure, symbols: tuple[str, ...]
 ) -> AtomicInteractionContainer:
     """
-    Identify all onsite interactions for a set of atomic species.
+    Identify all on-site interactions for a set of atomic species.
 
     Parameters
     ----------
@@ -149,7 +149,7 @@ def identify_onsite_interactions(
     -----
     In the context of pengwann, an on-site/diagonal interaction is simply a 2-body
     interaction between atoms or individual Wannier functions in which
-    atom_i == atom_j or wannier_function_i == wannier_function_j.
+    atom i == atom j or Wannier function i == Wannier function j.
     """
     bl_0 = np.array([0, 0, 0])
     wannier_centres = geometry.site_properties["wannier_centres"]

@@ -4,6 +4,9 @@ Utilities (:code:`pengwann.utils`)
 
 .. automodule:: pengwann.utils
 
+Functions
+---------
+
 .. autosummary::
    :toctree: generated
 

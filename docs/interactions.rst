@@ -4,6 +4,9 @@ Interactions (:code:`pengwann.interactions`)
 
 .. automodule:: pengwann.interactions
 
+Classes
+-------
+
 .. autosummary::
    :toctree: generated
 

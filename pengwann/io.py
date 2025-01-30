@@ -40,6 +40,13 @@ def read(
     """
     Wrapper function for parsing various Wannier90 output files.
 
+    In total, this function will parse:
+
+    - seedname.eig
+    - seedname_u.mat
+    - seedname_u_dis.mat (if disentanglement was used)
+    - seedname_hr.dat
+
     Parameters
     ----------
     seedname : str
@@ -60,6 +67,12 @@ def read(
         canonical Bloch states.
     h : dict of {3-length tuple of int : ndarray of complex} pairs.
         The Hamiltonian in the Wannier basis.
+
+    See Also
+    --------
+    read_eigenvalues
+    read_u
+    read_hamiltonian
     """
     u, kpoints = read_u(f"{path}/{seedname}_u.mat")
     if os.path.isfile(f"{path}/{seedname}_u_dis.mat"):
@@ -85,9 +98,9 @@ def read_eigenvalues(
     path : str
         The filepath to seedname.eig.
     num_bands : int
-        The number of bands used in the Wannier90 calculation.
+        The number of bands used in the prior Wannier90 calculation.
     num_kpoints : int
-        The number of k-points used in the Wanner90 calculation.
+        The number of k-points used in the prior Wanner90 calculation.
 
     Returns
     -------
@@ -130,7 +143,7 @@ def read_u(path: str) -> tuple[NDArray[np.complex128], NDArray[np.float64]]:
     u : ndarray of complex
         The unitary matrices U^k.
     kpoints : ndarray of float
-        The k-point mesh used in the Wannier90 calculation.
+        The k-point mesh used in the prior Wannier90 calculation.
     """
     u_list, kpoints_list = [], []
 
@@ -224,7 +237,7 @@ def read_xyz(path: str) -> tuple[list[str], list[tuple[float, ...]]]:
         The elemental symbol for each Wannier centre or atom in the xyz file.
 
     coords : list of tuple of float
-        The coordinates for each Wannier centre or atom in the xyz file.
+        The cartesian coordinates for each Wannier centre or atom in the xyz file.
     """
     with open(path, "r") as stream:
         lines = stream.readlines()

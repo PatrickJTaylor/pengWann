@@ -3,7 +3,8 @@ Various utility functions.
 
 This module contains some miscellaneous utility functions required elsewhere in the
 codebase. For the most part, this module is unlikely to be useful to end users, but
-there are some niche use cases (hence why it is still documented).
+there are some niche use cases (hence why it is still documented as part of the public
+API).
 """
 
 # Copyright (C) 2024-2025 Patrick J. Taylor
@@ -81,6 +82,10 @@ def get_spilling_factor(u: NDArray[np.complex128], num_wann: int) -> np.float64:
     -------
     spilling_factor : float
         The spilling factor.
+
+    See Also
+    --------
+    pengwann.io.read_u
 
     Notes
     -----

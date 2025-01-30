@@ -76,7 +76,7 @@ def fermi_dirac(
     mu : float
         The Fermi level.
     sigma : float
-        The smearing width in eV (= kT for some electronic temperature T).
+        The smearing width (= kT for some electronic temperature T).
 
     Returns
     -------
@@ -114,7 +114,7 @@ def gaussian(
     mu : float
         The Fermi level.
     sigma : float
-        The smearing width in eV.
+        The smearing width.
 
     Returns
     -------
@@ -151,7 +151,7 @@ def cold(
     mu : float
         The Fermi level.
     sigma : float
-        The smearing width in eV.
+        The smearing width.
 
     Returns
     -------
@@ -191,7 +191,7 @@ def get_occupation_matrix(
     **function_kwargs,
 ) -> NDArray[np.float64]:
     """
-    Compute an occupation matrix.
+    Reconstruct the occupation matrix from an ab-initio calculation.
 
     Parameters
     ----------
@@ -205,7 +205,7 @@ def get_occupation_matrix(
         to 1.
     occupation_function : callable, optional
         The occupation function used to calculate the occupation matrix. Defaults to
-        :py:func:`~pengwann.occupation_functions.fixed` (i.e. fixed occupations).
+        :py:func:`~pengwann.occupations.fixed` (i.e. fixed occupations).
     **function_kwargs
         Additional keyword arguments to be passed to `occupation_function`.
 
@@ -214,6 +214,10 @@ def get_occupation_matrix(
     occupation_matrix : ndarray of float
         The occupation matrix.
 
+    See Also
+    --------
+    pengwann.io.read_eigenvalues
+
     Notes
     -----
     Ideally the occupation matrix should be read in directly from the ab initio code
@@ -221,10 +225,10 @@ def get_occupation_matrix(
     be reconstructed so long as the correct occupation function is used.
 
     Various pre-defined occupation functions (Gaussian, Marzari-Vanderbilt etc) can be
-    found in the :py:mod:`~pengwann.occupation_functions` module. If none of these
-    match the occupation function used by the ab initio code, a custom occupation
-    function can be defined and passed as `occupation_function` (so long as it takes
-    `eigenvalues` and `mu` as the first two positional arguments).
+    found in this module. If none of these match the occupation function used by the ab
+    initio code, a custom occupation function can be defined and passed as
+    `occupation_function` (so long as it takes `eigenvalues` and `mu` as the first two
+    positional arguments).
     """
     if nspin not in (1, 2):
         raise ValueError(
