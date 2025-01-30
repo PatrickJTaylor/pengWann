@@ -6,12 +6,12 @@ The pCOHP and pCOBI are both local descriptors of chemical bonding defined by th
 
 ```{math}
 \begin{align}
-\mathrm{pCOHP}_{\alpha\beta}(E) &= H_{\alpha\beta}\sum_{nk}\mathrm{Re}(C^{*}_{\alpha nk}C_{\beta nk})\delta(\epsilon_{nk} - E) \\
-\mathrm{pCOBI}_{\alpha\beta}(E) &= P_{\alpha\beta}\sum_{nk}\mathrm{Re}(C^{*}_{\alpha nk}C_{\beta nk})\delta(\epsilon_{nk} - E).
+\mathrm{pCOHP}_{\alpha\beta}(E) &= H_{\alpha\beta}\sum_{nk}\mathrm{Re}\left[\left(C^{\alpha}_{nk}\right)^{*}C^{\beta}_{nk}\right]\cdot\delta(E - \epsilon_{nk}) \\
+\mathrm{pCOBI}_{\alpha\beta}(E) &= P_{\alpha\beta}\sum_{nk}\mathrm{Re}\left[\left(C^{\alpha}_{nk}\right)^{*}C^{\beta}_{nk}\right]\cdot\delta(E - \epsilon_{nk}).
 \end{align}
 ```
 
-In both of the equations above, each {math}`C_{\alpha nk}` is the coefficient resulting from the projection of the Kohn-Sham eigenstate {math}`\ket{\psi_{nk}}` onto the localised basis function {math}`\ket{\phi_{\alpha}}`. Together with {math}`\delta(\epsilon_{nk} - E)`, which is the density of states arising from {math}`\ket{\psi_{nk}}`, everything within the summation in both equations is referred to as the DOS matrix arising from local basis states {math}`\ket{\phi_{\alpha}}` and {math}`\ket{\phi_{\beta}}`. In the pCOHP, the sum over this DOS matrix is weighted by the corresponding element of the local basis Hamiltonian {math}`H_{\alpha\beta}`, whilst in the pCOBI it is weighted by {math}`P_{\alpha\beta}`, the relevant element of the local basis density matrix.
+In both of the equations above, each {math}`C^{\alpha}_{nk}` is the coefficient resulting from the projection of the Kohn-Sham eigenstate {math}`\ket{\psi_{nk}}` onto the localised basis function {math}`\ket{\phi_{\alpha}}`. Together with {math}`\delta(E - \epsilon_{nk})`, which is the density of states arising from {math}`\ket{\psi_{nk}}`, everything within the summation in both equations is referred to as the DOS matrix arising from local basis states {math}`\ket{\phi_{\alpha}}` and {math}`\ket{\phi_{\beta}}`. In the pCOHP, the sum over this DOS matrix is weighted by the corresponding element of the local basis Hamiltonian {math}`H_{\alpha\beta}`, whilst in the pCOBI it is weighted by {math}`P_{\alpha\beta}`, the relevant element of the local basis density matrix.
 
 Loosely speaking, the pCOHP is thought to be correlated with **bond strength**, whilst the pCOBI is thought to be correlated with **bond order** (or rather, the contribution to these two metrics by a given pair of basis functions). This is most clearly expressed by their integrals up to the Fermi level,
 
@@ -39,10 +39,13 @@ which takes value between 0 and 1. If the local basis spans the same Hilbert spa
 Very briefly, Wannier functions are a localised basis obtained from a set of Kohn-Sham eigenstates via a unitary transformation {footcite:p}`original_Wannier`. For a set of {math}`J` energetically isolated bands (i.e. a manifold of bands separated from all other bands by an energy gap everywhere in the Brillouin zone), this can be written as
 
 ```{math}
-\ket{w_{\alpha R}} = \sum_{k}\exp[-ik\cdot R]\sum^{J}_{m} U^{k}_{m\alpha}\ket{\psi_{mk}},
+\begin{align}
+\ket{w_{\alpha}} &= \sum_{k}\exp[-ik\cdot R]\sum^{J}_{m} U^{k}_{m\alpha}\ket{\psi_{mk}} \\
+\ket{w_{\alpha}} &= \ket{w_{iR}},
+\end{align}
 ```
 
-where {math}`R` is a Bravais lattice vector specifying the unit cell in which {math}`\ket{w_{\alpha R}}` resides and each {math}`U^{k}` is a unitary matrix. Owing to the fact that the Wannier functions are obtained via unitary transformations, the trace over any one-particle operator is the same whether one chooses to use the Bloch basis or the Wannier basis. The spilling factor can therefore be written as
+where {math}`i` is a band-like index (note that within the exponential term, {math}`i = \sqrt{-1}`), {math}`R` is a Bravais lattice vector specifying the unit cell in which {math}`\ket{w_{iR}}` resides ({math}`\alpha` combines these two indices) and each {math}`U^{k}` is a unitary matrix. Owing to the fact that the Wannier functions are obtained via unitary transformations, the trace over any one-particle operator is the same whether one chooses to use the Bloch basis or the Wannier basis. The spilling factor can therefore be written as
 
 ```{math}
 S = \frac{1}{N_{k}}\frac{1}{N_{b}}\sum_{nk} 1 - \sum_{m}|\braket{\psi_{nk}|\psi_{mk}}|^{2},
@@ -58,15 +61,15 @@ In the context of chemical bonding descriptors, Wannier functions therefore repr
 
 ```{math}
 \begin{align}
-\mathrm{WOHP}^{R}_{\alpha\beta}(E) &= -H^{R}_{\alpha\beta}\sum_{nk}\mathrm{Re}(C^{*}_{\alpha R_{1}nk}C_{\beta R_{2}nk})\delta(\epsilon_{nk} - E) \\
-\mathrm{WOBI}^{R}_{\alpha\beta}(E) &= P^{R}_{\alpha\beta}\sum_{nk}\mathrm{Re}(C^{*}_{\alpha R_{1}nk}C_{\beta R_{2}nk})\delta(\epsilon_{nk} - E),
+\mathrm{WOHP}^{R}_{\alpha\beta}(E) &= -H_{\alpha\beta}^{R}\sum_{nk}\mathrm{Re}\left[\left(C^{\alpha}_{nk}\right)^{*}C^{\beta}_{nk}\right]\cdot\delta(E - \epsilon_{nk}) \\
+\mathrm{WOBI}^{R}_{\alpha\beta}(E) &= P_{\alpha\beta}^{R}\sum_{nk}\mathrm{Re}\left[\left(C^{\alpha}_{nk}\right)^{*}C^{\beta}_{nk}\right]\cdot\delta(E - \epsilon_{nk}).
 \end{align}
 ```
 
 where {math}`R = R_{2} - R_{1}` is an extra index accounting for the fact that one could techincally compute the WOHP or WOBI between Wannier functions located in a variety of different unit cells. The coefficients used to build the DOS matrix are easily obtained from the unitary matrices used to define the Wannier functions:
 
 ```{math}
-C^{*}_{\alpha Rnk} = \exp[-ik\cdot R]U^{k}_{n\alpha}.
+C^{\alpha}_{nk} = \exp[ik \cdot R]\left(U^{k}_{n\alpha}\right)^{*}.
 ```
 
 Note that here we define the WOHP with the opposite sign to the pCOHP so as to ensure that a positive WOHP indicates bonding and a negative WOHP indicates antibonding (thus matching the WOBI in this respect).
@@ -77,7 +80,7 @@ Whilst Wannier functions derived from energetically isolated bands are guarantee
 
 There exists well-estalished methods for mitigating both of the concerns raised above. The non-uniqeuness of Wannier functions can be circumvented by minimising their spread with respect to the unitary matrices {math}`U^{k}`, thus producing so-called "Maximally-Localised Wannier Functions" or MLWFs {footcite:p}`MLWF, MLWF_dis`. Such Wannier functions tend to be atom-centred and to take on shapes that in many cases match our chemical intution for the system at hand. Maximal localisation can also be applpied to a manifold of entangled bands, although a separate "disentanglement" step is required in this case, unless one chooses to utilise the SCDM method {footcite:p}`SCDM, SCDM_k`.
 
-In general, obtaining "good" MLWFs for non-trivial systems is not always easy, although developements in recent years are slowly making this a more reliable and automatable process. As a result, the two most obvious use cases for `pengwann` are as follows:
+In general, obtaining "good" MLWFs for non-trivial systems is not always easy, although developments in recent years are slowly making this a more reliable and automatable process. As a result, the two most obvious use cases for `pengwann` are as follows:
 
 1. You have **already obtained** MLWFs for your system (for some other purpose) and would like to characterise the local bonding.
 2. You have attempted to characterise the bonding via another tool such as [LOBSTER](http://www.cohp.de/), but you find that the results are **not satisfactory**.
