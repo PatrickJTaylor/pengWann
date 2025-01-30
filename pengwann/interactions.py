@@ -190,7 +190,8 @@ class AtomicInteraction:
     See Also
     --------
     WannierInteraction
-    identify_interatomic_interactions
+    pengwann.geometry.identify_interatomic_interactions
+    pengwann.geometry.identify_onsite_interactions
 
     Notes
     -----
