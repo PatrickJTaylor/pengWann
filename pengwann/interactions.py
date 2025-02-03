@@ -96,6 +96,17 @@ class AtomicInteractionContainer:
     def __len__(self) -> int:
         return len(self.sub_interactions)
 
+    def __str__(self) -> str:
+        to_print = ["Atomic interactions"]
+
+        underline = ["=" for character in to_print[-1]]
+        to_print.append("".join(underline))
+
+        for interaction in self.sub_interactions:
+            to_print.append(interaction.tag)
+
+        return "\n".join(to_print) + "\n"
+
     @cached_property
     def _interaction_matrix(self) -> list[list[list[int]]]:
         return _build_interaction_matrix(self.sub_interactions)
@@ -136,6 +147,61 @@ class AtomicInteractionContainer:
             raise ValueError("No interactions involving {symbols} found.")
 
         return interactions
+
+    def with_integrals(
+        self,
+        energies: NDArray[np.float64],
+        mu: float,
+        resolve_orbitals: bool = False,
+        valence_counts: dict[str, int] | None = None,
+    ) -> AtomicInteractionContainer:
+        """
+        Return an updated container with integrated descriptors for all interactions.
+
+        The `valence_counts` argument may be provided in order to compute atomic charges
+        for all on-site interactions.
+
+        Parameters
+        ----------
+        energies : ndarray of float
+            The discrete energies at which the density of states and all derived
+            descriptors have been evaluated.
+        mu : float
+            The Fermi level
+        resolve_orbitals : bool, optional
+            If True, integrate descriptors for individual WannierInteraction objects
+            as well as each overall AtomicInteraction. Defaults to False.
+        valence_counts : dict of {str : int} pairs or None, optional
+            The number of valence electrons associated with each atomic species
+            according to the pseudopotentials employed in the prior ab initio
+            calculation. This is used to compute atomic charges and pertains solely
+            to on-site interactions. Defaults to None.
+
+        Returns
+        -------
+        container_with_integrals : AtomicInteractionConatiner
+            A new AtomicInteractionContainer with each AtomicInteraction now being
+            associated with its integrated descriptors.
+        """
+        sub_interactions = []
+        for interaction in self.sub_interactions:
+            symbol_i, symbol_j = interaction.symbol_i, interaction.symbol_j
+
+            if valence_counts is not None and symbol_i == symbol_j:
+                valence_count = valence_counts[symbol_i]
+
+            else:
+                valence_count = None
+
+            updated_interaction = interaction.with_integrals(
+                energies,
+                mu,
+                resolve_orbitals=resolve_orbitals,
+                valence_count=valence_count,
+            )
+            sub_interactions.append(updated_interaction)
+
+        return replace(self, sub_interactions=sub_interactions)
 
 
 @dataclass(frozen=True)
@@ -251,6 +317,41 @@ class AtomicInteraction:
     def __len__(self) -> int:
         return len(self.sub_interactions)
 
+    def __str__(self) -> str:
+        to_print = [f"Atomic interaction {self.tag}"]
+
+        underline = ["=" for character in to_print[-1]]
+        to_print.append("".join(underline))
+
+        print_names = (
+            ("dos_matrix", "DOS matrix"),
+            ("wohp", "WOHP"),
+            ("wobi", "WOBI"),
+            ("iwohp", "IWOHP"),
+            ("iwobi", "IWOBI"),
+            ("population", "Population"),
+            ("charge", "Charge"),
+        )
+        for attribute_name, print_name in print_names:
+            value = getattr(self, attribute_name)
+
+            print_value = "Not calculated" if value is None else "Calculated"
+
+            line = f"{print_name} => {print_value}"
+
+            to_print.append(line)
+
+        to_print.append("\n")
+
+        subtitle = "Associated Wannier interactions"
+        subtitle_underline = ["-" for character in subtitle]
+        to_print.extend((subtitle, "".join(subtitle_underline)))
+
+        for w_interaction in self.sub_interactions:
+            to_print.append(w_interaction.tag)
+
+        return "\n".join(to_print) + "\n"
+
     @cached_property
     def _interaction_matrix(self) -> list[list[list[int]]]:
         return _build_interaction_matrix(self.sub_interactions)
@@ -268,7 +369,7 @@ class AtomicInteraction:
         generated_tag : str
             The generated tag.
         """
-        return f"{self.symbol_i}{self.i}<=>{self.symbol_j}{self.j}"
+        return f"{self.symbol_i}{self.i} <=> {self.symbol_j}{self.j}"
 
     def with_summed_descriptors(self) -> AtomicInteraction:
         """
@@ -321,13 +422,13 @@ class AtomicInteraction:
         energies: NDArray[np.float64],
         mu: float,
         resolve_orbitals: bool = False,
-        valence: int | None = None,
+        valence_count: int | None = None,
     ) -> AtomicInteraction:
         """
         Return a new AtomicInteraction object with integrated descriptors.
 
-        The `valence` argument may be provided in order to compute atomic charges for
-        on-site interactions.
+        The `valence_count` argument may be provided in order to compute atomic charges
+        for on-site interactions.
 
         Parameters
         ----------
@@ -339,7 +440,7 @@ class AtomicInteraction:
         resolve_orbitals : bool, optional
             If True, integrate descriptors for individual WannierInteraction objects
             as well as the total AtomicInteraction. Defaults to False.
-        valence : int or None, optional
+        valence_count : int or None, optional
             The number of valence electrons associated with the interaction according to
             the pseudopotentials employed in the prior ab initio calculation. This is
             used to compute atomic charges and only really makes sense for on-site
@@ -358,8 +459,8 @@ class AtomicInteraction:
                 energies, self.dos_matrix, mu
             )
 
-            if valence is not None:
-                new_values["charge"] = valence - new_values["population"]
+            if valence_count is not None:
+                new_values["charge"] = valence_count - new_values["population"]
 
         if self.wohp is not None:
             new_values["iwohp"] = integrate_descriptor(energies, self.wohp, mu)
@@ -433,6 +534,35 @@ class WannierInteraction(NamedTuple):
     iwobi: np.float64 | NDArray[np.float64] | None = None
     population: np.float64 | NDArray[np.float64] | None = None
 
+    def __str__(self) -> str:
+        to_print = [f"Wannier interaction {self.tag}"]
+
+        underline = ["=" for character in to_print[-1]]
+        to_print.append("".join(underline))
+
+        print_names = (
+            ("dos_matrix", "DOS matrix"),
+            ("h_ij", "H_ij"),
+            ("p_ij", "P_ij"),
+            ("iwohp", "IWOHP"),
+            ("iwobi", "IWOBI"),
+            ("population", "Population"),
+        )
+        for attribute_name, print_name in print_names:
+            value = getattr(self, attribute_name)
+
+            if attribute_name in ("h_ij", "p_ij"):
+                print_value = "Not calculated" if value is None else value
+
+            else:
+                print_value = "Not calculated" if value is None else "Calculated"
+
+            line = f"{print_name} => {print_value}"
+
+            to_print.append(line)
+
+        return "\n".join(to_print) + "\n"
+
     @property
     def tag(self) -> str:
         """
@@ -446,7 +576,7 @@ class WannierInteraction(NamedTuple):
         generated_tag : str
             The generated tag.
         """
-        return f"{self.i}{self.bl_1.tolist()}<=>{self.j}{self.bl_2.tolist()}"
+        return f"{self.i}{self.bl_1.tolist()} <=> {self.j}{self.bl_2.tolist()}"
 
     @property
     def wohp(self) -> NDArray[np.float64] | None:
@@ -565,7 +695,7 @@ def _slice_interaction_matrix(
         indices = interaction_matrix[i][j]
 
     if not indices:
-        raise ValueError("No interactions found for indices {key}.")
+        raise ValueError(f"No interactions found for indices {key}.")
 
     return indices
 
@@ -595,5 +725,6 @@ def _build_interaction_matrix(
         i, j = interaction.i, interaction.j
 
         interaction_matrix[i][j].append(idx)
+        interaction_matrix[j][i].append(idx)
 
     return interaction_matrix
