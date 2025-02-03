@@ -315,11 +315,11 @@ def test_AtomicInteraction_with_integrals(
 ) -> None:
     energies = np.linspace(-20, 10, 100)
     mu = 0
-    valence = 2
+    valence_count = 2
 
     atomic_interaction = atomic_interaction.with_summed_descriptors()
     atomic_interaction = atomic_interaction.with_integrals(
-        energies, mu, resolve_orbitals=True, valence=valence
+        energies, mu, resolve_orbitals=True, valence_count=valence_count
     )
 
     integrals = {

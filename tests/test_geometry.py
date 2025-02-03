@@ -114,7 +114,7 @@ def test_build_geometry(shared_datadir) -> None:
         (-1.7803725545451616, 0.0000000000000000, -1.7803725545451616),
         (-0.0000000000000003, -1.7803725545451616, -1.7803725545451616),
     )
-    test_geometry = build_geometry(f"{shared_datadir}/centres.xyz", cell)
+    test_geometry = build_geometry("wannier90", f"{shared_datadir}", cell)
     num_wann = len([site for site in test_geometry if site.species_string == "X0+"])
 
     with open(f"{shared_datadir}/geometry.json", "r") as stream:
