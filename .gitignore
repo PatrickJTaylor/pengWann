@@ -1,4 +1,5 @@
 .python-version
+.ipynb_checkpoints
 _build
 __pycache__
 /pengwann.egg-info

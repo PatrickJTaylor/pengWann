@@ -31,6 +31,8 @@ cd docs
 make html
 ```
 
+Note that you will also need to install [pandoc](https://pandoc.org/installing.html) for the above to run without error (unfortunately we cannot package this as a dependency directly as it is written in Haskell, not Python).
+
 If you are interested in contributing to `pengwann`, then you may want to install the developer extras via:
 
 ```

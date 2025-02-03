@@ -11,6 +11,7 @@ Functions
    :toctree: generated
 
    read
+   read_cell
    read_eigenvalues
    read_hamiltonian
    read_u
