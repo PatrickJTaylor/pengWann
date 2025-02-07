@@ -2,7 +2,7 @@
 
 ## The pCOHP and the pCOBI
 
-The pCOHP and pCOBI are both local descriptors of chemical bonding defined by the projection of the Kohn-Sham eigenstates (as calculated via a prior DFT calculation) onto a chosen set of localised basis functions {footcite:p}`pCOHP, pCOBI`
+The projected crystal orbital Hamilton population (pCOHP) and the projected crystal orbital bond index (pCOBI) are both local descriptors of chemical bonding defined by the projection of the Kohn-Sham eigenstates (as calculated via a prior DFT calculation) onto a chosen set of localised basis functions {footcite:p}`pCOHP, pCOBI`
 
 ```{math}
 \begin{align}
@@ -81,6 +81,22 @@ where {math}`R = R_{2} - R_{1}` is an extra index accounting for the fact that o
 ```{math}
 C^{\alpha}_{nk} = \exp[ik \cdot R]\left(U^{k}_{n\alpha}\right)^{*}.
 ```
+
+## The pCOOP and the WOOP/pDOS
+
+As well as the pCOHP and the pCOBI, there is also a third descriptor that has traditionally been used to assess the bonding/antibonding character of various interactions: the projected crystal orbital overlap population or pCOOP:
+
+```{math}
+\mathrm{pCOOP}_{\alpha\beta}(E) = S_{\alpha\beta}D_{\alpha\beta}(E) = S_{\alpha\beta}\sum_{nk}\mathrm{Re}\left[\left(C^{\alpha}_{nk}\right)^{*}C^{\beta}_{nk}\right]\cdot\delta(E - \epsilon_{nk}),
+```
+
+where {math}`S` is the overlap matrix. If we use Wannier functions as our local basis, then {math}`S = I` and the WOOP (Wannier orbital overlap population) is non-zero only for on-site interactions {footcite:p}`WOHP`:
+
+```{math}
+\mathrm{WOOP}_{\alpha\alpha}(E) = D_{\alpha\alpha}(E) = \mathrm{pDOS}_{\alpha}(E),
+```
+
+in which case we can also think of it as the density of states projected onto a specific Wannier function {math}`\ket{w_{\alpha}}`.
 
 ## Caveats
 
