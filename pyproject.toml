@@ -49,9 +49,7 @@ dev = [
 ]
 
 docs = [
-  'ipykernel',
-  'myst_parser',
-  'nbsphinx',
+  'myst-nb',
   'numpydoc',
   'pydata-sphinx-theme',
   'sphinx',
