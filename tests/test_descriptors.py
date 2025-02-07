@@ -180,7 +180,7 @@ class TestkResolvedMethods:
     def test_DescriptorCalculator_parallelise(
         self, dcalc, interactions, resolve_k, calc_p_ij, ndarrays_regression, tol
     ) -> None:
-        wannier_interactions = interactions.sub_interactions[0].sub_interactions
+        wannier_interactions = interactions[1, 2].sub_interactions
 
         processed_wannier_interactions = dcalc.parallelise(
             wannier_interactions, calc_p_ij=calc_p_ij, resolve_k=resolve_k, num_proc=4
@@ -188,10 +188,10 @@ class TestkResolvedMethods:
 
         descriptors = {}
         for w_interaction in processed_wannier_interactions:
-            w_label = str(w_interaction.i) + str(w_interaction.j)
+            tag = w_interaction.tag
 
-            descriptors[w_label + "_dos_matrix"] = w_interaction.dos_matrix
-            descriptors[w_label + "_p_ij"] = none_to_nan(w_interaction.p_ij)
+            descriptors[tag + "_dos_matrix"] = w_interaction.dos_matrix
+            descriptors[tag + "_p_ij"] = none_to_nan(w_interaction.p_ij)
 
         ndarrays_regression.check(descriptors, default_tolerance=tol)
 
