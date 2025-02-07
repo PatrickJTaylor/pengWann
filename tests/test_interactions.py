@@ -369,6 +369,60 @@ def test_AtomicInteraction_with_integrals_no_descriptors(atomic_interaction) -> 
     assert atomic_interaction.iwobi is None
 
 
+@pytest.mark.parametrize(
+    "valence_counts", ({("Ga", "As"): 2}, None), ids=("calc_charge", "no_charge")
+)
+def test_AtomicInteractionContainer_with_integrals(
+    interaction_container, valence_counts, ndarrays_regression, tol
+) -> None:
+    energies = np.linspace(-20, 10, 100)
+    mu = 0
+
+    atomic_interactions = []
+    for atomic_interaction in interaction_container:
+        atomic_interactions.append(atomic_interaction.with_summed_descriptors())
+
+    interaction_container = replace(
+        interaction_container, sub_interactions=atomic_interactions
+    )
+    interaction_container = interaction_container.with_integrals(
+        energies, mu, resolve_orbitals=True, valence_counts=valence_counts
+    )
+
+    integrals = {}
+    for interaction in interaction_container:
+        tag = interaction.tag
+
+        integrals[tag + "_population"] = interaction.population
+        integrals[tag + "_charge"] = none_to_nan(interaction.charge)
+        integrals[tag + "_IWOHP"] = interaction.iwohp
+        integrals[tag + "_IWOBI"] = interaction.iwobi
+
+        for w_interaction in interaction:
+            w_tag = w_interaction.tag
+
+            integrals[w_tag + "_population"] = w_interaction.population
+            integrals[w_tag + "_IWOHP"] = w_interaction.iwohp
+            integrals[w_tag + "_IWOBI"] = w_interaction.iwobi
+
+    ndarrays_regression.check(integrals, default_tolerance=tol)
+
+
+def test_AtomicInteractionContainer_with_integrals_no_descriptors(
+    interaction_container,
+) -> None:
+    energies = np.linspace(-20, 10, 100)
+    mu = 0
+
+    interaction_container = interaction_container.with_integrals(energies, mu)
+
+    for interaction in interaction_container:
+        assert interaction.population is None
+        assert interaction.charge is None
+        assert interaction.iwohp is None
+        assert interaction.iwobi is None
+
+
 def test_AtomicInteractionContainer_filter_by_species(interaction_container) -> None:
     symbols = ("Ga", "As")
     interactions = interaction_container.filter_by_species(symbols)
