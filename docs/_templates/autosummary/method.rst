@@ -4,6 +4,4 @@
 
 .. currentmodule:: {{ module }}
 
-method
-
 .. auto{{ objtype }}:: {{ fullname | replace("pengwann.", "pengwann::") }}
