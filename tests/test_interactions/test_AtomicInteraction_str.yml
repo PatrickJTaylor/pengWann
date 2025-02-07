@@ -1,0 +1,29 @@
+str: 'Atomic interaction Ga1 <=> As2
+
+  ==============================
+
+  DOS matrix => Not calculated
+
+  WOHP => Not calculated
+
+  WOBI => Not calculated
+
+  IWOHP => Not calculated
+
+  IWOBI => Not calculated
+
+  Population => Not calculated
+
+  Charge => Not calculated
+
+
+
+  Associated Wannier interactions
+
+  -------------------------------
+
+  0[0, 0, 0] <=> 1[0, 0, 0]
+
+  2[1, 0, 0] <=> 3[0, 0, 0]
+
+  '

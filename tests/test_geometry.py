@@ -61,54 +61,22 @@ def geometry() -> Structure:
     return geometry
 
 
-@pytest.fixture
-def wannier_interaction() -> WannierInteraction:
-    i = 0
-    j = 1
-    bl_1 = np.array([0, 0, 0])
-    bl_2 = np.array([0, 0, 0])
-    dos_matrix = np.linspace(0, 50, 100)
-    h_ij = 2
-    p_ij = 0.5
-
-    return WannierInteraction(
-        i=i, j=j, bl_1=bl_1, bl_2=bl_2, dos_matrix=dos_matrix, h_ij=h_ij, p_ij=p_ij
-    )
-
-
-@pytest.fixture
-def atomic_interaction(wannier_interaction) -> AtomicInteraction:
-    i = 2
-    j = 3
-    bl_1 = np.array([0, 0, 0])
-    bl_2 = np.array([0, 0, 0])
-    dos_matrix = np.linspace(0, 25, 100)
-    h_ij = 2.5
-    p_ij = 0.7
-
-    second_interaction = WannierInteraction(
-        i=i,
-        j=j,
-        bl_1=bl_1,
-        bl_2=bl_2,
-        dos_matrix=dos_matrix,
-        h_ij=h_ij,
-        p_ij=p_ij,
-    )
-    wannier_interactions = (wannier_interaction, second_interaction)
-
-    i, j, symbol_i, symbol_j = 1, 2, "Ga", "As"
-
-    return AtomicInteraction(
-        i=i,
-        j=j,
-        symbol_i=symbol_i,
-        symbol_j=symbol_j,
-        sub_interactions=wannier_interactions,
-    )
-
-
 def test_build_geometry(shared_datadir) -> None:
+    test_geometry = build_geometry("wannier90", f"{shared_datadir}")
+    num_wann = len([site for site in test_geometry if site.species_string == "X0+"])
+
+    with open(f"{shared_datadir}/geometry.json", "r") as stream:
+        serial = json.load(stream)
+
+    ref_geometry = Structure.from_dict(serial)
+
+    sm = StructureMatcher()
+
+    assert num_wann == 8
+    assert sm.fit(test_geometry, ref_geometry)
+
+
+def test_build_geometry_with_cell(shared_datadir) -> None:
     cell = (
         (-1.7803725545451619, -1.7803725545451616, 0.0000000000000000),
         (-1.7803725545451616, 0.0000000000000000, -1.7803725545451616),
@@ -145,18 +113,22 @@ def test_assign_wannier_centres_invalid_structure(geometry) -> None:
         assign_wannier_centres(geometry)
 
 
-@pytest.mark.parametrize("elemental", (True, False), ids=("elemental", "binary"))
-def test_identify_interatomic_interactions(
-    geometry, elemental, data_regression
-) -> None:
-    if elemental:
-        geometry.replace(3, "C")
-        wannier_centres = ((2,), (3,), (0,), (1,))
-        geometry.add_site_property("wannier_centres", wannier_centres)
-        cutoffs = {("C", "C"): 4.5}
+def test_identify_interatomic_interactions_elemental(geometry, data_regression) -> None:
+    geometry.replace(3, "C")
+    wannier_centres = ((2,), (3,), (0,), (1,))
+    geometry.add_site_property("wannier_centres", wannier_centres)
 
-    else:
-        cutoffs = {("C", "O"): 4.5}
+    cutoffs = {("C", "C"): 4.5}
+
+    interactions = identify_interatomic_interactions(geometry, cutoffs)
+
+    serialised_interactions = serialise_interactions(interactions)
+
+    data_regression.check(serialised_interactions)
+
+
+def test_identify_interatomic_interactions_binary(geometry, data_regression) -> None:
+    cutoffs = {("C", "O"): 4.5}
 
     interactions = identify_interatomic_interactions(geometry, cutoffs)
 
