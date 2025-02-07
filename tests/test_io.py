@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License along with pengWann.
 # If not, see <https://www.gnu.org/licenses/>.
 
+import pytest
 from pengwann.io import read, read_cell, read_eigenvalues, read_hamiltonian, read_u
 
 
@@ -71,3 +72,8 @@ def test_read_cell_bohr(shared_datadir, ndarrays_regression, tol) -> None:
     cell = read_cell(f"{shared_datadir}/wannier90_bohr.win")
 
     ndarrays_regression.check({"cell": cell}, default_tolerance=tol)
+
+
+def test_read_cell_not_enough_vectors(shared_datadir) -> None:
+    with pytest.raises(ValueError):
+        read_cell(f"{shared_datadir}/wannier90_invalid_cell.win")
