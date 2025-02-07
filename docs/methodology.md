@@ -23,8 +23,8 @@ Loosely speaking, the pCOHP is thought to be correlated with **bond strength**, 
 
 ```{math}
 \begin{align}
-\mathrm{ICOHP}_{\alpha\beta} &= \int^{E_{\mathrm{F}}}_{-\infty} dE\,\mathrm{COHP}_{\alpha\beta}(E) \\
-\mathrm{ICOBI}_{\alpha\beta} &= \int^{E_{\mathrm{F}}}_{-\infty} dE\,\mathrm{COBI}_{\alpha\beta}(E),
+\mathrm{ICOHP}_{\alpha\beta} &= \int^{E_{\mathrm{F}}}_{-\infty} \mathrm{d}E\,\mathrm{COHP}_{\alpha\beta}(E) \\
+\mathrm{ICOBI}_{\alpha\beta} &= \int^{E_{\mathrm{F}}}_{-\infty} \mathrm{d}E\,\mathrm{COBI}_{\alpha\beta}(E),
 \end{align}
 ```
 
@@ -42,7 +42,7 @@ which takes value between 0 and 1. If the local basis spans the same Hilbert spa
 
 ## Wannier functions
 
-Very briefly, Wannier functions are a localised basis obtained from a set of Kohn-Sham eigenstates via a unitary transformation {footcite:p}`original_Wannier`. For a set of {math}`J` energetically isolated bands (i.e. a manifold of bands separated from all other bands by an energy gap everywhere in the Brillouin zone), this can be written as
+Very briefly, Wannier functions are a localised basis obtained from a set of Kohn-Sham eigenstates via a unitary transformation {footcite:p}`original_Wannier`. For a set of {math}`J` energetically isolated bands (i.e., a manifold of bands separated from all other bands by an energy gap everywhere in the Brillouin zone), this can be written as
 
 ```{math}
 \begin{align}
