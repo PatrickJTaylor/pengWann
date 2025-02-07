@@ -21,9 +21,8 @@ sys.path.insert(0, os.path.abspath(".."))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    "myst_parser",
+    "myst_nb",
     "numpydoc",
-    "nbsphinx",
     "sphinx.ext.intersphinx",
     "sphinx.ext.autodoc",
     "sphinx.ext.mathjax",
@@ -32,6 +31,10 @@ extensions = [
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+
+# myst_parser
+
+myst_enable_extensions = ["colon_fence", "dollarmath"]
 
 # intersphinx
 
