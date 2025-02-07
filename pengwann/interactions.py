@@ -725,6 +725,8 @@ def _build_interaction_matrix(
         i, j = interaction.i, interaction.j
 
         interaction_matrix[i][j].append(idx)
-        interaction_matrix[j][i].append(idx)
+
+        if i != j:
+            interaction_matrix[j][i].append(idx)
 
     return interaction_matrix
