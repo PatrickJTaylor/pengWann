@@ -13,7 +13,18 @@
 # You should have received a copy of the GNU General Public License along with pengWann.
 # If not, see <https://www.gnu.org/licenses/>.
 
-from pengwann.io import read, read_eigenvalues, read_hamiltonian, read_u
+from pengwann.io import read, read_cell, read_eigenvalues, read_hamiltonian, read_u
+
+
+def test_read(shared_datadir, ndarrays_regression, tol) -> None:
+    kpoints, eigenvalues, u, h = read("wannier90", path=shared_datadir)
+
+    h_000 = h[(0, 0, 0)]
+
+    ndarrays_regression.check(
+        {"k-points": kpoints, "eigenvalues": eigenvalues, "U": u, "H_000": h_000},
+        default_tolerance=tol,
+    )
 
 
 def test_read_eigenvalues(shared_datadir, ndarrays_regression, tol) -> None:
@@ -48,3 +59,15 @@ def test_read_u_dis(shared_datadir, ndarrays_regression, tol) -> None:
     _, _, u, _ = read("wannier90", f"{shared_datadir}")
 
     ndarrays_regression.check({"U": u}, default_tolerance=tol)
+
+
+def test_read_cell(shared_datadir, ndarrays_regression, tol) -> None:
+    cell = read_cell(f"{shared_datadir}/wannier90.win")
+
+    ndarrays_regression.check({"cell": cell}, default_tolerance=tol)
+
+
+def test_read_cell_bohr(shared_datadir, ndarrays_regression, tol) -> None:
+    cell = read_cell(f"{shared_datadir}/wannier90_bohr.win")
+
+    ndarrays_regression.check({"cell": cell}, default_tolerance=tol)
