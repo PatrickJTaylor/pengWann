@@ -47,7 +47,7 @@ class AtomicInteractionContainer:
     Attributes
     ----------
     sub_interactions : sequence of AtomicInteraction
-        A sequence of AtomicInteraction objects to be stored.
+        The sequence of AtomicInteraction objects to be stored.
 
     See Also
     --------
@@ -117,8 +117,8 @@ class AtomicInteractionContainer:
         """
         Return a subset of AtomicInteraction objects filtered by atomic species.
 
-        For a given interaction to be returned by this function, its elemental symbols
-        must be a subset of `symbols`.
+        For a given interaction to be returned by this function, its associated
+        elemental symbols must be a subset of `symbols`.
 
         Parameters
         ----------

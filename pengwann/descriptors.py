@@ -235,7 +235,7 @@ class DescriptorCalculator:
             The index identifying the target Wannier function.
         bl_vector : ndarray of np.int_
             The Bravais lattice vector specifying the translation of Wannier function
-            i from its home cell.
+            i relative to its home cell.
 
         Returns
         -------
@@ -281,7 +281,7 @@ class DescriptorCalculator:
         Parameters
         ----------
         c_star : ndarray of complex
-            The complex conjugate of the coefficient matrix for Wannier function i witha
+            The complex conjugate of the coefficient matrix for Wannier function i with
             Bravais lattice vector R_1.
         c : ndarray of complex
             The coefficient matrix for Wannier function j with Bravais lattice vector
@@ -411,8 +411,8 @@ class DescriptorCalculator:
         Parameters
         ----------
         interactions : AtomicInteractionContainer
-            The 2-body interactions for which to calculate DOS matrices, WOHPs and
-            WOBIs.
+            The interactions for which to calculate DOS matrices and optionally, WOHPs
+            and WOBIs.
         calc_wohp : bool, optional
             Whether or not to calculate WOHPs for the input `interactions`. Defaults to
             True.
@@ -420,8 +420,8 @@ class DescriptorCalculator:
             Whether or not to calculate WOBIs for the input `interactions`. Defaults to
             True.
         resolve_k : bool, optional
-            Whether or not to resolve the output WOHPs and/or WOBIs with respect to
-            k-points. Defaults to False.
+            Whether or not to resolve the output DOS matrices, WOHPs and WOBIs with
+            respect to k-points. Defaults to False.
         num_proc : int, optional
             The number of processes used to compute descriptors in parallel. Note that
             if `num_proc` is less than the value reported by
@@ -447,15 +447,16 @@ class DescriptorCalculator:
 
         Notes
         -----
-        The WOHPs and WOBIs for the input `interactions` are computed using shared
-        memory parallelism to avoid copying potentially very large arrays (such as the
-        density of states at each energy, k-point and band) between concurrent
-        processes. Even with shared memory, very small (low volume -> many k-points) and
-        very large (many electrons -> many bands/Wannier functions) systems can be
-        problematic in terms of memory usage if the energy resolution is too high. If
-        you find that you are running out of memory, you can either a) reduce `num_proc`
-        or b) reduce the energy resolution of the DOS by passing a smaller `resolution`
-        to :py:meth:`~pengwann.descriptors.DescriptorCalculator.from_eigenvalues`.
+        The DOS matrices, WOHPs and WOBIs for the input `interactions` are computed
+        using shared memory parallelism to avoid copying potentially very large arrays
+        (such as the density of states at each energy, k-point and band) between
+        concurrent processes. Even with shared memory, very small (low volume -> many
+        k-points) and very large (many electrons -> many bands/Wannier functions)
+        systems can be problematic in terms of memory usage, particularly if the energy
+        resolution is too high. If you find that you are running out of memory, you can
+        either a) reduce `num_proc` or b) reduce the energy resolution of the DOS by
+        passing a smaller `resolution` to
+        :py:meth:`~pengwann.descriptors.DescriptorCalculator.from_eigenvalues`.
 
         For `resolve_k` = True and `calc_wohp` = True, the k-resolved WOHP for a given
         pair of Wannier functions is computed as :footcite:p:`WOHP, pCOHP`
@@ -633,7 +634,7 @@ class DescriptorCalculator:
         See Also
         --------
         assign_descriptors : Assign WOHPs to a set of AtomicInteraction objects.
-        integrate_descriptors : Integrate WOHPs to obtain IWOHPs.
+        pengwann.interactions.AtomicInteractionContainer.with_integrals: Integrate WOHPs to obtain IWOHPs.
 
         Notes
         -----
