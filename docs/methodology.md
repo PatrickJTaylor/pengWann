@@ -11,7 +11,13 @@ The pCOHP and pCOBI are both local descriptors of chemical bonding defined by th
 \end{align}
 ```
 
-In both of the equations above, each {math}`C^{\alpha}_{nk}` is the coefficient resulting from the projection of the Kohn-Sham eigenstate {math}`\ket{\psi_{nk}}` onto the localised basis function {math}`\ket{\phi_{\alpha}}`. Together with {math}`\delta(E - \epsilon_{nk})`, which is the density of states arising from {math}`\ket{\psi_{nk}}`, everything within the summation in both equations is referred to as the DOS matrix arising from local basis states {math}`\ket{\phi_{\alpha}}` and {math}`\ket{\phi_{\beta}}`. In the pCOHP, the sum over this DOS matrix is weighted by the corresponding element of the local basis Hamiltonian {math}`H_{\alpha\beta}`, whilst in the pCOBI it is weighted by {math}`P_{\alpha\beta}`, the relevant element of the local basis density matrix.
+In both of the equations above, each {math}`C^{\alpha}_{nk}` is the coefficient resulting from the projection of the Kohn-Sham eigenstate {math}`\ket{\psi_{nk}}` onto the localised basis function {math}`\ket{\phi_{\alpha}}`. Together with {math}`\delta(E - \epsilon_{nk})`, which is the density of states arising from {math}`\ket{\psi_{nk}}`, everything within the summation in both equations is referred to as the DOS matrix arising from local basis states {math}`\ket{\phi_{\alpha}}` and {math}`\ket{\phi_{\beta}}`:
+
+```{math}
+D_{\alpha\beta}(E) = \sum_{nk}\mathrm{Re}\left[\left(C^{\alpha}_{nk}\right)^{*}C^{\beta}_{nk}\right]\cdot\delta(E - \epsilon_{nk}).
+```
+
+In the pCOHP, the sum over this DOS matrix is weighted by the corresponding element of the local basis Hamiltonian {math}`H_{\alpha\beta}`, whilst in the pCOBI it is weighted by {math}`P_{\alpha\beta}`, the relevant element of the local basis density matrix.
 
 Loosely speaking, the pCOHP is thought to be correlated with **bond strength**, whilst the pCOBI is thought to be correlated with **bond order** (or rather, the contribution to these two metrics by a given pair of basis functions). This is most clearly expressed by their integrals up to the Fermi level,
 
@@ -66,13 +72,15 @@ In the context of chemical bonding descriptors, Wannier functions therefore repr
 \end{align}
 ```
 
+:::{note}
+We define the WOHP with the opposite sign to the pCOHP so as to ensure that a positive WOHP indicates bonding and a negative WOHP indicates antibonding (thus matching the WOBI in this respect).
+:::
+
 where {math}`R = R_{2} - R_{1}` is an extra index accounting for the fact that one could techincally compute the WOHP or WOBI between Wannier functions located in a variety of different unit cells. The coefficients used to build the DOS matrix are easily obtained from the unitary matrices used to define the Wannier functions:
 
 ```{math}
 C^{\alpha}_{nk} = \exp[ik \cdot R]\left(U^{k}_{n\alpha}\right)^{*}.
 ```
-
-Note that here we define the WOHP with the opposite sign to the pCOHP so as to ensure that a positive WOHP indicates bonding and a negative WOHP indicates antibonding (thus matching the WOBI in this respect).
 
 ## Caveats
 
