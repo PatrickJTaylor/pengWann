@@ -38,7 +38,7 @@ myst_enable_extensions = ["colon_fence", "dollarmath"]
 
 # myst-nb
 
-jupyter_execute_notebooks = "off"
+nb_execution_mode = "off"
 
 # intersphinx
 
