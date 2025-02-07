@@ -36,6 +36,10 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 myst_enable_extensions = ["colon_fence", "dollarmath"]
 
+# myst-nb
+
+jupyter_execute_notebooks = "off"
+
 # intersphinx
 
 intersphinx_mapping = {
