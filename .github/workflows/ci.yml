@@ -17,16 +17,16 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install pengwann
+      - name: Sync environment
         run: uv sync
 
       - name: Enforce black formatting
         run: |
-          uv run ruff format --check pengwann
+          uv run ruff format --check src/pengwann
           uv run ruff format --check tests
 
       - name: Lint
-        run: uv run ruff check pengwann
+        run: uv run ruff check src/pengwann
 
       - name: Run static type checking
         run: uv run pyright

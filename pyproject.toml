@@ -48,13 +48,13 @@ docs = [
 homepage = 'https://github.com/PatrickJTaylor/pengWann'
 
 [tool.hatch.build]
-include = ['pengwann']
+include = ['src/pengwann']
 
 [tool.hatch.version]
-path = 'pengwann/version.py'
+path = 'src/pengwann/version.py'
 
 [tool.pyright]
-include = ['pengwann']
+include = ['src/pengwann']
 
 [tool.coverage.run]
 concurrency = ['multiprocessing']
@@ -63,11 +63,12 @@ sigterm = true
 
 [tool.coverage.report]
 omit = [
-  'pengwann/__init__.py',
-  'pengwann/version.py'
+  'src/pengwann/__init__.py',
+  'src/pengwann/version.py'
 ]
 
 [tool.pytest.ini_options]
+pythonpath = ['src']
 addopts = '--random-order --cov-report xml --cov=pengwann'
 testpaths = ['tests']
 
