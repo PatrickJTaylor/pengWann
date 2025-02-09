@@ -48,13 +48,13 @@ docs = [
 homepage = 'https://github.com/PatrickJTaylor/pengWann'
 
 [tool.hatch.build]
-include = ['src/pengwann']
+packages = ['src/pengwann']
 
 [tool.hatch.version]
 path = 'src/pengwann/version.py'
 
 [tool.pyright]
-include = ['src/pengwann']
+include = ['src']
 
 [tool.coverage.run]
 concurrency = ['multiprocessing']
