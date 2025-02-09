@@ -36,18 +36,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = [
-  'pyright',
-  'pytest',
-  'pytest-cov',
-  'pytest-datadir',
-  'pytest-random-order',
-  'pytest-regressions',
-  'ruff',
-  'scipy-stubs',
-  'types-tqdm'
-]
-
 docs = [
   'myst-nb',
   'numpydoc',
@@ -82,3 +70,16 @@ omit = [
 [tool.pytest.ini_options]
 addopts = '--random-order --cov-report xml --cov=pengwann'
 testpaths = ['tests']
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.393",
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+    "pytest-datadir>=1.6.1",
+    "pytest-random-order>=1.1.1",
+    "pytest-regressions>=2.7.0",
+    "ruff>=0.9.5",
+    "scipy-stubs>=1.15.1.0",
+    "types-tqdm>=4.67.0.20241221",
+]

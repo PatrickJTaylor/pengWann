@@ -1,4 +1,4 @@
-name: ci
+name: continuous integration
 
 on: [push, pull_request]
 
@@ -10,30 +10,32 @@ jobs:
         python-version: ['3.10', '3.11', '3.12', '3.13']
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install '.[dev]'
-    - name: Enforce formatting
-      run: |
-        ruff format --check pengwann
-        ruff format --check tests
-    - name: Lint
-      run: |
-        ruff check pengwann
-    - name: Run static type checking
-      run: |
-        pyright
-    - name: Run test suite
-      run: |
-        pytest
-    - name: Publish test coverage report
-      if: github.event_name == 'push'
-      uses: paambaati/codeclimate-action@v9.0.0
-      env:
-        CC_TEST_REPORTER_ID: ${{ secrets.CODECLIMATE_REPO_TOKEN }}
+      - uses: actions/checkout@v4
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install pengwann
+        run: uv sync
+
+      - name: Enforce black formatting
+        run: |
+          uv run ruff format --check pengwann
+          uv run ruff format --check tests
+
+      - name: Lint
+        run: uv run ruff check pengwann
+
+      - name: Run static type checking
+        run: uv run pyright
+
+      - name: Run test suite
+        run: uv run pytest
+
+      - name: Publish test coverage report
+        if: github.event_name == 'push'
+        uses: paambaati/codeclimate-action@v9.0.0
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CODECLIMATE_REPO_TOKEN }}
