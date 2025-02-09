@@ -1280,17 +1280,6 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-dev = [
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pytest-datadir" },
-    { name = "pytest-random-order" },
-    { name = "pytest-regressions" },
-    { name = "ruff" },
-    { name = "scipy-stubs" },
-    { name = "types-tqdm" },
-]
 docs = [
     { name = "myst-nb" },
     { name = "numpydoc" },
@@ -1319,19 +1308,10 @@ requires-dist = [
     { name = "numpydoc", marker = "extra == 'docs'" },
     { name = "pydata-sphinx-theme", marker = "extra == 'docs'" },
     { name = "pymatgen", specifier = ">=2022.0.3" },
-    { name = "pyright", marker = "extra == 'dev'" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-cov", marker = "extra == 'dev'" },
-    { name = "pytest-datadir", marker = "extra == 'dev'" },
-    { name = "pytest-random-order", marker = "extra == 'dev'" },
-    { name = "pytest-regressions", marker = "extra == 'dev'" },
-    { name = "ruff", marker = "extra == 'dev'" },
     { name = "scipy" },
-    { name = "scipy-stubs", marker = "extra == 'dev'" },
     { name = "sphinx", marker = "extra == 'docs'" },
     { name = "sphinxcontrib-bibtex", marker = "extra == 'docs'" },
     { name = "tqdm" },
-    { name = "types-tqdm", marker = "extra == 'dev'" },
 ]
 
 [package.metadata.requires-dev]
