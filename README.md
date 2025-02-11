@@ -24,3 +24,8 @@ Alternatively, to install the current development build:
 ```
 pip install git+https://github.com/PatrickJTaylor/pengwann.git
 ```
+
+## Bugs and development
+
+If you think you have encountered a bug whilst using `pengwann`, please create an [issue](https://github.com/PatrickJTaylor/pengWann/issues) and let us know!
+Contributions to `pengwann` via [pull requests](https://github.com/PatrickJTaylor/pengWann/pulls) are also very welcome (see the [contributions guide](https://github.com/PatrickJTaylor/pengWann/blob/main/docs/CONTRIBUTING.md) for more details).
