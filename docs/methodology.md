@@ -51,7 +51,13 @@ Very briefly, Wannier functions are a localised basis obtained from a set of Koh
 \end{align}
 ```
 
-where {math}`i` is a band-like index (note that within the exponential term, {math}`i = \sqrt{-1}`), {math}`R` is a Bravais lattice vector specifying the unit cell in which {math}`\ket{w_{iR}}` resides ({math}`\alpha` combines these two indices) and each {math}`U^{k}` is a unitary matrix. Owing to the fact that the Wannier functions are obtained via unitary transformations, the trace over any one-particle operator is the same whether one chooses to use the Bloch basis or the Wannier basis. The spilling factor can therefore be written as
+where {math}`i` is a band-like index (note that within the exponential term, {math}`i = \sqrt{-1}`), {math}`R` is a Bravais lattice vector specifying the unit cell in which {math}`\ket{w_{iR}}` resides ({math}`\alpha` combines these two indices) and each {math}`U^{k}` is a unitary matrix. Owing to the fact that the Wannier functions are obtained via unitary transformations, the trace over any one-particle operator is the same whether one chooses to use the Bloch basis or the Wannier basis:
+
+```{math}
+\sum_{k}\ket{\psi_{nk}}\bra{\psi_{nk}} = \sum_{R}\ket{w_{nR}}\bra{w_{nR}}.
+```
+
+The spilling factor can therefore be written as
 
 ```{math}
 S = \frac{1}{N_{k}}\frac{1}{N_{b}}\sum_{nk} 1 - \sum_{m}|\braket{\psi_{nk}|\psi_{mk}}|^{2},
@@ -96,18 +102,20 @@ where {math}`S` is the overlap matrix. If we use Wannier functions as our local 
 \mathrm{WOOP}_{\alpha\alpha}(E) = D_{\alpha\alpha}(E) = \mathrm{pDOS}_{\alpha}(E),
 ```
 
-in which case we can also think of it as the density of states projected onto a specific Wannier function {math}`\ket{w_{\alpha}}`.
+in which case we can also think of it as {math}`\mathrm{pDOS}_{\alpha}`: the density of states projected onto a specific Wannier function {math}`\ket{w_{\alpha}}`.
 
 ## Caveats
 
-Whilst Wannier functions derived from energetically isolated bands are guaranteed to span the same Hilbert space, this does not mean that individual WOHPs and WOBIs are uniquely defined. In general, Wannier functions are strongly non-unique: so long as each {math}`U^{k}` remains unitary, the spilling factor is strictly 0, but the resulting Wannier functions may have wildly different centres, spreads and shapes. In addition, Wannier bases derived from groups of entangled bands (those that are not separated by an energy gap from all other bands everywhere in the Brillouin zone) are no longer guaranteed to span exactly the same space as the original Kohn-Sham states, thus potentially suffering from the same problems as pre-defined basis sets of atomic or pseudo-atomic orbitals.
+Whilst Wannier functions derived from energetically isolated bands are guaranteed to span the same Hilbert space as the Kohn-Sham eigenstates, this does not mean that individual WOHPs and WOBIs are uniquely defined. In general, Wannier functions are strongly non-unique: so long as each {math}`U^{k}` remains unitary, the spilling factor is strictly 0, but the resulting Wannier functions may have wildly different centres, spreads and shapes. In addition, Wannier bases derived from groups of entangled bands (those that are not separated by an energy gap from all other bands everywhere in the Brillouin zone) are no longer guaranteed to span exactly the same space as the original Kohn-Sham states, thus potentially suffering from the same problems as pre-defined basis sets of atomic or pseudo-atomic orbitals.
 
-There exists well-estalished methods for mitigating both of the concerns raised above. The non-uniqeuness of Wannier functions can be circumvented by minimising their spread with respect to the unitary matrices {math}`U^{k}`, thus producing so-called "Maximally-Localised Wannier Functions" or MLWFs {footcite:p}`MLWF, MLWF_dis`. Such Wannier functions tend to be atom-centred and to take on shapes that in many cases match our chemical intution for the system at hand. Maximal localisation can also be applpied to a manifold of entangled bands, although a separate "disentanglement" step is required in this case, unless one chooses to utilise the SCDM method {footcite:p}`SCDM, SCDM_k`.
+There exists well-estalished methods for mitigating both of the concerns raised above. The non-uniqeuness of Wannier functions can be circumvented by minimising their spread with respect to the unitary matrices {math}`U^{k}`, thus producing so-called "Maximally-Localised Wannier Functions" or MLWFs {footcite:p}`MLWF, MLWF_dis`. Such Wannier functions tend to be atom-centred and to take on shapes that in many cases match our chemical intution for the system at hand. Maximal localisation can also be applied to a manifold of entangled bands, although a separate "disentanglement" step is required in this case, unless one chooses to utilise the SCDM method {footcite:p}`SCDM, SCDM_k`.
 
 In general, obtaining "good" MLWFs for non-trivial systems is not always easy, although developments in recent years are slowly making this a more reliable and automatable process. As a result, the two most obvious use cases for `pengwann` are as follows:
 
 1. You have **already obtained** MLWFs for your system (for some other purpose) and would like to characterise the local bonding.
 2. You have attempted to characterise the bonding via another tool such as [LOBSTER](http://www.cohp.de/), but you find that the results are **not satisfactory**.
+
+### References
 
 ```{footbibliography}
 ```
