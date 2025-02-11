@@ -33,7 +33,6 @@ from multiprocessing.shared_memory import SharedMemory
 from numpy.typing import NDArray
 from pengwann.geometry import AtomicInteractionContainer, WannierInteraction
 from pengwann.utils import allocate_shared_memory, get_spilling_factor
-from pymatgen.core import Structure
 from tqdm.auto import tqdm
 from typing import Any
 
