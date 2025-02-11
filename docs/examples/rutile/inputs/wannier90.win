@@ -16,9 +16,9 @@ wannier_plot = true
 
 auto_projections = true
 dis_froz_proj = true
-dis_proj_max = 0.85
+dis_proj_max = 0.95
 dis_proj_min = 0.01
-dis_froz_max = 13.0242
+dis_froz_max = 11.1608
 
 begin atoms_frac
 Ti               0.5000000000        0.5000000000       -0.0000000000
