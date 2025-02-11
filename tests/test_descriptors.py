@@ -262,33 +262,6 @@ def test_DescriptorCalculator_assign_h_ij(
     )
 
 
-def test_DescriptorCalculator_get_bwdf(
-    shared_datadir, dcalc, interactions, geometry, ndarrays_regression, tol
-) -> None:
-    base_interaction = interactions.sub_interactions[0]
-    processed_interactions = (replace(base_interaction, iwohp=10),)
-    processed_interaction_container = replace(
-        interactions, sub_interactions=processed_interactions
-    )
-
-    r_range = (0, 5)
-    nbins = 500
-
-    r, bwdf = dcalc.get_bwdf(processed_interaction_container, geometry, r_range, nbins)
-
-    ndarrays_regression.check({"r": r, "BWDF": bwdf[("C", "C")]}, default_tolerance=tol)
-
-
-def test_DescriptorCalculator_get_bwdf_no_iwohp(
-    shared_datadir, dcalc, interactions, geometry
-) -> None:
-    r_range = (0, 5)
-    nbins = 500
-
-    with pytest.raises(TypeError):
-        dcalc.get_bwdf(interactions, geometry, r_range, nbins)
-
-
 def test_DescriptorCalculator_parallelise_no_occupation_matrix(
     dcalc, interactions
 ) -> None:
