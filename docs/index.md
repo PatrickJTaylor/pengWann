@@ -40,4 +40,5 @@ installation
 methodology
 examples
 api
+CONTRIBUTING
 ```
