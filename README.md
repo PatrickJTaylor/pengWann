@@ -1,4 +1,4 @@
-![The pengWann logo: a purple penguin.](docs/_static/logo.svg)
+![The pengWann logo: a purple penguin.](docs/_static/logo.png)
 
 (technically pronounced *peng-van*)
 
