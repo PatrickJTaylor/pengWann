@@ -25,46 +25,31 @@ Contributions to `pengwann` should be made via the [fork and pull](https://docs.
 
 2. Clone a local version of your new fork:
 
-```bash
+```console
 git clone git@github.com:your_username_here/pengWann.git
 ```
 
-3. Set up a development environment:
+3. Set up a development environment with [uv](https://docs.astral.sh/uv/):
 
-```bash
+```console
 cd pengWann
-uv sync
+uv run pre-commit install
 ```
 
 4. Create and switch to a new branch:
 
-```bash
+```console
 git switch -c name_of_new_feature
 ```
 
 5. Implement the changes that you would like to contribute.
 
-6. (Optional) Format, lint, type-check and test any new code:
+6. Commit your changes and push to GitHub:
 
-```bash
-uv run ruff format --check src
-uv run ruff format --check tests
-
-uv run ruff check src
-
-uv run pyright
-
-uv run pytest
-```
-
-Note that if you choose not to validate your branch at this stage, it will automatically be validated by CI when you create a pull request.
-
-7. Commit your changes and push to GitHub:
-
-```bash
+```console
 git add src/pengwann/changed_file.py
 git commit -m 'Short description of changes made.'
 git push origin name_of_new_feature
 ```
 
-8. Submit a pull request via GitHub.
+7. Submit a [pull request](https://github.com/PatrickJTaylor/pengWann/pulls).
