@@ -30,7 +30,7 @@ from pymatgen.core import Structure
 def serialise_interactions(
     interactions: tuple[AtomicInteraction, ...],
 ) -> dict[str, int | tuple[str, str] | list[int]]:
-    serialised_interactions = {"tags": [], "i": [], "j": [], "bl_1": [], "bl_2": []}
+    serialised_interactions = {"tags": [], "i": [], "j": [], "bl_i": [], "bl_j": []}
     for interaction in interactions:
         serialised_interactions["tags"].append(interaction.tag)
 
@@ -38,11 +38,11 @@ def serialise_interactions(
             serialised_interactions["i"].append(w_interaction.i)
             serialised_interactions["j"].append(w_interaction.j)
 
-            serial_bl_1 = w_interaction.bl_1.tolist()
-            serial_bl_2 = w_interaction.bl_2.tolist()
+            serial_bl_i = w_interaction.bl_i.tolist()
+            serial_bl_j = w_interaction.bl_j.tolist()
 
-            serialised_interactions["bl_1"].append(serial_bl_1)
-            serialised_interactions["bl_2"].append(serial_bl_2)
+            serialised_interactions["bl_i"].append(serial_bl_i)
+            serialised_interactions["bl_j"].append(serial_bl_j)
 
     return serialised_interactions
 

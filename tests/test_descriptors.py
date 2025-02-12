@@ -64,10 +64,10 @@ def dcalc(shared_datadir) -> DescriptorCalculator:
 @pytest.fixture
 def interactions() -> AtomicInteractionContainer:
     w_interaction_1 = WannierInteraction(
-        i=1, j=0, bl_1=np.array([0, 1, 0]), bl_2=np.array([0, 0, 0])
+        i=1, j=0, bl_i=np.array([0, 1, 0]), bl_j=np.array([0, 0, 0])
     )
     w_interaction_2 = WannierInteraction(
-        i=5, j=6, bl_1=np.array([0, 1, 1]), bl_2=np.array([0, 0, 0])
+        i=5, j=6, bl_i=np.array([0, 1, 1]), bl_j=np.array([0, 0, 0])
     )
     interactions = (
         AtomicInteraction(
@@ -125,11 +125,11 @@ class TestkResolvedMethods:
         self, dcalc, resolve_k, ndarrays_regression, tol
     ) -> None:
         i, j = 1, 0
-        bl_1 = np.array([0, 0, 0])
-        bl_2 = np.array([-1, 1, 0])
+        bl_i = np.array([0, 0, 0])
+        bl_j = np.array([-1, 1, 0])
 
-        c_star = np.conj(dcalc.get_coefficient_matrix(i, bl_1))
-        c = dcalc.get_coefficient_matrix(j, bl_2)
+        c_star = np.conj(dcalc.get_coefficient_matrix(i, bl_i))
+        c = dcalc.get_coefficient_matrix(j, bl_j)
 
         dos_matrix = dcalc.get_dos_matrix(c_star, c, resolve_k=resolve_k)
 
@@ -210,11 +210,11 @@ def test_DescriptorCalculator_get_density_matrix_element(
     dcalc, ndarrays_regression, tol
 ) -> None:
     i, j = 1, 4
-    bl_1 = np.array([0, 0, 0])
-    bl_2 = np.array([-1, 0, 0])
+    bl_i = np.array([0, 0, 0])
+    bl_j = np.array([-1, 0, 0])
 
-    c_star = np.conj(dcalc.get_coefficient_matrix(i, bl_1))
-    c = dcalc.get_coefficient_matrix(j, bl_2)
+    c_star = np.conj(dcalc.get_coefficient_matrix(i, bl_i))
+    c = dcalc.get_coefficient_matrix(j, bl_j)
 
     p_ij = dcalc.get_density_matrix_element(c_star, c)
 

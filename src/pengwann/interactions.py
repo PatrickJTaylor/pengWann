@@ -488,10 +488,10 @@ class WannierInteraction(NamedTuple):
         The index identifying Wannier function i.
     j : int
         The index identifying Wannier function j.
-    bl_1 : ndarray of np.int_
+    bl_i : ndarray of np.int_
         The Bravais lattice vector specifying the translation of Wannier function i
         relative to its home cell.
-    bl_2 : ndarray of np.int_
+    bl_j : ndarray of np.int_
         The Bravais lattice vector specifying the translation of Wannier function j
         relative to its home cell.
     tag : str
@@ -517,15 +517,15 @@ class WannierInteraction(NamedTuple):
     -----
     It is expected that this class will normally be initialised with solely the data
     required to specify the interacting Wannier functions: the indices `i` and `j`
-    alongside the Bravais lattice vectors `bl_1` and `bl_2`. The remaining fields will
+    alongside the Bravais lattice vectors `bl_i` and `bl_j`. The remaining fields will
     usually only be set by methods of the
     :py:class:`~pengwann.descriptors.DescriptorCalculator` class.
     """
 
     i: int
     j: int
-    bl_1: NDArray[np.int_]
-    bl_2: NDArray[np.int_]
+    bl_i: NDArray[np.int_]
+    bl_j: NDArray[np.int_]
 
     dos_matrix: NDArray[np.float64] | None = None
     h_ij: np.float64 | None = None
@@ -576,7 +576,7 @@ class WannierInteraction(NamedTuple):
         generated_tag : str
             The generated tag.
         """
-        return f"{self.i}{self.bl_1.tolist()} <=> {self.j}{self.bl_2.tolist()}"
+        return f"{self.i}{self.bl_i.tolist()} <=> {self.j}{self.bl_j.tolist()}"
 
     @property
     def wohp(self) -> NDArray[np.float64] | None:

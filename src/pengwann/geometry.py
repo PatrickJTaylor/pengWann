@@ -274,10 +274,10 @@ def identify_interatomic_interactions(
                 wannier_interactions_list = []
                 for m in wannier_centres[i]:
                     for n in wannier_centres[j]:
-                        _, bl_1 = geometry[i].distance_and_image(geometry[m])
-                        _, bl_2 = geometry[j].distance_and_image(geometry[n])
+                        _, bl_i = geometry[i].distance_and_image(geometry[m])
+                        _, bl_j = geometry[j].distance_and_image(geometry[n])
 
-                        wannier_interaction = WannierInteraction(m, n, bl_1, bl_2)
+                        wannier_interaction = WannierInteraction(m, n, bl_i, bl_j)
                         wannier_interactions_list.append(wannier_interaction)
 
                 wannier_interactions = tuple(wannier_interactions_list)

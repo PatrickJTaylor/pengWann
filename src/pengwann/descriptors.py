@@ -547,7 +547,7 @@ class DescriptorCalculator:
             assigned.
         """
         bl_vector = tuple(
-            [int(component) for component in interaction.bl_2 - interaction.bl_1]
+            [int(component) for component in interaction.bl_j - interaction.bl_i]
         )
 
         assert self._h is not None
@@ -773,8 +773,8 @@ class DescriptorCalculator:
 
         dcalc = cls(**dcalc_builder)
 
-        c_star = np.conj(dcalc.get_coefficient_matrix(interaction.i, interaction.bl_1))
-        c = dcalc.get_coefficient_matrix(interaction.j, interaction.bl_2)
+        c_star = np.conj(dcalc.get_coefficient_matrix(interaction.i, interaction.bl_i))
+        c = dcalc.get_coefficient_matrix(interaction.j, interaction.bl_j)
 
         new_values = {}
 

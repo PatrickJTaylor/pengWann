@@ -32,38 +32,18 @@ def none_to_nan(data: Any) -> Any:
         return data
 
 
-def serialise_interactions(
-    interactions: tuple[AtomicInteraction, ...],
-) -> dict[str, int | tuple[str, str] | list[int]]:
-    serialised_interactions = {"tags": [], "i": [], "j": [], "bl_1": [], "bl_2": []}
-    for interaction in interactions:
-        serialised_interactions["tags"].append(interaction.tag)
-
-        for w_interaction in interaction.sub_interactions:
-            serialised_interactions["i"].append(w_interaction.i)
-            serialised_interactions["j"].append(w_interaction.j)
-
-            serial_bl_1 = w_interaction.bl_1.tolist()
-            serial_bl_2 = w_interaction.bl_2.tolist()
-
-            serialised_interactions["bl_1"].append(serial_bl_1)
-            serialised_interactions["bl_2"].append(serial_bl_2)
-
-    return serialised_interactions
-
-
 @pytest.fixture
 def wannier_interaction() -> WannierInteraction:
     i = 0
     j = 1
-    bl_1 = np.array([0, 0, 0])
-    bl_2 = np.array([0, 0, 0])
+    bl_i = np.array([0, 0, 0])
+    bl_j = np.array([0, 0, 0])
     dos_matrix = np.linspace(0, 50, 100)
     h_ij = 2
     p_ij = 0.5
 
     return WannierInteraction(
-        i=i, j=j, bl_1=bl_1, bl_2=bl_2, dos_matrix=dos_matrix, h_ij=h_ij, p_ij=p_ij
+        i=i, j=j, bl_i=bl_i, bl_j=bl_j, dos_matrix=dos_matrix, h_ij=h_ij, p_ij=p_ij
     )
 
 
@@ -71,8 +51,8 @@ def wannier_interaction() -> WannierInteraction:
 def atomic_interaction(wannier_interaction) -> AtomicInteraction:
     i = 2
     j = 3
-    bl_1 = np.array([1, 0, 0])
-    bl_2 = np.array([0, 0, 0])
+    bl_i = np.array([1, 0, 0])
+    bl_j = np.array([0, 0, 0])
     dos_matrix = np.linspace(0, 25, 100)
     h_ij = 2.5
     p_ij = 0.7
@@ -80,8 +60,8 @@ def atomic_interaction(wannier_interaction) -> AtomicInteraction:
     second_interaction = WannierInteraction(
         i=i,
         j=j,
-        bl_1=bl_1,
-        bl_2=bl_2,
+        bl_i=bl_i,
+        bl_j=bl_j,
         dos_matrix=dos_matrix,
         h_ij=h_ij,
         p_ij=p_ij,
@@ -105,8 +85,8 @@ def interaction_container(
 ) -> AtomicInteractionContainer:
     i = 4
     j = 5
-    bl_1 = np.array([0, 1, 0])
-    bl_2 = np.array([0, 0, 0])
+    bl_i = np.array([0, 1, 0])
+    bl_j = np.array([0, 0, 0])
     dos_matrix = np.linspace(0, 30, 100)
     h_ij = 1.5
     p_ij = 0.2
@@ -114,8 +94,8 @@ def interaction_container(
     second_interaction = WannierInteraction(
         i=i,
         j=j,
-        bl_1=bl_1,
-        bl_2=bl_2,
+        bl_i=bl_i,
+        bl_j=bl_j,
         dos_matrix=dos_matrix,
         h_ij=h_ij,
         p_ij=p_ij,
@@ -234,14 +214,14 @@ def test_AtomicInteraction_slice_no_indices(atomic_interaction) -> None:
 def test_AtomicInteraction_slice_1_index(wannier_interaction) -> None:
     i = 0
     j = 3
-    bl_1 = np.array([1, 0, 0])
-    bl_2 = np.array([0, 0, 0])
+    bl_i = np.array([1, 0, 0])
+    bl_j = np.array([0, 0, 0])
 
     second_interaction = WannierInteraction(
         i=i,
         j=j,
-        bl_1=bl_1,
-        bl_2=bl_2,
+        bl_i=bl_i,
+        bl_j=bl_j,
     )
     wannier_interactions = (wannier_interaction, second_interaction)
 
