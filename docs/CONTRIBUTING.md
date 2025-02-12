@@ -44,7 +44,21 @@ git switch -c name_of_new_feature
 
 5. Implement the changes that you would like to contribute.
 
-6. Commit your changes and push to GitHub:
+6. (Optional) Run the test suite:
+
+```console
+uv run pytest
+```
+
+Regardless of whether or not you validate your changes with respect to the test suite, it will be run in CI when you open a pull request.
+Linting, formatting and static type checking are all implemented as `pre-commit` hooks via `ruff` and `pyright`, but you can also run these tools manually if you wish, for example:
+
+```console
+uv run ruff check src
+uv run pyright
+```
+
+7. Commit your changes and push to GitHub:
 
 ```console
 git add src/pengwann/changed_file.py
@@ -52,4 +66,4 @@ git commit -m 'Short description of changes made.'
 git push origin name_of_new_feature
 ```
 
-7. Submit a [pull request](https://github.com/PatrickJTaylor/pengWann/pulls).
+8. Submit a [pull request](https://github.com/PatrickJTaylor/pengWann/pulls).
