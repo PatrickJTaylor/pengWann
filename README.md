@@ -1,6 +1,6 @@
 ![The pengWann logo: a purple penguin.](docs/_static/logo.png)
 
-(technically pronounced *peng-van*, but some people say *num-pee* rather than *num-pie* in reference to `numpy`, so who really knows?)
+(technically pronounced *peng-van*, but some pronounce `numpy` as *num-pee* rather than *num-pie*, so who really knows?)
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Docs](https://readthedocs.org/projects/pengwann/badge/?version=latest)](https://pengwann.readthedocs.io/en/latest/)
