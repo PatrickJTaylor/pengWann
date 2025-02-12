@@ -20,13 +20,15 @@ jobs:
       - name: Sync environment
         run: uv sync
 
+      - name: Lint
+        run: |
+          uv run ruff check src
+          uv run ruff check tests
+
       - name: Enforce black formatting
         run: |
           uv run ruff format --check src
           uv run ruff format --check tests
-
-      - name: Lint
-        run: uv run ruff check src
 
       - name: Run static type checking
         run: uv run pyright

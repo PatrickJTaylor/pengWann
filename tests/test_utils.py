@@ -14,10 +14,8 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from multiprocessing.shared_memory import SharedMemory
 from pengwann.io import read_u
 from pengwann.utils import (
-    allocate_shared_memory,
     get_atom_indices,
     get_spilling_factor,
     integrate_descriptor,

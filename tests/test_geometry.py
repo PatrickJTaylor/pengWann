@@ -22,7 +22,6 @@ from pengwann.geometry import (
     build_geometry,
     identify_interatomic_interactions,
     identify_onsite_interactions,
-    WannierInteraction,
 )
 from pymatgen.analysis.structure_matcher import StructureMatcher
 from pymatgen.core import Structure

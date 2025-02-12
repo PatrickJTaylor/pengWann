@@ -16,11 +16,7 @@
 import json
 import pytest
 import numpy as np
-from dataclasses import replace
 from multiprocessing import set_start_method
-
-# TODO: Figure out why multithreaded fork() occurs only when pytest is run.
-set_start_method("spawn", force=True)
 from pengwann.descriptors import DescriptorCalculator
 from pengwann.geometry import (
     AtomicInteractionContainer,
@@ -29,6 +25,9 @@ from pengwann.geometry import (
 )
 from pymatgen.core import Structure
 from typing import Any
+
+# TODO: Figure out why multithreaded fork() occurs only when pytest is run.
+set_start_method("spawn", force=True)
 
 
 def none_to_nan(data: Any) -> Any:
