@@ -43,11 +43,9 @@ class DescriptorCalculator:
 
     This class can be used to calculate:
 
-    - The projected density of states (pDOS)
+    - The Wannier-projected density of states (pDOS)
     - Wannier orbital Hamilton populations (WOHPs)
     - Wannier orbital bond indices (WOBIs)
-    - The density of energy (DOE)
-    - Bond-weighted distribution functions (BWDFs)
 
     Parameters
     ----------
