@@ -53,10 +53,11 @@ packages = ['src/pengwann']
 [tool.hatch.version]
 path = 'src/pengwann/version.py'
 
+[tool.ruff]
+extend-exclude = ['*.ipynb']
+
 [tool.pyright]
 include = ['src']
-venvPath = '.'
-venv = '.venv'
 
 [tool.coverage.run]
 concurrency = ['multiprocessing']
@@ -76,7 +77,6 @@ testpaths = ['tests']
 
 [dependency-groups]
 dev = [
-    "pre-commit>=4.1.0",
     "pyright>=1.1.393",
     "pytest>=8.3.4",
     "pytest-cov>=6.0.0",

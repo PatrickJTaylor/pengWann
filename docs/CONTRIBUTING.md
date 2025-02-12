@@ -33,7 +33,7 @@ git clone git@github.com:your_username_here/pengWann.git
 
 ```console
 cd pengWann
-uv run pre-commit install
+uv sync
 ```
 
 4. Create and switch to a new branch:
@@ -44,19 +44,16 @@ git switch -c name_of_new_feature
 
 5. Implement the changes that you would like to contribute.
 
-6. (Optional) Run the test suite:
+6. (Optional) Lint, format, type check and run the test suite:
 
 ```console
+uv run ruff check
+uv run ruff format
+uv run pyright
 uv run pytest
 ```
 
-Regardless of whether or not you validate your changes with respect to the test suite, it will be run in CI when you open a pull request.
-Linting, formatting and static type checking are all implemented as `pre-commit` hooks via `ruff` and `pyright`, but you can also run these tools manually if you wish, for example:
-
-```console
-uv run ruff check src
-uv run pyright
-```
+Regardless of whether or not you validate your changes in the manner shown above, they will be checked in CI when you open a pull request.
 
 7. Commit your changes and push to GitHub:
 
