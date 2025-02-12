@@ -211,8 +211,7 @@ def identify_interatomic_interactions(
         A Pymatgen Structure object with a :code:`"wannier_centres"` site property that
         associates each atom with the indices of its Wannier centres.
     radial_cutoffs : dict of {2-length tuple of str : float} pairs
-        A dictionary defining radial cutoffs for pairs of atomic species e.g
-        :code:`{("C", "C"): 1.6, ("C", "O"): 1.5}`.
+        A dictionary defining radial cutoffs for pairs of atomic species.
 
     Returns
     -------
@@ -224,6 +223,12 @@ def identify_interatomic_interactions(
     build_geometry
     pengwann.descriptors.DescriptorCalculator.assign_descriptors :
         Compute bonding descriptors for a set of interatomic interactions.
+
+    Examples
+    --------
+    >>> cutoffs = {("Sr", "O"): 2.8,
+    ...            ("V", "O"): 2.0}
+    >>> interactions = identify_interatomic_interactions(geometry, cutoffs)
     """
     if "wannier_centres" not in geometry.site_properties.keys():
         raise ValueError('Input geometry is missing a "wannier_centres" site property.')
