@@ -38,7 +38,7 @@ Perhaps the most serious problem with calculating pCOHPs and pCOBIs in the manne
 S = \frac{1}{N_{k}}\frac{1}{N_{b}}\sum_{nk} 1 - \sum_{\alpha}|\braket{\psi_{nk}|\phi_{\alpha}}|^{2},
 ```
 
-which takes value between 0 and 1. If the local basis spans the same Hilbert space as the Kohn-Sham states, then {math}`S = 0`, whilst {math}`S = 1` indicates that the two bases are orthogonal to one another.
+which takes values between 0 and 1. If the local basis spans the same Hilbert space as the Kohn-Sham states, then {math}`S = 0`, whilst {math}`S = 1` indicates that the two bases are orthogonal to one another.
 
 ## Wannier functions
 
