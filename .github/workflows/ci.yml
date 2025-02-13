@@ -1,21 +1,23 @@
-name: continuous integration
+name: Continuous integration
 
 on: [push, pull_request]
 
 jobs:
-  build:
+  run:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ['3.10', '3.11', '3.12', '3.13']
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Install uv and Python
         uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python-version }}
+          enable-cache: true
 
       - name: Sync environment
         run: uv sync
