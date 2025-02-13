@@ -239,3 +239,135 @@ issn={2520-1158},
 doi={10.1038/s41929-024-01197-2},
 url={https://doi.org/10.1038/s41929-024-01197-2}
 }
+
+@article{wannier_review,
+title = {Maximally localized Wannier functions: Theory and applications},
+author = {Marzari, Nicola and Mostofi, Arash A. and Yates, Jonathan R. and Souza, Ivo and Vanderbilt, David},
+journal = {Rev. Mod. Phys.},
+volume = {84},
+issue = {4},
+pages = {1419--1475},
+numpages = {0},
+year = {2012},
+month = {Oct},
+publisher = {American Physical Society},
+doi = {10.1103/RevModPhys.84.1419},
+url = {https://link.aps.org/doi/10.1103/RevModPhys.84.1419}
+}
+
+@article{lobster_2020,
+author = {Nelson, Ryky and Ertural, Christina and George, Janine and Deringer, Volker L. and Hautier, Geoffroy and Dronskowski, Richard},
+title = {LOBSTER: Local orbital projections, atomic charges, and chemical-bonding analysis from projector-augmented-wave-based density-functional theory},
+journal = {Journal of Computational Chemistry},
+volume = {41},
+number = {21},
+pages = {1931-1940},
+keywords = {chemical bonding, COHP, DFT, plane waves, population analysis, projection, time-reversal symmetry},
+doi = {https://doi.org/10.1002/jcc.26353},
+url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/jcc.26353},
+eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/jcc.26353},
+abstract = {Abstract We present an update on recently developed methodology and functionality in the computer program Local Orbital Basis Suite Toward Electronic-Structure Reconstruction (LOBSTER) for chemical-bonding analysis in periodic systems. LOBSTER is based on an analytic projection from projector-augmented wave (PAW) density-functional theory (DFT) computations (Maintz et al., J. Comput. Chem. 2013, 34, 2557), reconstructing chemical information in terms of local, auxiliary atomic orbitals and thereby opening the output of PAW-based DFT codes to chemical interpretation. We demonstrate how LOBSTER has been improved by taking into account time-reversal symmetry, thereby speeding up the DFT and LOBSTER calculations by a factor of 2. Over the recent years, the functionalities have also been continually expanded, including accurate projected densities of states (DOSs), crystal orbital Hamilton population (COHP) analysis, atomic and orbital charges, gross populations, and the recently introduced k-dependent COHP. The software is offered free-of-charge for non-commercial research.},
+year = {2020}
+}
+
+@article{lobster_fragment,
+author = {M{\"u}ller, Peter C. and Schmit, Nathalie and Sann, Leander and Steinberg, Simon and Dronskowski, Richard},
+title = {Fragment Orbitals Extracted from First-Principles Plane-Wave Calculations},
+journal = {Inorganic Chemistry},
+volume = {63},
+number = {43},
+pages = {20161-20172},
+year = {2024},
+doi = {10.1021/acs.inorgchem.4c01024},
+note ={PMID: 38753490},
+URL = {https://doi.org/10.1021/acs.inorgchem.4c01024},
+eprint = {https://doi.org/10.1021/acs.inorgchem.4c01024}
+}
+
+@online{wobster,
+author = {Xiao, Chengcheng},
+title = {WOBSTER},
+year = {2020},
+month = {Nov},
+url = {https://github.com/Chengcheng-Xiao/WOBSTER}
+}
+
+@article{ht_scdm,
+author={Vitale, Valerio
+and Pizzi, Giovanni
+and Marrazzo, Antimo
+and Yates, Jonathan R.
+and Marzari, Nicola
+and Mostofi, Arash A.},
+title={Automated high-throughput Wannierisation},
+journal={npj Computational Materials},
+year={2020},
+month={Jun},
+day={01},
+volume={6},
+number={1},
+pages={66},
+abstract={Maximally-localised Wannier functions (MLWFs) are routinely used to compute from first-principles advanced materials properties that require very dense Brillouin zone integration and to build accurate tight-binding models for scale-bridging simulations. At the same time, high-throughput (HT) computational materials design is an emergent field that promises to accelerate reliable and cost-effective design and optimisation of new materials with target properties. The use of MLWFs in HT workflows has been hampered by the fact that generating MLWFs automatically and robustly without any user intervention and for arbitrary materials is, in general, very challenging. We address this problem directly by proposing a procedure for automatically generating MLWFs for HT frameworks. Our approach is based on the selected columns of the density matrix method and we present the details of its implementation in an AiiDA workflow. We apply our approach to a dataset of 200 bulk crystalline materials that span a wide structural and chemical space. We assess the quality of our MLWFs in terms of the accuracy of the band-structure interpolation that they provide as compared to the band-structure obtained via full first-principles calculations. Finally, we provide a downloadable virtual machine that can be used to reproduce the results of this paper, including all first-principles and atomistic simulations as well as the computational workflows.},
+issn={2057-3960},
+doi={10.1038/s41524-020-0312-y},
+url={https://doi.org/10.1038/s41524-020-0312-y}
+}
+
+@article{pwdf,
+author={Qiao, Junfeng
+and Pizzi, Giovanni
+and Marzari, Nicola},
+title={Projectability disentanglement for accurate and automated electronic-structure Hamiltonians},
+journal={npj Computational Materials},
+year={2023},
+month={Nov},
+day={03},
+volume={9},
+number={1},
+pages={208},
+abstract={Maximally-localized Wannier functions (MLWFs) are broadly used to characterize the electronic structure of materials. Generally, one can construct MLWFs describing isolated bands (e.g. valence bands of insulators) or entangled bands (e.g. valence and conduction bands of insulators, or metals). Obtaining accurate and compact MLWFs often requires chemical intuition and trial and error, a challenging step even for experienced researchers and a roadblock for high-throughput calculations. Here, we present an automated approach, projectability-disentangled Wannier functions (PDWFs), that constructs MLWFs spanning the occupied bands and their complement for the empty states, providing a tight-binding picture of optimized atomic orbitals in crystals. Key to the algorithm is a projectability measure for each Bloch state onto atomic orbitals, determining if that state should be kept identically, discarded, or mixed into the disentanglement. We showcase the accuracy on a test set of 200 materials, and the reliability by constructing 21,737 Wannier Hamiltonians.},
+issn={2057-3960},
+doi={10.1038/s41524-023-01146-w},
+url={https://doi.org/10.1038/s41524-023-01146-w}
+}
+
+@article{numpy,
+author={Harris, Charles R.
+and Millman, K. Jarrod
+and van der Walt, St{\'e}fan J.
+and Gommers, Ralf
+and Virtanen, Pauli
+and Cournapeau, David
+and Wieser, Eric
+and Taylor, Julian
+and Berg, Sebastian
+and Smith, Nathaniel J.
+and Kern, Robert
+and Picus, Matti
+and Hoyer, Stephan
+and van Kerkwijk, Marten H.
+and Brett, Matthew
+and Haldane, Allan
+and del R{\'i}o, Jaime Fern{\'a}ndez
+and Wiebe, Mark
+and Peterson, Pearu
+and G{\'e}rard-Marchant, Pierre
+and Sheppard, Kevin
+and Reddy, Tyler
+and Weckesser, Warren
+and Abbasi, Hameer
+and Gohlke, Christoph
+and Oliphant, Travis E.},
+title={Array programming with NumPy},
+journal={Nature},
+year={2020},
+month={Sep},
+day={01},
+volume={585},
+number={7825},
+pages={357-362},
+abstract={Array programming provides a powerful, compact and expressive syntax for accessing, manipulating and operating on data in vectors, matrices and higher-dimensional arrays. NumPy is the primary array programming library for the Python language. It has an essential role in research analysis pipelines in fields as diverse as physics, chemistry, astronomy, geoscience, biology, psychology, materials science, engineering, finance and economics. For example, in astronomy, NumPy was an important part of the software stack used in the discovery of gravitational waves1 and in the first imaging of a black hole2. Here we review how a few fundamental array concepts lead to a simple and powerful programming paradigm for organizing, exploring and analysing scientific data. NumPy is the foundation upon which the scientific Python ecosystem is constructed. It is so pervasive that several projects, targeting audiences with specialized needs, have developed their own NumPy-like interfaces and array objects. Owing to its central position in the ecosystem, NumPy increasingly acts as an interoperability layer between such array computation libraries and, together with its application programming interface (API), provides a flexible framework to support the next decade of scientific and industrial analysis.},
+issn={1476-4687},
+doi={10.1038/s41586-020-2649-2},
+url={https://doi.org/10.1038/s41586-020-2649-2}
+}
