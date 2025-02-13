@@ -22,23 +22,42 @@ bibliography: paper.bib
 
 # Summary
 
-Most first-principles quantum chemistry calculations characterise periodic systems with an electronic structure: a series of eigenvectors and eigenvalues calculated by diagonalising a large matrix (often referred to as some kind of Hamiltonian).
-These eigenvectors, often referred to as Bloch states or molecular orbitals, are in general delocalised across the entire structure and so are difficult to reason about in terms of local concepts such as chemical bonds.
+Most first-principles quantum chemistry calculations characterise periodic systems with an electronic structure: a series of eigenvectors and eigenvalues calculated by diagonalising some kind of Hamiltonian.
+These eigenvectors, often referred to as Bloch states or molecular orbitals, are in general delocalised across the entire structure and so are difficult to reason about in terms of chemically intuitive local concepts such as bonds.
 As a result, it is common practice to project these extended Bloch states onto a set of localised basis functions, from which various descriptors of chemical bonding and local electronic structure can then be derived.
-`pengwann` is a Python package for calculating some of these descriptors by projecting Bloch states onto Wannier functions: a highly optimised local basis that, for energetically isolated bands, spans the same Hilbert space as the canonical Bloch states.
-The Wannier functions themselves can be easily passed to `pengwann` via a simple interface to the popular Wannier90 code [@Wannier90], with which many researchers in the field will already be familiar.
+`pengwann` is a Python package for calculating some of these descriptors by projecting Bloch states onto Wannier functions: a highly optimised local basis that, when derived from energetically isolated bands, spans the same Hilbert space as the canonical Bloch states.
+The Wannier functions themselves can easily be passed to `pengwann` via a simple interface to the popular Wannier90 code [@wannier90], with which many researchers in the field will already be familiar.
 
 # Statement of need
 
-The technique of deriving bonding descriptors from the projection of Bloch states onto a local basis is widely used in the materials modelling community.
-Key to the success of this method is the choice of local basis: it should be the case that appropriately combined local basis functions can effectively reproduce the canonical Bloch states.
-The ability of a given basis set to accurately represent the original Bloch states is characterised by the spilling factor
+The technique of deriving bonding descriptors from the projection of Bloch states onto a local basis is widely used in the materials modelling community [@cohp_1;@cohp_2;@cohp_3;@cohp_4;@cohp_5;@cohp_6].
+Key to the success of this method is the choice of local basis functions, which should be able to effectively reproduce the canonical Bloch states when appropriately combined.
+The ability of a given basis set to accurately represent the original Bloch states is quantified by the spilling factor [@spilling_factor]
 
 $$S = \frac{1}{N_{b}}\frac{1}{N_{k}}\sum_{nk}1 - \sum_{\alpha}|\langle\psi_{nk}|\phi_{\alpha}\rangle|^{2},$$
 
-where $|\psi_{nk}\rangle$ is a Bloch state, $|\phi_{\alpha}\rangle$ is a localised basis function labelled by $\alpha$, $n$ labels bands, $k$ labels k-points, $N_{b}$ is the total number of bands and $N_{k}$ is the total number of k-points.
+where $|\psi_{nk}\rangle$ is a Bloch state, $|\phi_{\alpha}\rangle$ is a localised basis function, $n$ labels bands, $k$ labels k-points, $N_{b}$ is the total number of bands and $N_{k}$ is the total number of k-points.
 The spilling factor takes values between 0 and 1; if the local basis spans the same Hilbert space as the Bloch states, then $S = 0$, whilst $S = 1$ indicates that the two bases are orthogonal to one another.
-The most common choice of local basis is to use some kind of atomic or pseudo-atomic orbitals, which are parameterised with respect to atomic species but not usually to the specific system at hand.
-Due to the fact that these basis sets are designed to be transferable between most materials that one may wish to study, they will never be able to represent The Bloch states of an arbitrary system perfectly: the spilling factor will always be non-zero and some information will always be lost during the projection.
+The most common choice of local basis is to use some kind of atomic or pseudo-atomic orbitals [@bunge_basis;@koga_basis;@lobster_2016;@crystal_cohp], which are parameterised with respect to atomic species but not usually to the specific system at hand.
+Due to the fact that these basis sets are designed to be transferable between most materials that one may wish to study, they will never be able to represent the Bloch states of an arbitrary system perfectly: the spilling factor will always be non-zero and some information will always be lost during the projection.
+For many systems, the error introduced by this loss of information is relatively small and so can be safely ignored, but this is not always the case.
+To give a pathological example, in electride materials, atom-centred basis functions cannot accurately represent the Bloch states because some of the valence electrons behave like anions and occupy their own distinct space in the structure [@electrides].
+
+As mentioned previously, `pengwann` uses a Wannier basis, which when derived from energetically isolated bands, spans the same vector space as the canonical Bloch states.
+The spilling factor is therefore strictly zero and there is no loss of information in switching from the Bloch basis to the Wannier basis.
+With regards to Wannier functions derived from bands that are not energetically isolated everywhere in the Brillouin zone, the spilling factor will no longer be strictly zero, but we might still expect it to be very small, owing to the fact that Wannier functions are themselves calculated by a unitary transformation of the Bloch states.
+In addition, Wannier functions are not inherently atom-centred (even if in most systems they would appear to be so) and are therefore capable of accurately representing the Bloch states of electrides and other such anomalous systems.
+More generally, even in systems where basis sets of pre-defined atomic or pseudo-atomic orbitals perform very well, a Wannier basis will always be capable of reducing the spilling factor and therefore reducing the corresponding error in all derived descriptors.
+
+What follows is a list of the core features implemented in `pengwann`:
+
+- Identification of interatomic and on-site interactions in terms of the Wannier functions associated with each atom
+- Parsing of Wannier90 output files
+- Parallelised computation of the following descriptors:
+  - The Wannier orbital Hamilton population (WOHP)
+  - The Wannier orbital bond index (WOBI)
+  - The Wannier-projected density of states (pDOS)
+  - Orbital and k-resolved implementations of all of the above
+- Integration of descriptors to derive populations, charges, measures of bond strength and bond order
 
 # References
