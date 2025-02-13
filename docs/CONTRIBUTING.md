@@ -9,7 +9,7 @@ If you are going to submit a pull request to `pengwann`, please first check that
 1. New/modified functionality should be accompanied by new/appropriately modified **tests**.
 
 2. New/modified functionality should be accompanied by new/appropriately modified **documentation**.
-    - In keeping with the current codebase, please use [numpy](https://numpydoc.readthedocs.io/en/latest/format.html)-style docstrings to document all source code.
+    - In keeping with the current codebase, please use [numpy-style](https://numpydoc.readthedocs.io/en/latest/format.html) docstrings to document all source code.
 
 3. Where possible, write new code in a somewhat [functional](https://en.wikipedia.org/wiki/Functional_programming) style[^1].
 
