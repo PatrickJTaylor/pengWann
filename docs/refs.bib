@@ -28,7 +28,7 @@ eprint = {https://doi.org/10.1021/j100135a014}
 
 @article{pCOHP,
 author = {Deringer, Volker L. and Tchougr{\'e}eff, Andrei L. and Dronskowski, Richard},
-title = {Crystal {O}rbital {H}amilton {P}opulation ({COHP}) Analysis As Projected from Plane-Wave Basis Sets},
+title = {Crystal Orbital {H}amilton Population ({COHP}) Analysis As Projected from Plane-Wave Basis Sets},
 journal = {J. Phys. Chem. A},
 volume = {115},
 number = {21},
@@ -42,7 +42,7 @@ eprint = {https://doi.org/10.1021/jp202489s}
 
 @article{pCOBI,
 author = {M{\"u}ller, Peter C. and Ertural, Christina and Hempelmann, Jan and Dronskowski, Richard},
-title = {Crystal {O}rbital {B}ond {I}ndex: Covalent Bond Orders in Solids},
+title = {Crystal Orbital Bond Index: Covalent Bond Orders in Solids},
 journal = {J. Phys. Chem. C},
 volume = {125},
 number = {14},
@@ -129,7 +129,7 @@ abstract = {The projection of the eigenfunctions obtained in standard plane-wave
 
 @article{SCDM,
 author = {Damle, Anil and Lin, Lin and Ying, Lexing},
-title = {Compressed Representation of Kohn–Sham Orbitals via {S}elected {C}olumns of the {D}ensity {M}atrix},
+title = {Compressed Representation of {K}ohn–{S}ham Orbitals via Selected Columns of the Density Matrix},
 journal = {J. Chem. Theory Comput.},
 volume = {11},
 number = {4},
@@ -152,4 +152,43 @@ doi = {https://doi.org/10.1016/j.jcp.2016.12.053},
 url = {https://www.sciencedirect.com/science/article/pii/S0021999116307215},
 author = {Anil Damle and Lin Lin and Lexing Ying},
 keywords = {Kohn–Sham density functional theory, Localized orbitals, Brillouin zone sampling, Density matrix, Interpolative decomposition}
+}
+
+@article{ht_scdm,
+author={Vitale, Valerio
+and Pizzi, Giovanni
+and Marrazzo, Antimo
+and Yates, Jonathan R.
+and Marzari, Nicola
+and Mostofi, Arash A.},
+title={Automated high-throughput {W}annierisation},
+journal={npj Comput. Mater.},
+year={2020},
+month={Jun},
+day={01},
+volume={6},
+number={1},
+pages={66},
+abstract={Maximally-localised Wannier functions (MLWFs) are routinely used to compute from first-principles advanced materials properties that require very dense Brillouin zone integration and to build accurate tight-binding models for scale-bridging simulations. At the same time, high-throughput (HT) computational materials design is an emergent field that promises to accelerate reliable and cost-effective design and optimisation of new materials with target properties. The use of MLWFs in HT workflows has been hampered by the fact that generating MLWFs automatically and robustly without any user intervention and for arbitrary materials is, in general, very challenging. We address this problem directly by proposing a procedure for automatically generating MLWFs for HT frameworks. Our approach is based on the selected columns of the density matrix method and we present the details of its implementation in an AiiDA workflow. We apply our approach to a dataset of 200 bulk crystalline materials that span a wide structural and chemical space. We assess the quality of our MLWFs in terms of the accuracy of the band-structure interpolation that they provide as compared to the band-structure obtained via full first-principles calculations. Finally, we provide a downloadable virtual machine that can be used to reproduce the results of this paper, including all first-principles and atomistic simulations as well as the computational workflows.},
+issn={2057-3960},
+doi={10.1038/s41524-020-0312-y},
+url={https://doi.org/10.1038/s41524-020-0312-y}
+}
+
+@article{pwdf,
+author={Qiao, Junfeng
+and Pizzi, Giovanni
+and Marzari, Nicola},
+title={Projectability disentanglement for accurate and automated electronic-structure {H}amiltonians},
+journal={npj Comput. Mater.},
+year={2023},
+month={Nov},
+day={03},
+volume={9},
+number={1},
+pages={208},
+abstract={Maximally-localized Wannier functions (MLWFs) are broadly used to characterize the electronic structure of materials. Generally, one can construct MLWFs describing isolated bands (e.g. valence bands of insulators) or entangled bands (e.g. valence and conduction bands of insulators, or metals). Obtaining accurate and compact MLWFs often requires chemical intuition and trial and error, a challenging step even for experienced researchers and a roadblock for high-throughput calculations. Here, we present an automated approach, projectability-disentangled Wannier functions (PDWFs), that constructs MLWFs spanning the occupied bands and their complement for the empty states, providing a tight-binding picture of optimized atomic orbitals in crystals. Key to the algorithm is a projectability measure for each Bloch state onto atomic orbitals, determining if that state should be kept identically, discarded, or mixed into the disentanglement. We showcase the accuracy on a test set of 200 materials, and the reliability by constructing 21,737 Wannier Hamiltonians.},
+issn={2057-3960},
+doi={10.1038/s41524-023-01146-w},
+url={https://doi.org/10.1038/s41524-023-01146-w}
 }

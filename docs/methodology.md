@@ -110,7 +110,7 @@ Whilst Wannier functions derived from energetically isolated bands are guarantee
 
 There exists well-estalished methods for mitigating both of the concerns raised above. The non-uniqeuness of Wannier functions can be circumvented by minimising their spread with respect to the unitary matrices {math}`U^{k}`, thus producing so-called "Maximally-Localised Wannier Functions" or MLWFs {footcite:p}`MLWF, MLWF_dis`. Such Wannier functions tend to be atom-centred and to take on shapes that in many cases match our chemical intution for the system at hand. Maximal localisation can also be applied to a manifold of entangled bands, although a separate "disentanglement" step is required in this case, unless one chooses to utilise the SCDM method {footcite:p}`SCDM, SCDM_k`.
 
-In general, obtaining "good" MLWFs for non-trivial systems is not always easy, although developments in recent years are slowly making this a more reliable and automatable process. As a result, the two most obvious use cases for `pengwann` are as follows:
+In general, obtaining "good" Wannier functions for non-trivial systems is not always easy, although developments in recent years are slowly making this a more reliable and automatable process {footcite:p}`ht_scdm, pwdf`. As a result, the two most obvious use cases for `pengwann` are as follows:
 
 1. You have **already obtained** MLWFs for your system (for some other purpose) and would like to characterise the local bonding.
 2. You have attempted to characterise the bonding via another tool such as [LOBSTER](http://www.cohp.de/), but you find that the results are **not satisfactory**.
