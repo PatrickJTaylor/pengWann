@@ -47,7 +47,7 @@ To give a pathological example, in electride materials, atom-centred basis funct
 `pengwann` employs a Wannier basis which, when derived from energetically isolated bands, spans the same vector space as the canonical Bloch states.
 The spilling factor is therefore strictly zero and there is no loss of information in switching from the Bloch basis to the Wannier basis.
 For Wannier functions derived from bands that are not energetically isolated everywhere in the Brillouin zone, the spilling factor will no longer be strictly zero, but should remain very small, since Wannier functions are calculated by a unitary transformation of the Bloch states [@wannier_review].
-Importantly, Wannier functions are not constrained to be atom-centred and can therefore accurately representing the Bloch states of electrides and other such anomalous systems.
+Importantly, Wannier functions are not constrained to be atom-centred and can therefore accurately represent the Bloch states of electrides and other such anomalous systems.
 More generally, even in systems where pre-defined atomic or pseudo-atomic orbital basis sets perform well, a Wannier basis will always give a reduced spilling factor, thereby reducing the corresponding error in all derived descriptors.
 
 `pengwann` implements the following core features:
