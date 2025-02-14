@@ -72,4 +72,10 @@ Moreover, since Wannier functions serve many purposes in addition to the calcula
 
 The WOBSTER code [@wobster] implements a subset of the features found in `pengwann`, allowing users to compute the Wannier-projected density of states and the Wannier orbital Hamilton population. `pengwann` provides a broader set of features than WOBSTER and is more performant: `pengwann` leverages `numpy` [@numpy] and the built-in `multiprocessing` library to vectorise and parallelise most operations, whereas WOBSTER's loop-based approach is considerably slower.
 
+# Acknowledgements
+
+The authors thank the Faraday Institution CATMAT project (EP/S003053/1, FIRG016) for financial support and the Michael High-Performance Computing (HPC) facility (FIRG030).
+P.J.T would like to acknowledge Chengcheng Xiao (author of the WOBSTER code) for inspiring the development of `pengwann` and thanks the University of Bath (indirectly via the EPSRC) for PhD funding.
+B.J.M. thanks the Royal Society for a fellowship (URF/R/191006).
+
 # References
