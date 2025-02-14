@@ -47,7 +47,7 @@ docs = [
 [project.urls]
 homepage = 'https://github.com/PatrickJTaylor/pengWann'
 
-[tool.hatch.build]
+[tool.hatch.build.targets.wheel]
 packages = ['src/pengwann']
 
 [tool.hatch.version]
