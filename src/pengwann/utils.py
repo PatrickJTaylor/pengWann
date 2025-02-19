@@ -28,42 +28,7 @@ import numpy as np
 from collections.abc import Sequence
 from multiprocessing.shared_memory import SharedMemory
 from numpy.typing import NDArray
-from pymatgen.core import Structure
 from scipy.integrate import trapezoid
-
-
-def get_atom_indices(
-    geometry: Structure, symbols: tuple[str, ...]
-) -> dict[str, tuple[int, ...]]:
-    """
-    Categorise the site indices of a Pymatgen Structure according to atomic species.
-
-    Parameters
-    ----------
-    geometry : Structure
-        A Pymatgen Structure object.
-    symbols : tuple of str
-        The atomic species to associate site indices with.
-
-    Returns
-    -------
-    atom_indices : dict of {str : tuple of int} pairs.
-        The site indices categorised by atomic species.
-    """
-    atom_indices_list = {}
-    for symbol in symbols:
-        atom_indices_list[symbol] = []
-
-    for idx, atom in enumerate(geometry):
-        symbol = atom.species_string
-        if symbol in symbols:
-            atom_indices_list[symbol].append(idx)
-
-    atom_indices = {}
-    for symbol, indices in atom_indices_list.items():
-        atom_indices[symbol] = tuple(indices)
-
-    return atom_indices
 
 
 def get_spilling_factor(u: NDArray[np.complex128], num_wann: int) -> np.float64:

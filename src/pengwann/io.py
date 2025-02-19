@@ -223,7 +223,7 @@ def read_hamiltonian(path: str) -> dict[tuple[int, ...], NDArray[np.complex128]]
     return h
 
 
-def read_xyz(path: str) -> tuple[list[str], list[tuple[float, ...]]]:
+def read_xyz(path: str) -> tuple[list[str], NDArray[np.float64]]:
     """
     Parse the symbols and coordinates from a Wannier90 seedname_centres.xyz file.
 
@@ -245,15 +245,17 @@ def read_xyz(path: str) -> tuple[list[str], list[tuple[float, ...]]]:
 
     start_idx = 2
 
-    symbols, coords = [], []
+    symbols, coords_list = [], []
     for line in lines[start_idx:]:
         data = line.split()
 
         symbol = str(data[0]).capitalize()
-        cart_coords = tuple(float(coord) for coord in data[1:])
+        coords = tuple(float(coord) for coord in data[1:])
 
         symbols.append(symbol)
-        coords.append(cart_coords)
+        coords_list.append(coords)
+
+    coords = np.array(coords_list).T
 
     return symbols, coords
 
