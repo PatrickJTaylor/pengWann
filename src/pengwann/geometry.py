@@ -270,17 +270,16 @@ def identify_onsite_interactions(
     Parameters
     ----------
     geometry : Geometry
-            A Pymatgen Structure object with a :code:`"wannier_centres"` site property
-            that associates each atom with the indices of its Wannier centres.
+        The structure in which to identify on-site interactions.
     symbols : tuple of str
             The atomic species to return interactions for. These should match one or
-            more of the species present in `geometry`.
+            more of the atomic species present in `geometry`.
 
     Returns
     -------
     interactions : AtomicInteractionContainer
-            The on-site/diagonal AtomicInteraction objects associated with each symbol
-            in `symbols`.
+        The on-site/diagonal AtomicInteraction objects associated with each symbol
+        in `symbols`.
 
     Notes
     -----
@@ -325,8 +324,7 @@ def identify_interatomic_interactions(
     Parameters
     ----------
     geometry : Geometry
-        A Pymatgen Structure object with a :code:`"wannier_centres"` site property that
-        associates each atom with the indices of its Wannier centres.
+        The structure in which to identify interatomic interactions.
     radial_cutoffs : dict of {2-length tuple of str : float} pairs
         A dictionary defining radial cutoffs for pairs of atomic species.
 
@@ -387,18 +385,18 @@ def _get_atom_indices(
     geometry: Geometry, symbols: tuple[str, ...]
 ) -> dict[str, tuple[int, ...]]:
     """
-    Categorise the site indices of a Pymatgen Structure according to atomic species.
+    Categorise the site indices of a Geometry object according to atomic species.
 
     Parameters
     ----------
-    geometry : Structure
-        A Pymatgen Structure object.
-    symbols : tuple of str
+    geometry : Geometry
+        The structure from which to extract indices.
+    symbols : tuple[str, ...]
         The atomic species to associate site indices with.
 
     Returns
     -------
-    atom_indices : dict of {str : tuple of int} pairs.
+    atom_indices : dict[str, tuple[int, ...]]
         The site indices categorised by atomic species.
     """
     atom_indices_list = {}
