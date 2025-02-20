@@ -45,8 +45,28 @@ class Geometry:
     def __iter__(self) -> Iterator[Site]:
         return iter(self.sites)
 
+    def __getitem__(self, key: int) -> Site:
+        return self.sites[key]
+
     def __len__(self) -> int:
         return len(self.sites)
+
+    def __str__(self) -> str:
+        to_print = [
+            "Geometry",
+            "========",
+            "Cell",
+            "----",
+            f"{self.cell}",
+            "",
+            "Sites",
+            "-----",
+        ]
+
+        for site in self.sites:
+            to_print.append(f"{site.symbol}{site.index} {site.coords}")
+
+        return "\n".join(to_print) + "\n"
 
     @cached_property
     def wannier_assignments(self) -> tuple[tuple[int, ...], ...]:
