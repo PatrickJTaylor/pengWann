@@ -92,7 +92,7 @@ class Geometry:
 
         return "\n".join(to_print) + "\n"
 
-    @cached_property
+    @property
     def wannier_assignments(self) -> tuple[tuple[int, ...], ...]:
         """
         Assign Wannier centres to atoms based on a closest distance criterion.
@@ -111,6 +111,10 @@ class Geometry:
         -----
         This property is cached after it has been evaluated once.
         """
+        return self._wannier_assignments
+
+    @cached_property
+    def _wannier_assignments(self) -> tuple[tuple[int, ...], ...]:
         wannier_indices, atom_indices = [], []
         for site in self.sites:
             if site.symbol == "X":
@@ -136,7 +140,7 @@ class Geometry:
 
         return tuple(tuple(indices) for indices in assignments_list)
 
-    @cached_property
+    @property
     def distance_and_image_matrices(
         self,
     ) -> tuple[NDArray[np.float64], NDArray[np.int_]]:
@@ -159,6 +163,12 @@ class Geometry:
         -----
         This property is cached after it has been evaluated once.
         """
+        return self._distance_and_image_matrices
+
+    @cached_property
+    def _distance_and_image_matrices(
+        self,
+    ) -> tuple[NDArray[np.float64], NDArray[np.int_]]:
         num_sites = len(self)
         num_dim = len(self.cell)
         distance_matrix = np.zeros((num_sites, num_sites))
