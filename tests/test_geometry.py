@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License along with pengWann.
 # If not, see <https://www.gnu.org/licenses/>.
 
+import json
 import pytest
 import numpy as np
 from pengwann.geometry import (
@@ -22,6 +23,8 @@ from pengwann.geometry import (
     identify_onsite_interactions,
     Site,
 )
+from pymatgen.analysis.structure_matcher import StructureMatcher
+from pymatgen.core import Structure
 
 
 def build_geometry(symbols: list[str]) -> Geometry:
@@ -161,6 +164,20 @@ def test_Geometry_wannier_assignments(geometry, data_regression) -> None:
 def test_Geometry_wannier_assignments_no_wann(geometry_no_x) -> None:
     with pytest.raises(ValueError):
         geometry_no_x.wannier_assignments
+
+
+def test_Geometry_as_structure(shared_datadir) -> None:
+    geometry = Geometry.from_xyz("wannier90", f"{shared_datadir}")
+    structure = geometry.as_structure()
+
+    with open(f"{shared_datadir}/geometry.json", "r") as stream:
+        serial = json.load(stream)
+
+    ref_structure = Structure.from_dict(serial)
+
+    sm = StructureMatcher()
+
+    assert sm.fit(structure, ref_structure)
 
 
 def test_identify_interatomic_interactions_elemental(
