@@ -229,13 +229,7 @@ def identify_interatomic_interactions(
             'Input geometry contains no Wannier centres (i.e. no "X" atoms).'
         )
 
-    symbols_list: list[str] = []
-    for pair in radial_cutoffs:
-        for symbol in pair:
-            if symbol not in symbols_list:
-                symbols_list.append(symbol)
-
-    symbols = tuple(symbols_list)
+    symbols = tuple({symbol for pair in radial_cutoffs for symbol in pair})
 
     atom_indices = _get_atom_indices(geometry, symbols)
 
@@ -245,36 +239,28 @@ def identify_interatomic_interactions(
     for pair, cutoff in radial_cutoffs.items():
         symbol_i, symbol_j = pair
 
-        possible_interactions = []
-        if symbol_i != symbol_j:
-            for i in atom_indices[symbol_i]:
-                for j in atom_indices[symbol_j]:
-                    possible_interactions.append((i, j))
-
         # Exclude self-interactions
-        else:
-            for idx, i in enumerate(atom_indices[symbol_i]):
-                for j in atom_indices[symbol_j][idx + 1 :]:
-                    possible_interactions.append((i, j))
+        offset = 1 if symbol_i == symbol_j else 0
 
-        for i, j in possible_interactions:
-            distance = distance_matrix[i, j]
+        for idx, i in enumerate(atom_indices[symbol_i]):
+            for j in atom_indices[symbol_j][idx + offset :]:
+                distance = distance_matrix[i, j]
 
-            if distance < cutoff:
-                wannier_interactions_list = []
-                for m in assignments[i]:
-                    for n in assignments[j]:
-                        bl_i = image_matrix[i, m]
-                        bl_j = image_matrix[j, n]
+                if distance < cutoff:
+                    wannier_interactions_list = []
+                    for m in assignments[i]:
+                        for n in assignments[j]:
+                            bl_i = image_matrix[i, m]
+                            bl_j = image_matrix[j, n]
 
-                        wannier_interaction = WannierInteraction(m, n, bl_i, bl_j)
-                        wannier_interactions_list.append(wannier_interaction)
+                            wannier_interaction = WannierInteraction(m, n, bl_i, bl_j)
+                            wannier_interactions_list.append(wannier_interaction)
 
-                wannier_interactions = tuple(wannier_interactions_list)
-                interaction = AtomicInteraction(
-                    i, j, symbol_i, symbol_j, wannier_interactions
-                )
-                interactions.append(interaction)
+                    wannier_interactions = tuple(wannier_interactions_list)
+                    interaction = AtomicInteraction(
+                        i, j, symbol_i, symbol_j, wannier_interactions
+                    )
+                    interactions.append(interaction)
 
     return AtomicInteractionContainer(sub_interactions=tuple(interactions))
 
