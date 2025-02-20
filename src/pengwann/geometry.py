@@ -82,12 +82,13 @@ class Geometry:
             "----",
             f"{self.cell}",
             "",
-            "Sites",
-            "-----",
+            "Assignments",
+            "-----------",
         ]
 
-        for site in self.sites:
-            to_print.append(f"{site.symbol}{site.index} {site.coords}")
+        for site, assignments in zip(self.sites, self.wannier_assignments):
+            arrow = "=>" if site.symbol == "X" else "<="
+            to_print.append(f"{site.symbol}{site.index} {arrow} {assignments}")
 
         return "\n".join(to_print) + "\n"
 
