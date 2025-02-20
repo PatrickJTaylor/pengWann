@@ -1,9 +1,9 @@
 """
 Parse periodic structures, assign Wannier centres and identify interactions.
 
-This module contains the functions necessary to parse the geometry of the target system
-and from this identify relevant interatomic/on-site interactions from which to compute
-descriptors of bonding and local electronic structure.
+This module contains the classes and functions necessary to parse the geometry of the
+target system and from this identify relevant interatomic/on-site interactions from
+which to compute descriptors of bonding and local electronic structure.
 """
 
 # Copyright (C) 2024-2025 Patrick J. Taylor
@@ -40,7 +40,7 @@ from pengwann.io import read_cell, read_xyz
 @dataclass(frozen=True)
 class Geometry:
     """
-    Data structure representing a periodic structure of atoms and Wannier centres.
+    Data structure representing a periodic system of atoms and Wannier centres.
 
     Attributes
     ----------
@@ -48,9 +48,9 @@ class Geometry:
         The individual Site objects representing each atom/Wannier centre in the
         structure.
     cell : ndarray of float
-        The cell vectors associated with the structure.
+        The cell vectors associated with the system.
     wannier_assignments : tuple of tuple of int
-    distance_and_image_matrices : tuple of ndarray of float
+    distance_and_image_matrices : tuple of ndarray
 
     See Also
     --------
@@ -345,7 +345,6 @@ def identify_interatomic_interactions(
 
     See Also
     --------
-    build_geometry
     pengwann.descriptors.DescriptorCalculator.assign_descriptors :
         Compute bonding descriptors for a set of interatomic interactions.
 
