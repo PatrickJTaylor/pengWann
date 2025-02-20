@@ -35,7 +35,6 @@ from pengwann.interactions import (
     WannierInteraction,
 )
 from pengwann.io import read_cell, read_xyz
-from typing import NamedTuple
 
 
 @dataclass(frozen=True)
@@ -56,10 +55,10 @@ class Geometry:
         wannier_indices, atom_indices = [], []
         for site in self.sites:
             if site.symbol == "X":
-                wannier_indices.append(site.idx)
+                wannier_indices.append(site.index)
 
             else:
-                atom_indices.append(site.idx)
+                atom_indices.append(site.index)
 
         num_wann = len(wannier_indices)
 
@@ -130,9 +129,10 @@ class Geometry:
         return cls(sites, cell)
 
 
-class Site(NamedTuple):
+@dataclass(frozen=True)
+class Site:
     symbol: str
-    idx: int
+    index: int
     coords: NDArray[np.float64]
 
 
@@ -170,14 +170,14 @@ def identify_onsite_interactions(
     for site in geometry:
         if site.symbol in symbols:
             wannier_interactions = []
-            for i in assignments[site.idx]:
+            for i in assignments[site.index]:
                 wannier_interaction = WannierInteraction(i, i, bl_0, bl_0)
 
                 wannier_interactions.append(wannier_interaction)
 
             interaction = AtomicInteraction(
-                site.idx,
-                site.idx,
+                site.index,
+                site.index,
                 site.symbol,
                 site.symbol,
                 tuple(wannier_interactions),
