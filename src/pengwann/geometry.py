@@ -163,7 +163,7 @@ def identify_onsite_interactions(
     interaction between atoms or individual Wannier functions in which
     atom i == atom j or Wannier function i == Wannier function j.
     """
-    bl_0 = np.array([0, 0, 0])
+    zero_vector = np.array([0, 0, 0])
     assignments = geometry.wannier_assignments
 
     interactions = []
@@ -171,7 +171,7 @@ def identify_onsite_interactions(
         if site.symbol in symbols:
             wannier_interactions = []
             for i in assignments[site.index]:
-                wannier_interaction = WannierInteraction(i, i, bl_0, bl_0)
+                wannier_interaction = WannierInteraction(i, i, zero_vector, zero_vector)
 
                 wannier_interactions.append(wannier_interaction)
 
