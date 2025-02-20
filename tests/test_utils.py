@@ -16,22 +16,9 @@
 import numpy as np
 from pengwann.io import read_u
 from pengwann.utils import (
-    get_atom_indices,
     get_spilling_factor,
     integrate_descriptor,
 )
-from pymatgen.core import Structure
-
-
-def test_get_atom_indices(data_regression) -> None:
-    cell = np.diag([5, 5, 5])
-    species = ["X0+", "C", "O"]
-    coords = [[0, 0, 0], [0.25, 0.25, 0.25], [0.75, 0.75, 0.75]]
-    geometry = Structure(cell, species, coords)
-
-    indices = get_atom_indices(geometry, ("C", "O", "X0+"))
-
-    data_regression.check(indices)
 
 
 def test_get_spilling_factor(shared_datadir, ndarrays_regression, tol) -> None:
