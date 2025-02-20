@@ -4,13 +4,20 @@ Geometry (:code:`pengwann.geometry`)
 
 .. automodule:: pengwann.geometry
 
+Classes
+-------
+
+.. autosummary::
+   :toctree: generated
+
+   Geometry
+   Site
+
 Functions
 ---------
 
 .. autosummary::
    :toctree: generated
 
-   build_geometry
-   assign_wannier_centres
    identify_interatomic_interactions
    identify_onsite_interactions

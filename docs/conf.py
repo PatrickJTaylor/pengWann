@@ -62,6 +62,8 @@ numpydoc_xref_aliases = {
     "DescriptorCalculator": "pengwann.descriptors.DescriptorCalculator",
     "AtomicInteractionContainer": "pengwann.interactions.AtomicInteractionContainer",
     "AtomicInteraction": "pengwann.interactions.AtomicInteraction",
+    "Geometry": "pengwann.geometry.Geometry",
+    "Site": "pengwann.geometry.Site",
     "WannierInteraction": "pengwann.interactions.WannierInteraction",
     "np.dtype": "numpy.dtype",
     "np.int_": "numpy.int_",
