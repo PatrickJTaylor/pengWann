@@ -38,39 +38,6 @@ from pengwann.io import read_cell, read_xyz
 from typing import NamedTuple
 
 
-def get_atom_indices(
-    geometry: Geometry, symbols: tuple[str, ...]
-) -> dict[str, tuple[int, ...]]:
-    """
-    Categorise the site indices of a Pymatgen Structure according to atomic species.
-
-    Parameters
-    ----------
-    geometry : Structure
-        A Pymatgen Structure object.
-    symbols : tuple of str
-        The atomic species to associate site indices with.
-
-    Returns
-    -------
-    atom_indices : dict of {str : tuple of int} pairs.
-        The site indices categorised by atomic species.
-    """
-    atom_indices_list = {}
-    for symbol in symbols:
-        atom_indices_list[symbol] = []
-
-    for idx, site in enumerate(geometry):
-        if site.symbol in symbols:
-            atom_indices_list[site.symbol].append(idx)
-
-    atom_indices = {}
-    for symbol, indices in atom_indices_list.items():
-        atom_indices[symbol] = tuple(indices)
-
-    return atom_indices
-
-
 @dataclass(frozen=True)
 class Geometry:
     sites: tuple[Site, ...]
@@ -261,15 +228,16 @@ def identify_interatomic_interactions(
         )
 
     symbols_list: list[str] = []
-    for pair in radial_cutoffs.keys():
+    for pair in radial_cutoffs:
         for symbol in pair:
             if symbol not in symbols_list:
                 symbols_list.append(symbol)
 
     symbols = tuple(symbols_list)
 
-    atom_indices = get_atom_indices(geometry, symbols)
+    atom_indices = _get_atom_indices(geometry, symbols)
 
+    distance_matrix, image_matrix = geometry.distance_and_image_matrices
     assignments = geometry.wannier_assignments
     interactions = []
     for pair, cutoff in radial_cutoffs.items():
@@ -287,7 +255,6 @@ def identify_interatomic_interactions(
                 for j in atom_indices[symbol_j][idx + 1 :]:
                     possible_interactions.append((i, j))
 
-        distance_matrix, image_matrix = geometry.distance_and_image_matrices
         for i, j in possible_interactions:
             distance = distance_matrix[i, j]
 
@@ -308,3 +275,35 @@ def identify_interatomic_interactions(
                 interactions.append(interaction)
 
     return AtomicInteractionContainer(sub_interactions=tuple(interactions))
+
+def _get_atom_indices(
+    geometry: Geometry, symbols: tuple[str, ...]
+) -> dict[str, tuple[int, ...]]:
+    """
+    Categorise the site indices of a Pymatgen Structure according to atomic species.
+
+    Parameters
+    ----------
+    geometry : Structure
+        A Pymatgen Structure object.
+    symbols : tuple of str
+        The atomic species to associate site indices with.
+
+    Returns
+    -------
+    atom_indices : dict of {str : tuple of int} pairs.
+        The site indices categorised by atomic species.
+    """
+    atom_indices_list = {}
+    for symbol in symbols:
+        atom_indices_list[symbol] = []
+
+    for idx, site in enumerate(geometry):
+        if site.symbol in symbols:
+            atom_indices_list[site.symbol].append(idx)
+
+    atom_indices = {}
+    for symbol, indices in atom_indices_list.items():
+        atom_indices[symbol] = tuple(indices)
+
+    return atom_indices
