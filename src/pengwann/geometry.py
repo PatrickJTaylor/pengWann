@@ -109,29 +109,31 @@ class Geometry:
 
         return distance_matrix, image_matrix
 
+    @classmethod
+    def from_xyz(
+        cls, seedname: str, path: str = ".", cell: ArrayLike | None = None
+    ) -> Geometry:
+        symbols, cart_coords = read_xyz(f"{path}/{seedname}_centres.xyz")
+
+        if cell is None:
+            cell = read_cell(f"{path}/{seedname}.win")
+
+        else:
+            cell = np.asarray(cell)
+
+        frac_coords = np.linalg.inv(cell) @ cart_coords
+        sites = tuple(
+            Site(symbol, idx, coords)
+            for idx, (symbol, coords) in enumerate(zip(symbols, frac_coords.T))
+        )
+
+        return cls(sites, cell)
+
 
 class Site(NamedTuple):
     symbol: str
     idx: int
     coords: NDArray[np.float64]
-
-
-def build_geometry(seedname: str, path: str = ".", cell: ArrayLike | None = None):
-    symbols, cart_coords = read_xyz(f"{path}/{seedname}_centres.xyz")
-
-    if cell is None:
-        cell = read_cell(f"{path}/{seedname}.win")
-
-    else:
-        cell = np.asarray(cell)
-
-    frac_coords = np.linalg.inv(cell) @ cart_coords
-    sites = tuple(
-        Site(symbol, idx, coords)
-        for idx, (symbol, coords) in enumerate(zip(symbols, frac_coords.T))
-    )
-
-    return Geometry(sites, cell)
 
 
 def identify_onsite_interactions(
@@ -275,6 +277,7 @@ def identify_interatomic_interactions(
                 interactions.append(interaction)
 
     return AtomicInteractionContainer(sub_interactions=tuple(interactions))
+
 
 def _get_atom_indices(
     geometry: Geometry, symbols: tuple[str, ...]
