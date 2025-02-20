@@ -70,8 +70,6 @@ class Geometry:
 
     @cached_property
     def wannier_assignments(self) -> tuple[tuple[int, ...], ...]:
-        distance_matrix, image_matrix = self.distance_and_image_matrices
-
         wannier_indices, atom_indices = [], []
         for site in self.sites:
             if site.symbol == "X":
@@ -84,6 +82,8 @@ class Geometry:
 
         if num_wann == 0:
             raise ValueError('No Wannier centres ("X" atoms) found in geometry.')
+
+        distance_matrix, image_matrix = self.distance_and_image_matrices
 
         assignments_list = [[] for site in self.sites]
         for i in wannier_indices:
@@ -242,13 +242,6 @@ def identify_interatomic_interactions(
     ...            ("V", "O"): 2.0}
     >>> interactions = identify_interatomic_interactions(geometry, cutoffs)
     """
-    num_wann = len([site for site in geometry if site.symbol == "X"])
-
-    if num_wann == 0:
-        raise ValueError(
-            'Input geometry contains no Wannier centres (i.e. no "X" atoms).'
-        )
-
     symbols = tuple({symbol for pair in radial_cutoffs for symbol in pair})
 
     atom_indices = _get_atom_indices(geometry, symbols)
