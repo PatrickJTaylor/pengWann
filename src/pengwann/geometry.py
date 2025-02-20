@@ -109,7 +109,7 @@ class Geometry:
 
         Notes
         -----
-        This property is cached once it has been evaluated once.
+        This property is cached after it has been evaluated once.
         """
         wannier_indices, atom_indices = [], []
         for site in self.sites:
@@ -145,7 +145,7 @@ class Geometry:
 
         The image matrix mirrors the shape of the distance matrix, with each element
         referring to a Bravais lattice vector that specifies the periodic image of a
-        given site that is closest to another site.
+        given site that is the closest to another site.
 
         Returns
         -------
@@ -157,7 +157,7 @@ class Geometry:
 
         Notes
         -----
-        This property is cached once it has been evaluated once.
+        This property is cached after it has been evaluated once.
         """
         num_sites = len(self)
         num_dim = len(self.cell)
