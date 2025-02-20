@@ -87,8 +87,6 @@ class DescriptorCalculator:
     classmethod.
     """
 
-    _bl_0 = np.array((0, 0, 0))
-
     def __init__(
         self,
         dos_array: NDArray[np.float64],
