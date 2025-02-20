@@ -30,9 +30,8 @@ classifiers = [
 requires-python = '>=3.10'
 dependencies = [
   'numpy>=2',
-  'pymatgen>=2022.0.3',
   'scipy',
-  'tqdm'
+  'tqdm',
 ]
 
 [project.optional-dependencies]
@@ -77,6 +76,7 @@ testpaths = ['tests']
 
 [dependency-groups]
 dev = [
+    "pymatgen>=2025.1.24",
     "pyright>=1.1.393",
     "pytest>=8.3.4",
     "pytest-cov>=6.0.0",
