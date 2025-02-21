@@ -1,4 +1,4 @@
-![The pengWann logo: a purple penguin.](https://github.com/PatrickJTaylor/pengWann/blob/main/docs/_static/logo.png)
+![The pengWann logo: a purple penguin.](https://github.com/PatrickJTaylor/pengWann/raw/main/docs/_static/logo.png)
 
 (technically pronounced *peng-van*, but some pronounce `numpy` as *num-pee* rather than *num-pie*, so who really knows?)
 
@@ -11,6 +11,9 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 `pengwann` is a lightweight Python package for computing descriptors of chemical bonding and local electronic structure from Wannier functions (as output by [Wannier90](https://wannier.org/)). Alternatively phrased: `pengwann` replicates the core functionality of [LOBSTER](http://www.cohp.de/), except that the local basis used to represent the Hamiltonian and the density matrix is comprised of Wannier functions rather than pre-defined atomic or pseudo-atomic orbitals. The primary advantage of this methodology is that (for energetically isolated bands) **the spilling factor is strictly 0**.
+
+![Example outputs](https://github.com/PatrickJTaylor/pengWann/raw/main/docs/_static/example_outputs_light.svg#gh-light-mode-only)
+![Example outputs](https://github.com/PatrickJTaylor/pengWann/raw/main/docs/_static/example_outputs_dark.svg#gh-dark-mode-only)
 
 ## Installation
 
