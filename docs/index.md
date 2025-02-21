@@ -19,7 +19,7 @@ Besides the [API reference](./api), a detailed use case of how `pengwann` can be
 :scale: 140%
 ```
 
-```{figure} _static/example_outputs_dark.svg
+```{figure} _static/example_outputs.svg
 :align: center
 :class: only-dark
 :scale: 140%
