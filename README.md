@@ -10,41 +10,65 @@
 [![PyPI version](https://badge.fury.io/py/pengwann.svg)](https://badge.fury.io/py/pengwann)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-`pengwann` is a lightweight Python package for computing descriptors of chemical bonding and local electronic structure from Wannier functions (as output by [Wannier90](https://wannier.org/)).
-Alternatively phrased: `pengwann` replicates the core functionality of [LOBSTER](http://www.cohp.de/), except that the local basis used to represent the Hamiltonian and the density matrix is comprised of Wannier functions rather than pre-defined atomic or pseudo-atomic orbitals. 
-The primary advantage of this methodology is that (for energetically isolated bands) **the spilling factor is strictly 0**.
+A lightweight Python package for computing descriptors of chemical bonding and local electronic structure from Wannier functions.
 
-The core features of `pengwann` include:
-
-- Identification of interatomic and on-site interactions in terms of the Wannier functions associated with each atom
-- Parsing of Wannier90 output files
-- Parallelised computation of the following descriptors:
+- Parse [Wannier90](https://wannier.org/) output files
+- Identify interatomic and on-site interactions in terms of atom-assigned Wannier functions
+- Compute in parallel:
   - The Wannier orbital Hamilton population (WOHP)
   - The Wannier orbital bond index (WOBI)
   - The Wannier-projected density of states (pDOS)
   - Orbital and k-resolved implementations of all of the above
-- Integration of descriptors to derive:
+- Integrate descriptors to derive:
   - Löwdin-style populations and charges
   - Measures of bond strength and bond order
 
-For further details regarding functionality and methodology, please see the [documentation](https://pengwann.readthedocs.io/).
-If something is still unclear after having browsed the docs, then feel free to open a [discussion](https://github.com/PatrickJTaylor/pengWann/discussions) and we will endeavour to get back to you as soon as possible.
+`pengwann` replicates the core functionality of [LOBSTER](http://www.cohp.de/) but uses Wannier functions rather than pre-defined atomic or pseudo-atomic orbitals as a local basis in which to express the Hamiltonian and the density matrix.
+A Wannier basis is advantageous in that, when derived from energetically isolated bands, [the spilling factor is strictly 0](https://pengwann.readthedocs.io/en/latest/methodology.html).
 
-## Installation
+For further details regarding detailed methodology, functionality and examples, see the [documentation](https://pengwann.readthedocs.io/).
+
+## Getting started 🚀
+
+### Installation 🐧
 
 The latest tagged release of `pengwann` is `pip`-installable as:
 
-```
+```shell
 pip install pengwann
 ```
 
 Alternatively, to install the current development build:
 
-```
+```shell
 pip install git+https://github.com/PatrickJTaylor/pengwann.git
 ```
 
-## Bugs and development
+### Basic usage 📝
 
-If you think you have encountered a bug whilst using `pengwann`, please create an [issue](https://github.com/PatrickJTaylor/pengWann/issues) and let us know!
-Contributions to `pengwann` via [pull requests](https://github.com/PatrickJTaylor/pengWann/pulls) are also very welcome (see the [contributions guide](https://github.com/PatrickJTaylor/pengWann/blob/main/docs/CONTRIBUTING.md) for more details).
+For a quick run through of the basics, see the first example in the docs on [computing bonding descriptors in diamond](https://pengwann.readthedocs.io/en/latest/examples/diamond/basics.html).
+
+## Support 🤝
+
+### Getting help 👋
+
+If you're having problems using `pengwann` and the [docs](https://pengwann.readthedocs.io/) do not provide a solution, feel free to open a [discussion](https://github.com/PatrickJTaylor/pengWann/discussions) and we will endeavour to get back to you as soon as possible.
+
+### Bugs 🐛
+
+If you think you have found a bug in `pengwann`, please create an [issue]() and let us know!
+
+### Contributing 🛠
+
+Contributions to `pengwann` via [pull request]() are **very welcome**, whether the changes are big or small!
+See the [contributing guide](https://github.com/PatrickJTaylor/pengWann/blob/main/docs/CONTRIBUTING.md) for more details.
+
+## Acknowledgements 📣
+
+The development of `pengwann` was initially inspired by [WOBSTER](), which in turn drew inspiration from previous work on using Wannier functions for population analysis [[1]](#1).
+
+<a id="1">[1]</a>
+S. Kundu et al., 
+Population analysis with Wannier orbitals, 
+In: *J. Chem. Phys.* 154 (10 2021), 
+p. 104111
