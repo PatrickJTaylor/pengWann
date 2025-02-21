@@ -10,9 +10,27 @@
 [![PyPI version](https://badge.fury.io/py/pengwann.svg)](https://badge.fury.io/py/pengwann)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-`pengwann` is a lightweight Python package for computing descriptors of chemical bonding and local electronic structure from Wannier functions (as output by [Wannier90](https://wannier.org/)). Alternatively phrased: `pengwann` replicates the core functionality of [LOBSTER](http://www.cohp.de/), except that the local basis used to represent the Hamiltonian and the density matrix is comprised of Wannier functions rather than pre-defined atomic or pseudo-atomic orbitals. The primary advantage of this methodology is that (for energetically isolated bands) **the spilling factor is strictly 0**.
+`pengwann` is a lightweight Python package for computing descriptors of chemical bonding and local electronic structure from Wannier functions (as output by [Wannier90](https://wannier.org/)).
+Alternatively phrased: `pengwann` replicates the core functionality of [LOBSTER](http://www.cohp.de/), except that the local basis used to represent the Hamiltonian and the density matrix is comprised of Wannier functions rather than pre-defined atomic or pseudo-atomic orbitals. 
+The primary advantage of this methodology is that (for energetically isolated bands) **the spilling factor is strictly 0**.
 
-## Installation
+The core features of `pengwann` include:
+
+- Identification of interatomic and on-site interactions in terms of the Wannier functions associated with each atom
+- Parsing of Wannier90 output files
+- Parallelised computation of the following descriptors:
+  - The Wannier orbital Hamilton population (WOHP)
+  - The Wannier orbital bond index (WOBI)
+  - The Wannier-projected density of states (pDOS)
+  - Orbital and k-resolved implementations of all of the above
+- Integration of descriptors to derive:
+  - Löwdin-style populations and charges
+  - Measures of bond strength and bond order
+
+For further details regarding functionality and methodology, please see the [documentation](https://pengwann.readthedocs.io/).
+If something is still unclear after having browsed the docs, then feel free to open a [discussion](https://github.com/PatrickJTaylor/pengWann/discussions) and we will endeavour to get back to you as soon as possible.
+
+## Installation :penguin:
 
 The latest tagged release of `pengwann` is `pip`-installable as:
 
@@ -26,7 +44,7 @@ Alternatively, to install the current development build:
 pip install git+https://github.com/PatrickJTaylor/pengwann.git
 ```
 
-## Bugs and development
+## Bugs and development :hammer_and_wrench:
 
 If you think you have encountered a bug whilst using `pengwann`, please create an [issue](https://github.com/PatrickJTaylor/pengWann/issues) and let us know!
 Contributions to `pengwann` via [pull requests](https://github.com/PatrickJTaylor/pengWann/pulls) are also very welcome (see the [contributions guide](https://github.com/PatrickJTaylor/pengWann/blob/main/docs/CONTRIBUTING.md) for more details).
