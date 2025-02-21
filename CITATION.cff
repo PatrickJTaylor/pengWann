@@ -1,0 +1,17 @@
+abstract: "A lightweight Python package for computing descriptors of chemical bonding and local electronic structure from Wannier functions."
+authors:
+  - family-names: "Taylor"
+    given-names: "Patrick J."
+    orcid: "https://orcid.org/0009-0003-6511-6442"
+cff-version: 1.2.0
+date-released: 2025-02-14
+keywords:
+  - "Python"
+  - "chemical bonding"
+  - "wannier functions"
+license: GPL-3.0
+message: "If you use this software, please cite it as below."
+repository-code: "https://github.com/PatrickJTaylor/pengWann"
+title: "pengWann"
+version: 0.4.0
+url: "https://pengwann.readthedocs.io"
