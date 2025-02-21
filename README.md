@@ -1,4 +1,4 @@
-![The pengWann logo: a purple penguin.](https://github.com/PatrickJTaylor/pengWann/blob/main/docs/_static/logo.png)
+![The pengWann logo: a purple penguin.](https://github.com/PatrickJTaylor/pengWann/raw/main/docs/_static/logo.png)
 
 (technically pronounced *peng-van*, but some pronounce `numpy` as *num-pee* rather than *num-pie*, so who really knows?)
 
