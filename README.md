@@ -27,6 +27,8 @@ A lightweight Python package for computing descriptors of chemical bonding and l
   </small>
 </p>
 
+**Core features:**
+
 - 📖 Read [Wannier90](https://wannier.org/) output files
 - 🔎 Identify interatomic and on-site interactions in terms of atom-assigned Wannier functions
 - 💻 Compute in parallel:
