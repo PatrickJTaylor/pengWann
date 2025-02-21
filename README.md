@@ -27,14 +27,14 @@ A lightweight Python package for computing descriptors of chemical bonding and l
   </small>
 </p>
 
-- Parse [Wannier90](https://wannier.org/) output files
-- Identify interatomic and on-site interactions in terms of atom-assigned Wannier functions
-- Compute in parallel:
+- 📖 Read [Wannier90](https://wannier.org/) output files
+- 🔎 Identify interatomic and on-site interactions in terms of atom-assigned Wannier functions
+- 💻 Compute in parallel:
   - The Wannier orbital Hamilton population (WOHP)
   - The Wannier orbital bond index (WOBI)
   - The Wannier-projected density of states (pDOS)
   - Orbital and k-resolved implementations of all of the above
-- Integrate descriptors to derive:
+- 📈 Integrate descriptors to derive:
   - Löwdin-style populations and charges
   - Measures of bond strength and bond order
 
