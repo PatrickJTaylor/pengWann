@@ -56,15 +56,15 @@ If you're having problems using `pengwann` and the [docs](https://pengwann.readt
 
 ### Bugs 🐛
 
-If you think you have found a bug in `pengwann`, please create an [issue]() and let us know!
+If you think you have found a bug in `pengwann`, please create an [issue](https://github.com/PatrickJTaylor/pengWann/issues) and let us know!
 
 ### Contributing 🛠
 
-Contributions to `pengwann` via [pull request]() are **very welcome**, whether the changes are big or small!
+Contributions to `pengwann` via [pull request](https://github.com/PatrickJTaylor/pengWann/pulls) are **very welcome**, whether the changes are big or small!
 See the [contributing guide](https://github.com/PatrickJTaylor/pengWann/blob/main/docs/CONTRIBUTING.md) for more details.
 
 ## Acknowledgements 📣
 
-The development of `pengwann` was initially inspired by [WOBSTER](), which in turn drew inspiration from previous work on using Wannier functions for population analysis[^1].
+The development of `pengwann` was initially inspired by [WOBSTER](https://github.com/Chengcheng-Xiao/WOBSTER), which in turn drew inspiration from previous work on using Wannier functions for population analysis[^1].
 
 [^1]: S. Kundu et al., Population analysis with Wannier orbitals, In: *J. Chem. Phys.* 154 (10 2021), p. 104111
