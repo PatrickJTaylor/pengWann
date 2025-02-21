@@ -20,12 +20,12 @@ A lightweight Python package for computing descriptors of chemical bonding and l
   </picture>
 </p>
 
-<center>
-<small>
-A handful of example outputs from <code>pengwann</code> as applied to rutile. The colour-coded numbers next to the crystal structure are Löwdin-style charges computed for Ti (blue) and O (red).
-</small>
-</center>
-
+<p align="center">
+  <small>
+  A handful of example outputs from <code>pengwann</code> as applied to rutile.
+  The colour-coded numbers next to the crystal structure are Lwdin-style charges computed for Ti (blue) and O (red).
+  </small>
+</p>
 
 - Parse [Wannier90](https://wannier.org/) output files
 - Identify interatomic and on-site interactions in terms of atom-assigned Wannier functions
