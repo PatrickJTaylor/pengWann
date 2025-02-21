@@ -12,6 +12,20 @@
 
 A lightweight Python package for computing descriptors of chemical bonding and local electronic structure from Wannier functions.
 
+<p align="center">
+  <picture align="center">
+    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/PatrickJTaylor/pengWann/raw/main/docs/_static/example_outputs.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://github.com/PatrickJTaylor/pengWann/raw/main/docs/_static/example_outputs_light.svg">
+    <img alt="A handful of example outputs from pengWann as applied to rutile.", src="https://github.com/PatrickJTaylor/pengWann/raw/main/docs/_static/example_outputs.svg">
+  </picture>
+</p>
+
+<center>
+<small>
+A handful of example outputs from <code>pengwann</code> as applied to rutile. The colour-coded numbers next to the crystal structure are Löwdin-style charges computed for Ti (blue) and O (red).
+</small>
+</center>
+
 - Parse [Wannier90](https://wannier.org/) output files
 - Identify interatomic and on-site interactions in terms of atom-assigned Wannier functions
 - Compute in parallel:
