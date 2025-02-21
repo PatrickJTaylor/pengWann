@@ -65,10 +65,6 @@ See the [contributing guide](https://github.com/PatrickJTaylor/pengWann/blob/mai
 
 ## Acknowledgements 📣
 
-The development of `pengwann` was initially inspired by [WOBSTER](), which in turn drew inspiration from previous work on using Wannier functions for population analysis [[1]](#1).
+The development of `pengwann` was initially inspired by [WOBSTER](), which in turn drew inspiration from previous work on using Wannier functions for population analysis[^1].
 
-<a id="1">[1]</a>
-S. Kundu et al., 
-Population analysis with Wannier orbitals, 
-In: *J. Chem. Phys.* 154 (10 2021), 
-p. 104111
+[^1]: S. Kundu et al., Population analysis with Wannier orbitals, In: *J. Chem. Phys.* 154 (10 2021), p. 104111
