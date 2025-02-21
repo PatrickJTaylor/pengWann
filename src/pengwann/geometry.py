@@ -366,6 +366,12 @@ def identify_onsite_interactions(
         The on-site/diagonal AtomicInteraction objects associated with each symbol
         in `symbols`.
 
+    See Also
+    --------
+    Geometry.from_xyz
+    pengwann.descriptors.DescriptorCalculator.assign_descriptors :
+        Compute descriptors for a set of on-site interactions.
+
     Notes
     -----
     In the context of pengwann, an on-site/diagonal interaction is simply a 2-body
@@ -420,6 +426,7 @@ def identify_interatomic_interactions(
 
     See Also
     --------
+    Geometry.from_xyz
     pengwann.descriptors.DescriptorCalculator.assign_descriptors :
         Compute bonding descriptors for a set of interatomic interactions.
 
