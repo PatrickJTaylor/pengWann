@@ -46,11 +46,11 @@ class Geometry:
     """
     Data structure representing a periodic system of atoms and Wannier centres.
 
-    The primary function of this class is to store the information required to identify
-    interatomic and on-site interactions in terms of individual Wannier functions. In
-    addition, for ease of integration into common materials modelling workflows,
-    Geometry objects can be easily converted into Pymatgen Structure objects with the
-    :py:meth:`~pengwann.geometry.Geometry.as_structure` method.
+    The primary function of this class is to store the geometric information required to
+    identify interatomic and on-site interactions in terms of individual Wannier
+    functions. In addition, for ease of integration into common materials modelling
+    workflows, Geometry objects can be easily converted into Pymatgen Structure objects
+    with the :py:meth:`~pengwann.geometry.Geometry.as_structure` method.
 
     Attributes
     ----------
@@ -136,6 +136,12 @@ class Geometry:
 
     @cached_property
     def _wannier_assignments(self) -> tuple[tuple[int, ...], ...]:
+        """
+        Wrapped by the wannier_assignments property.
+
+        This cached_property is wrapped by a standard property simply because numpydoc
+        fails to link the autosummary stubs correctly otherwise.
+        """
         wannier_indices, atom_indices = [], []
         for site in self.sites:
             if site.symbol == "X":
@@ -190,6 +196,12 @@ class Geometry:
     def _distance_and_image_matrices(
         self,
     ) -> tuple[NDArray[np.float64], NDArray[np.int_]]:
+        """
+        Wrapped by the distance_and_image_matrices property.
+
+        This cached_property is wrapped by a standard property simply because numpydoc
+        fails to link the autosummary stubs correctly otherwise.
+        """
         num_sites = len(self)
         num_dim = len(self.cell)
         distance_matrix = np.zeros((num_sites, num_sites))
