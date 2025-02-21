@@ -24,7 +24,7 @@ A lightweight Python package for computing descriptors of chemical bonding and l
   - Measures of bond strength and bond order
 
 `pengwann` replicates the core functionality of [LOBSTER](http://www.cohp.de/) but uses Wannier functions rather than pre-defined atomic or pseudo-atomic orbitals as a local basis in which to express the Hamiltonian and the density matrix.
-A Wannier basis is advantageous in that, when derived from energetically isolated bands, [the spilling factor is strictly 0](https://pengwann.readthedocs.io/en/latest/methodology.html).
+A Wannier basis is advantageous in that, when derived from energetically isolated bands, [the spilling factor is strictly 0](https://pengwann.readthedocs.io/en/latest/methodology.html#the-spilling-factor).
 
 For further details regarding detailed methodology, functionality and examples, see the [documentation](https://pengwann.readthedocs.io/).
 
