@@ -30,7 +30,7 @@ The core features of `pengwann` include:
 For further details regarding functionality and methodology, please see the [documentation](https://pengwann.readthedocs.io/).
 If something is still unclear after having browsed the docs, then feel free to open a [discussion](https://github.com/PatrickJTaylor/pengWann/discussions) and we will endeavour to get back to you as soon as possible.
 
-## Installation :penguin:
+## Installation
 
 The latest tagged release of `pengwann` is `pip`-installable as:
 
@@ -44,7 +44,7 @@ Alternatively, to install the current development build:
 pip install git+https://github.com/PatrickJTaylor/pengwann.git
 ```
 
-## Bugs and development :hammer_and_wrench:
+## Bugs and development
 
 If you think you have encountered a bug whilst using `pengwann`, please create an [issue](https://github.com/PatrickJTaylor/pengWann/issues) and let us know!
 Contributions to `pengwann` via [pull requests](https://github.com/PatrickJTaylor/pengWann/pulls) are also very welcome (see the [contributions guide](https://github.com/PatrickJTaylor/pengWann/blob/main/docs/CONTRIBUTING.md) for more details).
