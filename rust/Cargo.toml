@@ -1,0 +1,15 @@
+[package]
+name = "pengwann"
+version = "0.4.0"
+edition = "2024"
+
+[lib]
+name = "pengwann"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+itertools = "0.14.0"
+ndarray = "0.16.1"
+ndarray-stats = "0.6.0"
+numpy = "0.23.0"
+pyo3 = { version = "0.23.5", features = ["extension-module"] }

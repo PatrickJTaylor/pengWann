@@ -1,6 +1,6 @@
 [build-system]
-requires = ['hatchling']
-build-backend = 'hatchling.build'
+requires = ['maturin>=1.0,<2.0']
+build-backend = 'maturin'
 
 [project]
 name = 'pengwann'
@@ -46,11 +46,9 @@ docs = [
 [project.urls]
 homepage = 'https://github.com/PatrickJTaylor/pengWann'
 
-[tool.hatch.build.targets.wheel]
-packages = ['src/pengwann']
-
-[tool.hatch.version]
-path = 'src/pengwann/version.py'
+[tool.maturin]
+features = ['pyo3/extension-module']
+module-name = 'pengwann._geometry'
 
 [tool.ruff]
 extend-exclude = ['*.ipynb']

@@ -29,6 +29,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from itertools import product
 from numpy.typing import ArrayLike, NDArray
+from pengwann._geometry import _build_distance_and_image_matrices
 from pengwann.interactions import (
     AtomicInteractionContainer,
     AtomicInteraction,
@@ -132,16 +133,6 @@ class Geometry:
         -----
         This property is cached after it has been evaluated once.
         """
-        return self._wannier_assignments
-
-    @cached_property
-    def _wannier_assignments(self) -> tuple[tuple[int, ...], ...]:
-        """
-        Wrapped by the wannier_assignments property.
-
-        This cached_property is wrapped by a standard property simply because numpydoc
-        fails to link the autosummary stubs correctly otherwise.
-        """
         wannier_indices, atom_indices = [], []
         for site in self.sites:
             if site.symbol == "X":
@@ -190,46 +181,9 @@ class Geometry:
         -----
         This property is cached after it has been evaluated once.
         """
-        return self._distance_and_image_matrices
+        coords = np.vstack([site.coords for site in self.sites])
 
-    @cached_property
-    def _distance_and_image_matrices(
-        self,
-    ) -> tuple[NDArray[np.float64], NDArray[np.int_]]:
-        """
-        Wrapped by the distance_and_image_matrices property.
-
-        This cached_property is wrapped by a standard property simply because numpydoc
-        fails to link the autosummary stubs correctly otherwise.
-        """
-        num_sites = len(self)
-        num_dim = len(self.cell)
-        distance_matrix = np.zeros((num_sites, num_sites))
-        image_matrix = np.zeros((num_sites, num_sites, num_dim), dtype=np.int_)
-
-        base_vectors = [[-1, 0, 1] for _ in range(num_dim)]
-        image_vectors = np.zeros((3**num_dim, num_dim))
-        for i, image_vector in enumerate(product(*base_vectors)):
-            image_vectors[i] = image_vector
-
-        for i in range(num_sites):
-            for j in range(i + 1, num_sites):
-                i_coords, j_coords = self.sites[i].coords, self.sites[j].coords
-
-                v_0 = np.round(i_coords - j_coords)
-                trans_j_coords = j_coords + v_0
-
-                cart_vectors = self.cell @ (trans_j_coords + image_vectors - i_coords).T
-                distances = np.linalg.norm(cart_vectors, axis=0)
-                min_idx = distances.argmin()
-
-                distance_matrix[i, j] = distance_matrix[j, i] = distances[min_idx]
-
-                image = image_vectors[min_idx] + v_0
-                image_matrix[i, j] = image
-                image_matrix[j, i] = -image
-
-        return distance_matrix, image_matrix
+        return _build_distance_and_image_matrices(coords, self.cell)
 
     def as_structure(self) -> Structure:
         """
