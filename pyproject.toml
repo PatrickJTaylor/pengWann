@@ -74,6 +74,7 @@ testpaths = ['tests']
 
 [dependency-groups]
 dev = [
+    "scikit-build-core<0.11",
     "pymatgen>=2025.1.24",
     "pyright>=1.1.393",
     "pytest>=8.3.4",
@@ -82,7 +83,6 @@ dev = [
     "pytest-random-order>=1.1.1",
     "pytest-regressions>=2.7.0",
     "ruff>=0.9.5",
-    "scikit-build-core<=0.10.7",
     "scipy-stubs>=1.15.1.0",
     "types-tqdm>=4.67.0.20241221",
 ]

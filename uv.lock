@@ -1343,7 +1343,7 @@ dev = [
     { name = "pytest-random-order", specifier = ">=1.1.1" },
     { name = "pytest-regressions", specifier = ">=2.7.0" },
     { name = "ruff", specifier = ">=0.9.5" },
-    { name = "scikit-build-core", specifier = "<=0.10.7" },
+    { name = "scikit-build-core", specifier = "<0.11" },
     { name = "scipy-stubs", specifier = ">=1.15.1.0" },
     { name = "types-tqdm", specifier = ">=4.67.0.20241221" },
 ]
