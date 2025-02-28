@@ -71,7 +71,6 @@ jobs:
         run: uv run pytest
 
       - name: Publish test coverage report
-        if: github.event_name == 'push'
         if: ${{ (github.event_name == 'push') && (runner.os == 'Linux') && (matrix.python-version == '3.12') }}
         uses: paambaati/codeclimate-action@v9.0.0
         env:
