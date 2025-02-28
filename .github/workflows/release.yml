@@ -25,13 +25,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
-      - name: Setup QEMU
-        uses: docker/setup-qemu-action@v1
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist --find-interpreter
+          args: --release --out dist -i /opt/python/cp310-cp310/bin/python /opt/python/cp311-cp311/bin/python /opt/python/cp312-cp312/bin/python /opt/python/cp313-cp313/bin/python /opt/python/pp310-pypy310_pp73/bin/python
           sccache: true
           manylinux: auto
       - name: Upload wheels
@@ -58,13 +56,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
-      - name: Setup QEMU
-        uses: docker/setup-qemu-action@v1
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist --find-interpreter
+          args: --release --out dist -i /opt/python/cp310-cp310/bin/python /opt/python/cp311-cp311/bin/python /opt/python/cp312-cp312/bin/python /opt/python/cp313-cp313/bin/python /opt/python/pp310-pypy310_pp73/bin/python
           sccache: true
           manylinux: musllinux_1_2
       - name: Upload wheels
