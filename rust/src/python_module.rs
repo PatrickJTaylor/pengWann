@@ -1,6 +1,7 @@
-use crate::build_distance_and_image_matrices;
 use numpy::{IntoPyArray, PyArray2, PyArray3, PyReadonlyArray2};
 use pyo3::prelude::*;
+
+use crate::build_distance_and_image_matrices;
 
 #[pymodule(name = "_geometry")]
 fn pengwann(m: &Bound<'_, PyModule>) -> PyResult<()> {

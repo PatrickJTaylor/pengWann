@@ -1,21 +1,24 @@
-//! Rust functions called by the pengwann rust extension.
+//! A small rust extension for pengwann.
 //!
 //! Provides a few Rust implementations for functions that would be prohibitively slow
 //! in Python, mainly due to loops that cannot be unrolled by the interpreter.
 
-use itertools::iproduct;
-use ndarray::{Array1, Array2, Array3, ArrayView2, Axis, array, s};
+use std::iter::repeat_n;
+
+use itertools::Itertools;
+use ndarray::{Array1, Array2, Array3, ArrayView2, Axis, s};
 use ndarray_stats::QuantileExt;
 
 mod python_module;
 
 /// Given a set of fractional coordinates and cell vectors, calculate a distance matrix
-/// and accompanying image matrix. For each element of the distance matrix D_ij, the
+/// and the accompanying image matrix. For each element of the distance matrix D_ij, the
 /// corresponding element of the image matrix I_ij is the Bravais lattice vector that
 /// yields the periodic image of atom j that is closest to atom i.
 ///
 /// This function currently implements no error handling, because it is expected to only
-/// ever be called internally with arguments that will never cause a panic.
+/// ever be called internally (never directly by the user) with arguments that will
+/// never cause a panic.
 fn build_distance_and_image_matrices(
     frac_coords: &ArrayView2<f64>,
     cell: &ArrayView2<f64>,
@@ -55,14 +58,17 @@ fn build_distance_and_image_matrices(
     (distance_matrix, image_matrix)
 }
 
-/// Enumerate the Bravais lattice vectors for all unit cells neighbouring the home cell.
+/// Enumerate the Bravais lattice vectors in n-dimensions for all unit cells
+/// neighbouring the home cell.
 fn enum_image_vectors(num_dim: usize) -> Array2<f64> {
     let num_images = 3_usize.pow(u32::try_from(num_dim).unwrap());
 
-    let elements = [-1.0, 0.0, 1.0];
     let mut image_vectors = Array2::<f64>::zeros((num_images, num_dim));
-    for (i, (a, b, c)) in iproduct!(elements, elements, elements).enumerate() {
-        let bl_vector = array![a, b, c];
+    for (i, bl_vector) in repeat_n(-1..2, num_dim)
+        .multi_cartesian_product()
+        .enumerate()
+    {
+        let bl_vector = Array1::from_vec(bl_vector).mapv(f64::from);
 
         image_vectors.slice_mut(s![i, ..]).assign(&bl_vector);
     }
