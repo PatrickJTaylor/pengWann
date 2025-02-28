@@ -255,7 +255,7 @@ def read_xyz(path: str) -> tuple[list[str], NDArray[np.float64]]:
         symbols.append(symbol)
         coords_list.append(coords)
 
-    coords = np.array(coords_list).T
+    coords = np.array(coords_list, dtype=np.float64).T
 
     return symbols, coords
 
@@ -305,7 +305,7 @@ def read_cell(path: str) -> NDArray[np.float64]:
             vector), but found {num_vectors} instead: {cell_list}"""
         )
 
-    cell = np.array(cell_list)
+    cell = np.array(cell_list, dtype=np.float64)
 
     if bohr:
         radius = physical_constants["Bohr radius"][0] * 1.0e10
