@@ -74,6 +74,7 @@ testpaths = ['tests']
 
 [dependency-groups]
 dev = [
+    "maturin>=1.8.2",
     "pymatgen>=2025.1.24",
     "pyright>=1.1.393",
     "pytest>=8.3.4",
