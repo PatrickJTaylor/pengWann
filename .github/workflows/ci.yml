@@ -14,6 +14,7 @@ jobs:
       - name: Install uv and Python
         uses: astral-sh/setup-uv@v5
         with:
+          python-version: "3.12"
           enable-cache: true
 
       - name: Install Rust toolchain
@@ -47,7 +48,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ['3.10', '3.11', '3.12']
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
       - name: Checkout repository
