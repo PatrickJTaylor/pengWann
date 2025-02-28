@@ -26,8 +26,6 @@ from __future__ import annotations
 import numpy as np
 from collections.abc import Iterator
 from dataclasses import dataclass
-from functools import cached_property
-from itertools import product
 from numpy.typing import ArrayLike, NDArray
 from pengwann._geometry import _build_distance_and_image_matrices
 from pengwann.interactions import (
