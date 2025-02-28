@@ -1,2 +1,2 @@
-str: "Geometry\n========\nCell\n----\n[[5 0 0]\n [0 5 0]\n [0 0 5]]\n\nAssignments\n\
+str: "Geometry\n========\nCell\n----\n[[5. 0. 0.]\n [0. 5. 0.]\n [0. 0. 5.]]\n\nAssignments\n\
   -----------\nX0 => (2,)\nX1 => (3,)\nC2 <= (0,)\nO3 <= (1,)\n"

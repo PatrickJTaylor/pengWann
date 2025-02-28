@@ -28,7 +28,7 @@ from pymatgen.core import Structure
 
 
 def build_geometry(symbols: list[str]) -> Geometry:
-    cell = np.diag([5, 5, 5])
+    cell = np.diag([5.0, 5.0, 5.0])
 
     coords = np.array(
         [[0.1, 0.1, 0.1], [0.6, 0.6, 0.6], [0.25, 0.25, 0.25], [0.75, 0.75, 0.75]]
