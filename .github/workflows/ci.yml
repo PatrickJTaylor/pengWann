@@ -42,7 +42,7 @@ jobs:
         run: uv run pyright
 
   test:
-    name: Run test suite and publish to Code Climate
+    name: Test and publish coverage
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
