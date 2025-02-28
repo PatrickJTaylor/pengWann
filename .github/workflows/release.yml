@@ -58,7 +58,7 @@ jobs:
           manylinux: auto
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: dist
@@ -87,7 +87,7 @@ jobs:
           sccache: 'true'
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: dist
@@ -116,7 +116,7 @@ jobs:
           sccache: 'true'
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: dist
@@ -135,7 +135,7 @@ jobs:
           args: --out dist --manifest-path rust/Cargo.toml
 
       - name: Upload sdist
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: dist
