@@ -3,11 +3,52 @@ name: Continuous integration
 on: [push, pull_request]
 
 jobs:
-  run:
+  check:
+    name: Lint, format and type check
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Sync environment
+        run: uv sync
+
+      - name: Lint Rust
+        working-directory: rust
+        run: cargo clippy
+
+      - name: Enforce Rust formatting
+        working-directory: rust
+        run: cargo fmt --check
+
+      - name: Lint Python
+        run: uv run ruff check
+
+      - name: Enforce Python formatting
+        run: uv run ruff format --check
+
+      - name: Run static type checker
+        run: uv run pyright
+
+  test:
+    name: Test and publish coverage
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ['3.10', '3.11', '3.12', '3.13']
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
       - name: Checkout repository
@@ -19,23 +60,19 @@ jobs:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
 
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
       - name: Sync environment
         run: uv sync
-
-      - name: Lint
-        run: uv run ruff check
-
-      - name: Enforce black formatting
-        run: uv run ruff format --check
-
-      - name: Run static type checking
-        run: uv run pyright
 
       - name: Run test suite
         run: uv run pytest
 
       - name: Publish test coverage report
-        if: github.event_name == 'push'
+        if: ${{ (github.event_name == 'push') && (runner.os == 'Linux') && (matrix.python-version == '3.12') }}
         uses: paambaati/codeclimate-action@v9.0.0
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CODECLIMATE_REPO_TOKEN }}
