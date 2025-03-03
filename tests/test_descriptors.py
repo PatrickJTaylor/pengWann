@@ -23,7 +23,6 @@ from pengwann.geometry import (
     AtomicInteraction,
     WannierInteraction,
 )
-from pymatgen.core import Structure
 from typing import Any
 
 # TODO: Figure out why multithreaded fork() occurs only when pytest is run.
@@ -80,16 +79,6 @@ def interactions() -> AtomicInteractionContainer:
     )
 
     return AtomicInteractionContainer(sub_interactions=interactions)
-
-
-@pytest.fixture
-def geometry(shared_datadir) -> Structure:
-    with open(f"{shared_datadir}/geometry.json", "r") as stream:
-        serial = json.load(stream)
-
-    geometry = Structure.from_dict(serial)
-
-    return geometry
 
 
 @pytest.mark.filterwarnings("ignore::UserWarning")
