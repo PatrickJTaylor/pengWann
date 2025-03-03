@@ -50,7 +50,6 @@ jobs:
           python3 -m venv .venv
           source .venv/bin/activate
           pip install pengwann --find-links dist --force-reinstall
-          python -c "import pengwann._geometry; print('import sucess')"
           pip install pytest pytest-cov pytest-regressions pytest-random-order
           pytest --ignore=tests/test_pmg_interface.py
       - name: pytest
