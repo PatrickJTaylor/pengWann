@@ -49,7 +49,7 @@ jobs:
           set -e
           python3 -m venv .venv
           source .venv/bin/activate
-          pip install pengwann --no-index --find-links dist --force-reinstall
+          pip install pengwann --find-links dist --force-reinstall
           pip install pytest pytest-cov pytest-regressions pytest-random-order
           pytest --ignore=tests/test_pmg_interface.py
       - name: pytest
@@ -65,7 +65,7 @@ jobs:
             pip3 install -U pip pytest pytest-cov pytest-regressions pytest-random-order
           run: |
             set -e
-            pip3 install pengwann --no-index --find-links dist --force-reinstall
+            pip3 install pengwann --find-links dist --force-reinstall
             pytest --ignore=tests/test_pmg_interface.py
 
   musllinux:
@@ -109,7 +109,7 @@ jobs:
             apk add py3-pip py3-virtualenv
             python3 -m virtualenv .venv
             source .venv/bin/activate
-            pip install pengwann --no-index --no-index --find-links dist --force-reinstall
+            pip install pengwann --find-links dist --force-reinstall
             pip install pytest pytest-cov pytest-regressions pytest-random-order
             pytest --ignore=tests/test_pmg_interface.py
       - name: pytest
@@ -126,7 +126,7 @@ jobs:
             python3 -m virtualenv .venv
             source .venv/bin/activate
             pip install pytest pytest-cov pytest-regressions pytest-random-order
-            pip install pengwann --no-index --find-links dist --force-reinstall
+            pip install pengwann --find-links dist --force-reinstall
             pytest --ignore=tests/test_pmg_interface.py
 
   windows:
@@ -162,7 +162,7 @@ jobs:
           set -e
           python3 -m venv .venv
           source .venv/Scripts/activate
-          pip install pengwann --no-index --find-links dist --force-reinstall
+          pip install pengwann --find-links dist --force-reinstall
           pip install pytest pytest-cov pytest-regressions pytest-random-order
           pytest --ignore=tests/test_pmg_interface.py
 
@@ -196,7 +196,7 @@ jobs:
           set -e
           python3 -m venv .venv
           source .venv/bin/activate
-          pip install pengwann --no-index --find-links dist --force-reinstall
+          pip install pengwann --find-links dist --force-reinstall
           pip install pytest pytest-cov pytest-regressions pytest-random-order
           pytest --ignore=tests/test_pmg_interface.py
 
