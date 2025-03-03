@@ -67,9 +67,6 @@ jobs:
             set -e
             pip3 install pengwann --find-links dist --force-reinstall
             pytest --ignore=tests/test_pmg_interface.py
-      - name: tmate
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
 
   musllinux:
     runs-on: ${{ matrix.platform.runner }}

@@ -68,7 +68,6 @@ omit = [
 ]
 
 [tool.pytest.ini_options]
-pythonpath = ['src']
 addopts = '--random-order --cov-report xml --cov=pengwann'
 testpaths = ['tests']
 
