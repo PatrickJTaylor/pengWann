@@ -51,7 +51,6 @@ jobs:
           source .venv/bin/activate
           pip install pengwann --find-links dist --force-reinstall
           pip install pytest pytest-cov pytest-regressions pytest-random-order
-          python3 -c "import pengwann._geometry"
           pytest --ignore=tests/test_pmg_interface.py
       - name: pytest
         if: ${{ !startsWith(matrix.platform.target, 'x86') && matrix.platform.target != 'ppc64' }}
