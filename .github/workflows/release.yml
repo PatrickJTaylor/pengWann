@@ -165,6 +165,9 @@ jobs:
           pip install pengwann --find-links dist --force-reinstall
           pip install pytest pytest-cov pytest-regressions pytest-random-order
           pytest --ignore=tests/test_pmg_interface.py
+      - name: tmate
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
 
   macos:
     runs-on: ${{ matrix.platform.runner }}
