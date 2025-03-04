@@ -1,6 +1,8 @@
 .python-version
 .ipynb_checkpoints
+*.so
 _build
 __pycache__
+target
 /pengwann.egg-info
 docs/generated

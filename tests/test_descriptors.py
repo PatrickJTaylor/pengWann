@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License along with pengWann.
 # If not, see <https://www.gnu.org/licenses/>.
 
-import json
 import pytest
 import numpy as np
 from multiprocessing import set_start_method
@@ -23,7 +22,6 @@ from pengwann.geometry import (
     AtomicInteraction,
     WannierInteraction,
 )
-from pymatgen.core import Structure
 from typing import Any
 
 # TODO: Figure out why multithreaded fork() occurs only when pytest is run.
@@ -80,16 +78,6 @@ def interactions() -> AtomicInteractionContainer:
     )
 
     return AtomicInteractionContainer(sub_interactions=interactions)
-
-
-@pytest.fixture
-def geometry(shared_datadir) -> Structure:
-    with open(f"{shared_datadir}/geometry.json", "r") as stream:
-        serial = json.load(stream)
-
-    geometry = Structure.from_dict(serial)
-
-    return geometry
 
 
 @pytest.mark.filterwarnings("ignore::UserWarning")
