@@ -1,6 +1,11 @@
 name: Build wheels (tier 2)
 
-on: [pull_request, push, workflow_call]
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_call:
 
 jobs:
   linux-glibc:
