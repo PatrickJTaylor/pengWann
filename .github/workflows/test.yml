@@ -1,4 +1,4 @@
-name: Test wheels
+name: Test wheels (tier 1)
 
 on:
   pull_request:
