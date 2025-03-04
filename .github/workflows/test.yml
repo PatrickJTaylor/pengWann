@@ -1,4 +1,4 @@
-name: Test wheels (tier 1)
+name: Test wheels
 
 on: [pull_request, push, workflow_call]
 
