@@ -4,12 +4,15 @@ on: [pull_request, push, workflow_call]
 
 jobs:
   check:
+    name: Check
     uses: ./.github/workflows/check.yml
 
   build:
+    name: Build
     uses: ./.github/workflows/build-t1.yml
 
   test:
+    name: Test
     needs: [check, build]
     runs-on: ${{ matrix.platform.runner }}
     strategy:

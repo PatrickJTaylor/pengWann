@@ -1,0 +1,49 @@
+name: Release
+
+on: workflow_dispatch
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  build-t2:
+    uses: ./.github/workflows/build-t2.yml
+
+  sdist:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build sdist
+        uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: --out dist
+
+      - name: Upload sdist
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-sdist
+          path: dist
+
+  publish:
+    needs: [test, build-t2, sdist]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Download wheels
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Publish to PyPI
+        run: uv publish
