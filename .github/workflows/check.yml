@@ -1,0 +1,40 @@
+name: Check
+
+on: workflow_call
+
+jobs:
+  check:
+    name: Lint, format and validate types
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: 3.12
+          enable-cache: true
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Lint Rust
+        working-directory: rust
+        run: cargo clippy
+
+      - name: Check Rust formatting
+        working-directory: rust
+        run: cargo fmt --check
+
+      - name: Lint Python
+        run: uv run ruff check
+
+      - name: Check Python formatting
+        run: uv run ruff format --check
+
+      - name: Validate Python types
+        run: uv run pyright
