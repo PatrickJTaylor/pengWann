@@ -13,17 +13,17 @@ jobs:
     uses: ./.github/workflows/check.yml
 
   build-t1:
-    name: 🛠 build wheels (tier 1)
+    name: 🛠 build wheels (Tier 1)
     needs: check
     uses: ./.github/workflows/build-t1.yml
 
   build-t2:
-    name: 🛠 build wheels (tier 2)
+    name: 🛠 build wheels (Tier 2)
     needs: check
     uses: ./.github/workflows/build-t2.yml
 
   test:
-    name: 🧪 test wheels (tier 1)
+    name: 🧪 test wheels (Tier 1)
     needs: build-t1
     uses: ./.github/workflows/test.yml
 
