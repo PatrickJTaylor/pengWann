@@ -1,6 +1,6 @@
 import os
 import sys
-from pengwann.version import __version__ as VERSION
+import tomli
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -10,10 +10,15 @@ from pengwann.version import __version__ as VERSION
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+with open("../rust/Cargo.toml", "rb") as stream:
+    toml = tomli.load(stream)
+
+    version = toml["package"]["version"]
+
 project = "pengWann"
 copyright = "2024-2025, Patrick J. Taylor"
 author = "Patrick J. Taylor"
-release = VERSION
+release = version
 
 sys.path.insert(0, os.path.abspath(".."))
 

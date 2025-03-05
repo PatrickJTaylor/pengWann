@@ -55,11 +55,14 @@ The latest tagged release of `pengwann` is `pip`-installable as:
 pip install pengwann
 ```
 
-Alternatively, to install the current development build:
+Alternatively, to install the current development build, you can build from source with:
 
 ```shell
 pip install git+https://github.com/PatrickJTaylor/pengwann.git
 ```
+
+Note that building `pengwann` from source entails compiling a small Rust extension, meaning that a suitable version of the Rust compiler must be available on the host machine.
+For more details regarding installation and platform support, see the full [installation guide](https://pengwann.readthedocs.io/en/latest/installation.html) in the docs.
 
 ### Basic usage 📝
 

@@ -1,4 +1,4 @@
-name: test wheels (tier 1)
+name: test wheels (Tier 1)
 
 on: workflow_call
 

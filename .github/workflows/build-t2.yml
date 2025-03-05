@@ -1,4 +1,4 @@
-name: build wheels (tier 2)
+name: build wheels (Tier 2)
 
 on: workflow_call
 
