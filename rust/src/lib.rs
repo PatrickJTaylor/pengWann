@@ -6,7 +6,7 @@
 use std::iter::repeat_n;
 
 use itertools::Itertools;
-use ndarray::{Array1, Array2, Array3, ArrayView2, Axis, s};
+use ndarray::{s, Array1, Array2, Array3, ArrayView2, Axis};
 use ndarray_stats::QuantileExt;
 
 mod python_module;
