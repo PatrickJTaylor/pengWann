@@ -26,6 +26,7 @@ jobs:
     name: 🧪 test wheels (Tier 1)
     needs: build-t1
     uses: ./.github/workflows/test.yml
+    secrets: inherit
 
   pass:
     name: ✅ pass
