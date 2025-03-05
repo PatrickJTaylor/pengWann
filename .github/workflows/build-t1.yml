@@ -4,7 +4,7 @@ on: workflow_call
 
 jobs:
   linux:
-    name: 🐧 - 🧬 ${{ matrix.platform.target }}
+    name: 🐧 linux - 🧬 ${{ matrix.platform.target }}
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -36,7 +36,7 @@ jobs:
           path: dist
 
   macos:
-    name: 🍎 - 🧬 ${{ matrix.platform.target }}
+    name: 🍎 macos - 🧬 ${{ matrix.platform.target }}
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -72,7 +72,7 @@ jobs:
           path: dist
 
   windows:
-    name: 🪟 - 🧬 ${{ matrix.platform.target }}
+    name: 🪟 windows - 🧬 ${{ matrix.platform.target }}
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:

@@ -4,7 +4,7 @@ on: workflow_call
 
 jobs:
   linux-glibc:
-    name: 🐧 - 🧬 ${{ matrix.platform.target }} - glibc
+    name: 🐧 linux - 🧬 ${{ matrix.platform.target }} - 🐃 glibc
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -44,7 +44,7 @@ jobs:
           path: dist
 
   linux-musl:
-    name: 🐧 - 🧬 ${{ matrix.platform.target }} - musl
+    name: 🐧 linux - 🧬 ${{ matrix.platform.target }} - 🐚 musl
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -82,7 +82,7 @@ jobs:
           path: dist
 
   windows:
-    name: 🪟 - 🧬 ${{ matrix.platform.target }}
+    name: 🪟 windows - 🧬 ${{ matrix.platform.target }}
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
