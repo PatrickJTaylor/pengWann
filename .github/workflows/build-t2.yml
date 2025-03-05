@@ -1,15 +1,10 @@
-name: Build wheels (tier 2)
+name: build wheels (tier 2)
 
-on:
-  pull_request:
-  push:
-    branches:
-      - main
-  workflow_call:
+on: workflow_call
 
 jobs:
   linux-glibc:
-    name: Linux (glibc)
+    name: 🐧 - 🧬 ${{ matrix.platform.target }} - glibc
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -49,7 +44,7 @@ jobs:
           path: dist
 
   linux-musl:
-    name: Linux (musl)
+    name: 🐧 - 🧬 ${{ matrix.platform.target }} - musl
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -87,7 +82,7 @@ jobs:
           path: dist
 
   windows:
-    name: Windows
+    name: 🪟 - 🧬 ${{ matrix.platform.target }}
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:

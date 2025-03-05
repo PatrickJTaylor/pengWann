@@ -1,10 +1,10 @@
-name: Build wheels (tier 1)
+name: build wheels (tier 1)
 
 on: workflow_call
 
 jobs:
   linux:
-    name: Linux
+    name: 🐧 - 🧬 ${{ matrix.platform.target }}
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -36,7 +36,7 @@ jobs:
           path: dist
 
   macos:
-    name: MacOS
+    name: 🍎 - 🧬 ${{ matrix.platform.target }}
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -72,7 +72,7 @@ jobs:
           path: dist
 
   windows:
-    name: Windows
+    name: 🪟 - 🧬 ${{ matrix.platform.target }}
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:

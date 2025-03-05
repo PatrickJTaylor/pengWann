@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_call:
+
+jobs:
+  check:
+    name: 🔎 check
+    uses: ./.github/workflows/check.yml
+
+  build-t1:
+    name: 🛠 build wheel (tier 1)
+    needs: check
+    uses: ./.github/workflows/build-t1.yml
+
+  build-t2:
+    name: 🛠 build wheel (tier 2)
+    needs: check
+    uses: ./.github/workflows/build-t2.yml
+
+  test:
+    name: 🧪 test
+    needs: build-t1
+    uses: ./.github/workflows/test.yml
+
+  pass:
+    name: ✅ pass
+    needs: [check, build-t1, build-t2, test]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check all CI jobs
+        uses: re-actors/alls-green@release/v1
+        if: always()
+        with:
+          jobs: ${{ toJSON(needs) }}

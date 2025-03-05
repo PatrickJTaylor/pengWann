@@ -1,13 +1,10 @@
-name: Release
+name: release
 
 on: workflow_dispatch
 
 jobs:
-  test:
-    uses: ./.github/workflows/test.yml
-
-  build-t2:
-    uses: ./.github/workflows/build-t2.yml
+  ci:
+    uses: ./.github/workflows/ci.yml
 
   sdist:
     runs-on: ubuntu-latest
@@ -29,7 +26,7 @@ jobs:
           path: dist
 
   publish:
-    needs: [test, build-t2, sdist]
+    needs: [ci, sdist]
     runs-on: ubuntu-latest
     environment:
       name: pypi

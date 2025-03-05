@@ -1,10 +1,10 @@
-name: Check
+name: check
 
 on: workflow_call
 
 jobs:
   check:
-    name: Lint, format and validate types
+    name: linting, formatting, typing
     runs-on: ubuntu-latest
 
     steps:
