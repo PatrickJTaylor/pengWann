@@ -9,7 +9,7 @@ If you are going to submit a pull request to `pengwann`, please first check that
 1. New/modified functionality should be accompanied by new/appropriately modified **tests**.
 
 2. New/modified functionality should be accompanied by new/appropriately modified **documentation**.
-    - In keeping with the current codebase, please use [numpy-style](https://numpydoc.readthedocs.io/en/latest/format.html) docstrings to document all source code.
+    - In keeping with the current codebase, please use [numpy-style](https://numpydoc.readthedocs.io/en/latest/format.html) docstrings to document all Python source code.
 
 3. Where possible, write new code in a somewhat [functional](https://en.wikipedia.org/wiki/Functional_programming) style[^1].
 
@@ -25,39 +25,48 @@ Contributions to `pengwann` should be made via the [fork and pull](https://docs.
 
 2. Clone a local version of your new fork:
 
-```console
+```shell
 git clone git@github.com:your_username_here/pengWann.git
 ```
 
 3. Set up a development environment with [uv](https://docs.astral.sh/uv/):
 
-```console
+```shell
 cd pengWann
 uv sync
 ```
 
+Note that, as mentioned in the [installation guide](./installation), building `pengwann` from source (which will happen automatically when `uv` syncs the environment) requires the Rust compiler (see [rustup](https://rustup.rs/) for installation).
+
 4. Create and switch to a new branch:
 
-```console
+```shell
 git switch -c name_of_new_feature
 ```
 
 5. Implement the changes that you would like to contribute.
 
-6. (Optional) Lint, format, type check and run the test suite:
+6. If you have modified the Python source, run `ruff`, `pyright` and `pytest` to lint, format, type check and run the test suite:
 
-```console
+```shell
 uv run ruff check
 uv run ruff format
 uv run pyright
 uv run pytest
 ```
 
+If you have modified the Rust source, run `clippy` and `rustfmt` to lint and format:
+
+```shell
+cargo clippy
+cargo fmt
+```
+
 Regardless of whether or not you validate your changes in the manner shown above, they will be checked in CI when you open a pull request.
 
 7. Commit your changes and push to GitHub:
 
-```console
+```shell
 git add src/pengwann/changed_file.py
 git commit -m 'Short description of changes made.'
 git push origin name_of_new_feature

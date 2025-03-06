@@ -2,13 +2,13 @@
 
 To install the most recent tagged release of `pengwann`, use `pip`:
 
-```
+```shell
 pip install pengwann
 ```
 
 Alternatively, if you would like to install the bleeding-edge latest version of the code (i.e. the current Git commit), you can build from source with:
 
-```
+```shell
 pip install git+https://github.com/PatrickJTaylor/pengwann.git
 ```
 
@@ -16,7 +16,7 @@ pip install git+https://github.com/PatrickJTaylor/pengwann.git
 Note that building `pengwann` from source entails compiling a small Rust extension, meaning that a suitable version of the Rust compiler must be available on the host machine.
 This requirement does not usually hold when installing from PyPI, as pre-built wheels are provided for most commonly used platforms and architectures.
 
-If you do need to build from source and your host machine is lacking a Rust compiler, the [rustup](https://rustup.rs/) utility can easily be used to install one.
+If you do need to build from source and your host machine is lacking the Rust compiler, the [rustup](https://rustup.rs/) utility can easily be used to install it.
 :::
 
 ## Platform support
@@ -46,13 +46,15 @@ Practically speaking this means that the stability of `pengwann` on **Tier 2** s
 
 If you would like to build a local version of the `pengwann` documentation, you should install the `docs` extras:
 
-```
-pip install pengwann[docs]
+```shell
+git clone https://github.com/PatrickJTaylor/pengWann.git
+cd pengWann
+pip install -e '.[docs]'
 ```
 
 Once `pip` has finished, navigate to the docs and run `make` to build the documentation:
 
-```
+```shell
 cd docs
 make html
 ```
@@ -61,8 +63,10 @@ make html
 
 If you are interested in contributing to `pengwann`, a suitable development environment can be easily set up using [uv](https://docs.astral.sh/uv/):
 
-```
+```shell
 git clone https://github.com/PatrickJTaylor/pengWann.git
 cd pengWann
 uv sync
 ```
+
+For more details, see the [contributing guide](./CONTRIBUTING).
