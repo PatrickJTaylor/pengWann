@@ -1,4 +1,4 @@
-//! A small rust extension for pengwann.
+//! A small Rust extension for pengwann.
 //!
 //! Provides a few Rust implementations for functions that would be prohibitively slow
 //! in Python, mainly due to loops that cannot be unrolled by the interpreter.
