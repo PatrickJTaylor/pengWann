@@ -34,13 +34,11 @@ jobs:
       id-token: write
 
     steps:
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-
-      - name: Download wheels
+      - name: Download sdist and wheels
         uses: actions/download-artifact@v4
-        with:
-          path: dist
 
       - name: Publish to PyPI
-        run: uv publish
+        uses: PyO3/maturin-action@v1
+        with:
+          command: upload
+          args: --non-interactive --skip-existing wheels-*/*
