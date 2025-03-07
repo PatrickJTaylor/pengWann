@@ -63,10 +63,7 @@ parallel = true
 sigterm = true
 
 [tool.coverage.report]
-omit = [
-  'src/pengwann/__init__.py',
-  'src/pengwann/version.py'
-]
+omit = ['src/pengwann/__init__.py']
 
 [tool.pytest.ini_options]
 addopts = '--random-order --cov-report xml --cov=pengwann'
