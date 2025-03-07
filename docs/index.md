@@ -1,11 +1,12 @@
 # pengWann - Descriptors of chemical bonding from Wannier functions
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![JOSS status](https://joss.theoj.org/papers/eeaf01be0609655666b459cc816a146b/status.svg)](https://joss.theoj.org/papers/eeaf01be0609655666b459cc816a146b)
+[![License: GPL v3](https://img.shields.io/badge/license-GPLv3-blue)](https://www.gnu.org/licenses/gpl-3.0)
 [![Docs](https://readthedocs.org/projects/pengwann/badge/?version=latest)](https://pengwann.readthedocs.io/en/latest/)
 [![Test coverage](https://api.codeclimate.com/v1/badges/10626c706c7877d2af47/test_coverage)](https://codeclimate.com/github/PatrickJTaylor/pengWann/test_coverage)
-[![Requires Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python&logoColor=white)](https://python.org/downloads)
-[![PyPI version](https://badge.fury.io/py/pengwann.svg)](https://badge.fury.io/py/pengwann)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Requires Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white&logoSize=auto)](https://python.org/downloads)
+[![Requires Rust 1.82.0+](https://img.shields.io/badge/Rust-1.82.0%2B-blue?logo=rust&logoColor=white&logoSize=auto)](https://rustup.rs/)
+[![PyPI version](https://img.shields.io/pypi/v/pengWann?label=PyPI)](https://pypi.org/project/pengwann/)
 
 `pengwann` is a lightweight Python package for calculating descriptors of chemical bonding and local electronic structure from Wannier functions (as obtained from [Wannier90](https://wannier.org/)).
 
