@@ -46,12 +46,12 @@ git switch -c name_of_new_feature
 
 5. Implement the changes that you would like to contribute.
 
-6. If you have modified the Python source, run `ruff`, `pyright` and `pytest` to lint, format, type check and run the test suite:
+6. If you have modified the Python source, run `ruff`, `basedpyright` and `pytest` to lint, format, type check and run the test suite:
 
 ```shell
 uv run ruff check
 uv run ruff format
-uv run pyright
+uv run basedpyright
 uv run pytest
 ```
 
