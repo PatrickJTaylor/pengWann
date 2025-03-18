@@ -25,6 +25,7 @@ parsing all the data required to construct an instance of the
 from __future__ import annotations
 
 import os
+
 import numpy as np
 from numpy.typing import NDArray
 from scipy.constants import physical_constants
@@ -108,24 +109,19 @@ def read_eigenvalues(
     eigenvalues : ndarray of float
         The Kohn-Sham eigenvalues.
     """
-    eigenvalues_list = []
-
     with open(path, "r") as stream:
         lines = stream.readlines()
 
-    block_indices = [idx * num_bands for idx in range(num_kpoints)]
+    eigenvalues = np.zeros((num_bands, num_kpoints))
 
-    for column_idx in range(num_bands):
-        row = []
+    n_lines = range(num_bands)
+    k_lines = [idx * num_bands for idx in range(num_kpoints)]
 
-        for block_idx in block_indices:
-            eigenvalue = float(lines[column_idx + block_idx].split()[-1])
+    for n, n_line in enumerate(n_lines):
+        for k, k_line in enumerate(k_lines):
+            eigenvalue = float(lines[n_line + k_line].split()[-1])
 
-            row.append(eigenvalue)
-
-        eigenvalues_list.append(row)
-
-    eigenvalues = np.array(eigenvalues_list)
+            eigenvalues[n, k] = eigenvalue
 
     return eigenvalues
 
@@ -146,45 +142,33 @@ def read_u(path: str) -> tuple[NDArray[np.complex128], NDArray[np.float64]]:
     kpoints : ndarray of float
         The k-point mesh used in the prior Wannier90 calculation.
     """
-    u_list, kpoints_list = [], []
-
     with open(path, "r") as stream:
         lines = stream.readlines()
 
     num_kpoints, num_wann, num_bands = [int(string) for string in lines[1].split()]
 
-    block_indices = (idx * (num_wann * num_bands + 2) + 4 for idx in range(num_kpoints))
-    row_indices = [idx for idx in range(num_bands)]
-    column_indices = [idx * num_bands for idx in range(num_wann)]
+    u = np.zeros((num_kpoints, num_bands, num_wann), dtype=np.complex128)
+    kpoints = np.zeros((num_kpoints, 3))
 
-    for block_idx in block_indices:
-        u_k = []
+    k_lines = (idx * (num_wann * num_bands + 2) + 4 for idx in range(num_kpoints))
+    n_lines = [idx for idx in range(num_bands)]
+    w_lines = [idx * num_bands for idx in range(num_wann)]
 
-        kpoint = [float(string) for string in lines[block_idx - 1].split()]
-        kpoints_list.append(kpoint)
+    for k, k_line in enumerate(k_lines):
+        kpoints[k] = [float(string) for string in lines[k_line - 1].split()]
 
-        for row_idx in row_indices:
-            row = []
-
-            for column_idx in column_indices:
-                element_idx = block_idx + row_idx + column_idx
+        for n, n_line in enumerate(n_lines):
+            for w, w_line in enumerate(w_lines):
                 real, imaginary = [
-                    float(string) for string in lines[element_idx].split()
+                    float(string) for string in lines[k_line + n_line + w_line].split()
                 ]
 
-                row.append(complex(real, imaginary))
-
-            u_k.append(row)
-
-        u_list.append(u_k)
-
-    u = np.array(u_list)
-    kpoints = np.array(kpoints_list)
+                u[k, n, w] = complex(real, imaginary)
 
     return u, kpoints
 
 
-def read_hamiltonian(path: str) -> dict[tuple[int, ...], NDArray[np.complex128]]:
+def read_hamiltonian(path: str) -> dict[tuple[int, int, int], NDArray[np.complex128]]:
     """
     Parse the Wannier Hamiltonian from a Wannier90 seedname_hr.dat file.
 
@@ -206,11 +190,13 @@ def read_hamiltonian(path: str) -> dict[tuple[int, ...], NDArray[np.complex128]]
 
     start_idx = int(np.ceil(num_rpoints / 15)) + 3
 
-    h = {}
+    h: dict[tuple[int, int, int], NDArray[np.complex128]] = {}
 
     for line in lines[start_idx:]:
         data = line.split()
         bl = tuple([int(string) for string in data[:3]])
+
+        assert len(bl) == 3
 
         if bl not in h.keys():
             h[bl] = np.zeros((num_wann, num_wann), dtype=np.complex128)
@@ -245,12 +231,15 @@ def read_xyz(path: str) -> tuple[list[str], NDArray[np.float64]]:
 
     start_idx = 2
 
-    symbols, coords_list = [], []
+    symbols: list[str] = []
+    coords_list: list[tuple[float, float, float]] = []
     for line in lines[start_idx:]:
         data = line.split()
 
         symbol = str(data[0]).capitalize()
         coords = tuple(float(coord) for coord in data[1:])
+
+        assert len(coords) == 3
 
         symbols.append(symbol)
         coords_list.append(coords)
@@ -278,7 +267,7 @@ def read_cell(path: str) -> NDArray[np.float64]:
         lines = stream.readlines()
 
     bohr = False
-    cell_list = []
+    cell_list: list[list[float]] = []
     for idx, line in enumerate(lines):
         if "begin unit" in line:
             for cell_line in lines[idx + 1 :]:
