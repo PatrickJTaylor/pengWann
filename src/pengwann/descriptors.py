@@ -102,7 +102,7 @@ class DescriptorCalculator:
         nspin: int,
         kpoints: NDArray[np.float64],
         u: NDArray[np.complex128],
-        h: dict[tuple[int, ...], NDArray[np.complex128]] | None = None,
+        h: dict[tuple[int, int, int], NDArray[np.complex128]] | None = None,
         occupation_matrix: NDArray[np.float64] | None = None,
         energies: NDArray[np.float64] | None = None,
     ):
@@ -147,7 +147,7 @@ class DescriptorCalculator:
         sigma: float,
         kpoints: NDArray[np.float64],
         u: NDArray[np.complex128],
-        h: dict[tuple[int, ...], NDArray[np.complex128]] | None = None,
+        h: dict[tuple[int, int, int], NDArray[np.complex128]] | None = None,
         occupation_matrix: NDArray[np.float64] | None = None,
     ) -> DescriptorCalculator:
         """
@@ -557,6 +557,8 @@ class DescriptorCalculator:
         )
 
         assert self._h is not None
+        assert len(bl_vector) == 3
+
         h_ij = self._h[bl_vector][interaction.i, interaction.j].real
 
         return interaction._replace(h_ij=h_ij)

@@ -37,7 +37,7 @@ def read(
     NDArray[np.float64],
     NDArray[np.float64],
     NDArray[np.complex128],
-    dict[tuple[int, ...], NDArray[np.complex128]],
+    dict[tuple[int, int, int], NDArray[np.complex128]],
 ]:
     """
     Wrapper function for parsing various Wannier90 output files.
