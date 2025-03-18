@@ -37,4 +37,4 @@ jobs:
         run: uv run ruff format --check
 
       - name: Validate Python types
-        run: uv run pyright
+        run: uv run basedpyright

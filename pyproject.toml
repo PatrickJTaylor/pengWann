@@ -71,9 +71,9 @@ testpaths = ['tests']
 
 [dependency-groups]
 dev = [
+    "basedpyright>=1.28.1",
     "maturin>=1.8.2",
     "pymatgen>=2025.1.24",
-    "pyright>=1.1.393",
     "pytest>=8.3.4",
     "pytest-cov>=6.0.0",
     "pytest-datadir>=1.6.1",
