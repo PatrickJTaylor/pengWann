@@ -57,7 +57,6 @@ extend-exclude = ['*.ipynb']
 
 [tool.basedpyright]
 include = ['src']
-stubPath = 'src/pengwann'
 allowedUntypedLibraries = ['pymatgen']
 reportAny = false
 reportExplicitAny = false

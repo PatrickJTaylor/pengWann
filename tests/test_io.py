@@ -15,7 +15,7 @@
 
 import pytest
 
-from pengwann.io.wannier90 import (
+from pengwann.io import (
     read,
     read_cell,
     read_eigenvalues,

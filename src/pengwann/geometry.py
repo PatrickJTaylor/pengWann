@@ -39,7 +39,7 @@ from pengwann.interactions import (
     AtomicInteractionContainer,
     WannierInteraction,
 )
-from pengwann.io.wannier90 import read_cell, read_xyz
+from pengwann.io import read_cell, read_xyz
 
 if TYPE_CHECKING:
     from pymatgen.core import Structure
