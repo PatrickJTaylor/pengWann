@@ -1372,6 +1372,7 @@ dependencies = [
     { name = "numpy" },
     { name = "scipy" },
     { name = "tqdm" },
+    { name = "typing-extensions" },
 ]
 
 [package.optional-dependencies]
@@ -1411,6 +1412,7 @@ requires-dist = [
     { name = "sphinxcontrib-bibtex", marker = "extra == 'docs'" },
     { name = "tomli", marker = "extra == 'docs'" },
     { name = "tqdm" },
+    { name = "typing-extensions", specifier = ">=4.12,<5" },
 ]
 provides-extras = ["docs"]
 

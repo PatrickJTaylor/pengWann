@@ -32,6 +32,7 @@ dependencies = [
   'numpy>=2',
   'scipy',
   'tqdm',
+  "typing-extensions>=4.12,<5.0",
 ]
 
 [project.optional-dependencies]
@@ -54,8 +55,12 @@ module-name = 'pengwann._geometry'
 [tool.ruff]
 extend-exclude = ['*.ipynb']
 
-[tool.pyright]
+[tool.basedpyright]
 include = ['src']
+stubPath = 'src/pengwann'
+allowedUntypedLibraries = ['pymatgen']
+reportAny = false
+reportExplicitAny = false
 
 [tool.coverage.run]
 concurrency = ['multiprocessing']
