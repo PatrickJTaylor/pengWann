@@ -13,9 +13,10 @@
 # You should have received a copy of the GNU General Public License along with pengWann.
 # If not, see <https://www.gnu.org/licenses/>.
 
-import pytest
 import numpy as np
+import pytest
 from numpy.typing import NDArray
+
 from pengwann.occupations import (
     cold,
     fermi_dirac,

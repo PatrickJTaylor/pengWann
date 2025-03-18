@@ -13,16 +13,18 @@
 # You should have received a copy of the GNU General Public License along with pengWann.
 # If not, see <https://www.gnu.org/licenses/>.
 
-import pytest
-import numpy as np
 from multiprocessing import set_start_method
+from typing import Any
+
+import numpy as np
+import pytest
+
 from pengwann.descriptors import DescriptorCalculator
-from pengwann.geometry import (
-    AtomicInteractionContainer,
+from pengwann.interactions import (
     AtomicInteraction,
+    AtomicInteractionContainer,
     WannierInteraction,
 )
-from typing import Any
 
 # TODO: Figure out why multithreaded fork() occurs only when pytest is run.
 set_start_method("spawn", force=True)

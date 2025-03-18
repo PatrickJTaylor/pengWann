@@ -14,17 +14,19 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 import json
-import pytest
+
 import numpy as np
-from pengwann.geometry import (
-    AtomicInteraction,
-    Geometry,
-    identify_interatomic_interactions,
-    identify_onsite_interactions,
-    Site,
-)
+import pytest
 from pymatgen.analysis.structure_matcher import StructureMatcher
 from pymatgen.core import Structure
+
+from pengwann.geometry import (
+    Geometry,
+    Site,
+    identify_interatomic_interactions,
+    identify_onsite_interactions,
+)
+from pengwann.interactions import AtomicInteraction
 
 
 def build_geometry(symbols: list[str]) -> Geometry:

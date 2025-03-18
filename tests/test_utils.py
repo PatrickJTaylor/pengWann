@@ -14,7 +14,8 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from pengwann.io import read_u
+
+from pengwann.io.wannier90 import read_u
 from pengwann.utils import (
     get_spilling_factor,
     integrate_descriptor,

@@ -13,15 +13,17 @@
 # You should have received a copy of the GNU General Public License along with pengWann.
 # If not, see <https://www.gnu.org/licenses/>.
 
-import pytest
-import numpy as np
 from dataclasses import replace
+from typing import Any
+
+import numpy as np
+import pytest
+
 from pengwann.interactions import (
-    AtomicInteractionContainer,
     AtomicInteraction,
+    AtomicInteractionContainer,
     WannierInteraction,
 )
-from typing import Any
 
 
 def none_to_nan(data: Any) -> Any:

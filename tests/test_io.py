@@ -14,7 +14,14 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
-from pengwann.io import read, read_cell, read_eigenvalues, read_hamiltonian, read_u
+
+from pengwann.io.wannier90 import (
+    read,
+    read_cell,
+    read_eigenvalues,
+    read_hamiltonian,
+    read_u,
+)
 
 
 def test_read(shared_datadir, ndarrays_regression, tol) -> None:
