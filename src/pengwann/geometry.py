@@ -31,7 +31,9 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from typing_extensions import override
 
-from pengwann._geometry import _build_distance_and_image_matrices
+from pengwann._geometry import (
+    _build_distance_and_image_matrices,  # pyright:ignore[reportPrivateUsage]
+)
 from pengwann.interactions import (
     AtomicInteraction,
     AtomicInteractionContainer,
