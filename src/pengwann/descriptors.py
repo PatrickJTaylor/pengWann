@@ -25,18 +25,26 @@ from Wannier functions as output by Wannier90.
 from __future__ import annotations
 
 import warnings
-import numpy as np
 from collections.abc import Sequence
 from dataclasses import replace
-from multiprocessing import cpu_count, Pool
+from multiprocessing import Pool, cpu_count
 from multiprocessing.shared_memory import SharedMemory
-from numpy.typing import NDArray
-from pengwann.geometry import AtomicInteractionContainer, WannierInteraction
-from pengwann.utils import allocate_shared_memory, get_spilling_factor
-from tqdm.auto import tqdm
 from typing import Any
 
+import numpy as np
+from numpy.typing import NDArray
+from tqdm.auto import tqdm
+from typing_extensions import final
 
+from pengwann.interactions import (
+    AtomicInteraction,
+    AtomicInteractionContainer,
+    WannierInteraction,
+)
+from pengwann.utils import allocate_shared_memory, get_spilling_factor
+
+
+@final
 class DescriptorCalculator:
     r"""
     Compute descriptors of chemical bonding and local electronic structure.
@@ -509,7 +517,7 @@ class DescriptorCalculator:
                     constructor to calculate elements of the Wannier density matrix"""
                 )
 
-        wannier_interactions = []
+        wannier_interactions: list[WannierInteraction] = []
         for interaction in interactions:
             for w_interaction in interaction:
                 if calc_wohp:
@@ -578,7 +586,7 @@ class DescriptorCalculator:
             derived by summing over the relevant Wannier functions.
         """
         running_count = 0
-        processed_interactions = []
+        processed_interactions: list[AtomicInteraction] = []
         for interaction in atomic_interactions:
             associated_wannier_interactions = wannier_interactions[
                 running_count : running_count + len(interaction)
@@ -666,7 +674,7 @@ class DescriptorCalculator:
             memory_keys, shared_data
         )
 
-        args = []
+        args: list[Any] = []
         for w_interaction in wannier_interactions:
             args.append(
                 (
@@ -680,12 +688,18 @@ class DescriptorCalculator:
             )
 
         max_proc = cpu_count()
-        processes = min(max_proc, num_proc) if max_proc is not None else num_proc
+        processes = min(max_proc, num_proc)
 
         with Pool(processes=processes) as pool:
-            processed_wannier_interactions = tuple(
-                tqdm(pool.imap(self._parallel_wrapper, args), total=len(args))
-            )
+            if show_progress:
+                processed_wannier_interactions = tuple(
+                    tqdm(pool.imap(self._parallel_wrapper, args), total=len(args))
+                )
+
+            else:
+                processed_wannier_interactions = tuple(
+                    pool.imap(self._parallel_wrapper, args)
+                )
 
         for memory_handle in memory_handles:
             memory_handle.unlink()
@@ -693,7 +707,7 @@ class DescriptorCalculator:
         return processed_wannier_interactions
 
     @classmethod
-    def _parallel_wrapper(cls, args) -> WannierInteraction:
+    def _parallel_wrapper(cls, args: tuple[Any, ...]) -> WannierInteraction:
         """
         A simple wrapper for
         :py:meth:`~pengwann.descriptors.DescriptorCalculator.process_interaction`.
@@ -727,7 +741,7 @@ class DescriptorCalculator:
         nspin: int,
         calc_wobi: bool,
         resolve_k: bool,
-        memory_metadata: dict[str, tuple[tuple[int, ...], np.dtype]],
+        memory_metadata: dict[str, tuple[tuple[int, ...], np.dtype[np.generic]]],
     ) -> WannierInteraction:
         """
         For a pair of Wannier functions, compute the DOS matrix and (optionally), the
@@ -759,12 +773,14 @@ class DescriptorCalculator:
             relevant attributes.
         """
         dcalc_builder: dict[str, Any] = {"num_wann": num_wann, "nspin": nspin}
-        memory_handles = []
+        memory_handles: list[SharedMemory] = []
         for memory_key, metadata in memory_metadata.items():
             shape, dtype = metadata
 
             shared_memory = SharedMemory(name=memory_key)
-            buffered_data = np.ndarray(shape, dtype=dtype, buffer=shared_memory.buf)
+            buffered_data: NDArray[np.generic] = np.ndarray(
+                shape, dtype=dtype, buffer=shared_memory.buf
+            )
 
             dcalc_builder[memory_key] = buffered_data
             memory_handles.append(shared_memory)

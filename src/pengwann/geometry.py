@@ -23,18 +23,21 @@ which to compute descriptors of bonding and local electronic structure.
 
 from __future__ import annotations
 
-import numpy as np
 from collections.abc import Iterator
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+import numpy as np
 from numpy.typing import ArrayLike, NDArray
+from typing_extensions import override
+
 from pengwann._geometry import _build_distance_and_image_matrices
 from pengwann.interactions import (
-    AtomicInteractionContainer,
     AtomicInteraction,
+    AtomicInteractionContainer,
     WannierInteraction,
 )
-from pengwann.io import read_cell, read_xyz
-from typing import TYPE_CHECKING
+from pengwann.io.wannier90 import read_cell, read_xyz
 
 if TYPE_CHECKING:
     from pymatgen.core import Structure
@@ -94,6 +97,7 @@ class Geometry:
     def __len__(self) -> int:
         return len(self.sites)
 
+    @override
     def __str__(self) -> str:
         to_print = [
             "Geometry",
@@ -131,7 +135,8 @@ class Geometry:
         -----
         This property is cached after it has been evaluated once.
         """
-        wannier_indices, atom_indices = [], []
+        wannier_indices: list[int] = []
+        atom_indices: list[int] = []
         for site in self.sites:
             if site.symbol == "X":
                 wannier_indices.append(site.index)
@@ -144,9 +149,9 @@ class Geometry:
         if num_wann == 0:
             raise ValueError('No Wannier centres ("X" atoms) found in geometry.')
 
-        distance_matrix, image_matrix = self.distance_and_image_matrices
+        distance_matrix, _ = self.distance_and_image_matrices
 
-        assignments_list = [[] for site in self.sites]
+        assignments_list: list[list[int]] = [[] for _ in self.sites]
         for i in wannier_indices:
             distances = distance_matrix[i, num_wann:]
             min_idx = int(distances.argmin()) + num_wann
@@ -159,7 +164,7 @@ class Geometry:
     @property
     def distance_and_image_matrices(
         self,
-    ) -> tuple[NDArray[np.float64], NDArray[np.int_]]:
+    ) -> tuple[NDArray[np.float64], NDArray[np.int32]]:
         """
         Compute the distance and image matrices.
 
@@ -205,7 +210,9 @@ class Geometry:
         >>> assignments = structure.site_properties["wannier_assignments"]
         """
         try:
-            from pymatgen.core import Structure
+            from pymatgen.core import (
+                Structure,
+            )
 
         except ImportError as base_error:
             raise ImportError(
@@ -213,7 +220,8 @@ class Geometry:
                 be found."""
             ) from base_error
 
-        symbols, coords = [], []
+        symbols: list[str] = []
+        coords: list[NDArray[np.float64]] = []
         for site in self.sites:
             symbols.append(site.symbol)
             coords.append(site.coords)
@@ -333,10 +341,10 @@ def identify_onsite_interactions(
     zero_vector = np.array([0, 0, 0])
     assignments = geometry.wannier_assignments
 
-    interactions = []
+    interactions: list[AtomicInteraction] = []
     for site in geometry:
         if site.symbol in symbols:
-            wannier_interactions = []
+            wannier_interactions: list[WannierInteraction] = []
             for i in assignments[site.index]:
                 wannier_interaction = WannierInteraction(i, i, zero_vector, zero_vector)
 
@@ -394,7 +402,7 @@ def identify_interatomic_interactions(
 
     distance_matrix, image_matrix = geometry.distance_and_image_matrices
     assignments = geometry.wannier_assignments
-    interactions = []
+    interactions: list[AtomicInteraction] = []
     for pair, cutoff in radial_cutoffs.items():
         symbol_i, symbol_j = pair
 
@@ -406,7 +414,7 @@ def identify_interatomic_interactions(
                 distance = distance_matrix[i, j]
 
                 if distance < cutoff:
-                    wannier_interactions_list = []
+                    wannier_interactions_list: list[WannierInteraction] = []
                     for m in assignments[i]:
                         for n in assignments[j]:
                             bl_i = image_matrix[i, m]
@@ -442,7 +450,7 @@ def _get_atom_indices(
     atom_indices : dict[str, tuple[int, ...]]
         The site indices categorised by atomic species.
     """
-    atom_indices_list = {}
+    atom_indices_list: dict[str, list[int]] = {}
     for symbol in symbols:
         atom_indices_list[symbol] = []
 
@@ -450,7 +458,7 @@ def _get_atom_indices(
         if site.symbol in symbols:
             atom_indices_list[site.symbol].append(idx)
 
-    atom_indices = {}
+    atom_indices: dict[str, tuple[int, ...]] = {}
     for symbol, indices in atom_indices_list.items():
         atom_indices[symbol] = tuple(indices)
 

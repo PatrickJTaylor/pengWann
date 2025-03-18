@@ -25,10 +25,12 @@ occupation matrix needed to calculated WOBIs with the
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any
+
 import numpy as np
 from numpy.typing import NDArray
 from scipy.special import erf
-from typing import Callable
 
 
 def fixed(eigenvalues: NDArray[np.float64], mu: float) -> NDArray[np.float64]:
@@ -187,8 +189,8 @@ def get_occupation_matrix(
     eigenvalues: NDArray[np.float64],
     mu: float,
     nspin: int,
-    occupation_function: Callable = fixed,
-    **function_kwargs,
+    occupation_function: Callable[..., NDArray[np.float64]] = fixed,
+    **function_kwargs: Any,
 ) -> NDArray[np.float64]:
     """
     Reconstruct the occupation matrix from an ab-initio calculation.

@@ -25,13 +25,16 @@ set by functions and methods in the :py:mod:`~pengwann.descriptors` module.
 
 from __future__ import annotations
 
-import numpy as np
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, replace
 from functools import cached_property
-from numpy.typing import NDArray
-from pengwann.utils import integrate_descriptor
 from typing import NamedTuple
+
+import numpy as np
+from numpy.typing import NDArray
+from typing_extensions import override
+
+from pengwann.utils import integrate_descriptor
 
 
 @dataclass(frozen=True)
@@ -96,10 +99,11 @@ class AtomicInteractionContainer:
     def __len__(self) -> int:
         return len(self.sub_interactions)
 
+    @override
     def __str__(self) -> str:
         to_print = ["Atomic interactions"]
 
-        underline = ["=" for character in to_print[-1]]
+        underline = ["=" for _ in to_print[-1]]
         to_print.append("".join(underline))
 
         for interaction in self.sub_interactions:
@@ -183,7 +187,7 @@ class AtomicInteractionContainer:
             A new AtomicInteractionContainer with each AtomicInteraction now being
             associated with its integrated descriptors.
         """
-        sub_interactions = []
+        sub_interactions: list[AtomicInteraction] = []
         for interaction in self.sub_interactions:
             symbol_i, symbol_j = interaction.symbol_i, interaction.symbol_j
 
@@ -317,10 +321,11 @@ class AtomicInteraction:
     def __len__(self) -> int:
         return len(self.sub_interactions)
 
+    @override
     def __str__(self) -> str:
         to_print = [f"Atomic interaction {self.tag}"]
 
-        underline = ["=" for character in to_print[-1]]
+        underline = ["=" for _ in to_print[-1]]
         to_print.append("".join(underline))
 
         print_names = (
@@ -344,7 +349,7 @@ class AtomicInteraction:
         to_print.append("\n")
 
         subtitle = "Associated Wannier interactions"
-        subtitle_underline = ["-" for character in subtitle]
+        subtitle_underline = ["-" for _ in subtitle]
         to_print.extend((subtitle, "".join(subtitle_underline)))
 
         for w_interaction in self.sub_interactions:
@@ -469,11 +474,13 @@ class AtomicInteraction:
             new_values["iwobi"] = integrate_descriptor(energies, self.wobi, mu)
 
         if resolve_orbitals:
-            new_values["sub_interactions"] = []
+            sub_interactions: list[WannierInteraction] = []
             for w_interaction in self.sub_interactions:
                 updated_wannier_interaction = w_interaction.with_integrals(energies, mu)
 
-                new_values["sub_interactions"].append(updated_wannier_interaction)
+                sub_interactions.append(updated_wannier_interaction)
+
+            new_values["sub_interactions"] = sub_interactions
 
         return replace(self, **new_values)
 
@@ -534,10 +541,11 @@ class WannierInteraction(NamedTuple):
     iwobi: np.float64 | NDArray[np.float64] | None = None
     population: np.float64 | NDArray[np.float64] | None = None
 
+    @override
     def __str__(self) -> str:
         to_print = [f"Wannier interaction {self.tag}"]
 
-        underline = ["=" for character in to_print[-1]]
+        underline = ["=" for _ in to_print[-1]]
         to_print.append("".join(underline))
 
         print_names = (
@@ -718,8 +726,8 @@ def _build_interaction_matrix(
         The matrix of indices generated from the input `interactions`.
     """
     max_idx = max(max(interaction.i, interaction.j) for interaction in interactions)
-    interaction_matrix = [
-        [[] for idx in range(max_idx + 1)] for idx in range(max_idx + 1)
+    interaction_matrix: list[list[list[int]]] = [
+        [[] for _ in range(max_idx + 1)] for _ in range(max_idx + 1)
     ]
     for idx, interaction in enumerate(interactions):
         i, j = interaction.i, interaction.j

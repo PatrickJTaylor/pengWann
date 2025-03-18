@@ -24,9 +24,10 @@ API).
 
 from __future__ import annotations
 
-import numpy as np
 from collections.abc import Sequence
 from multiprocessing.shared_memory import SharedMemory
+
+import numpy as np
 from numpy.typing import NDArray
 from scipy.integrate import trapezoid
 
@@ -106,8 +107,8 @@ def integrate_descriptor(
 
 
 def allocate_shared_memory(
-    keys: Sequence[str], data: Sequence[NDArray]
-) -> tuple[dict[str, tuple[tuple[int, ...], np.dtype]], list[SharedMemory]]:
+    keys: Sequence[str], data: Sequence[NDArray[np.generic]]
+) -> tuple[dict[str, tuple[tuple[int, ...], np.dtype[np.generic]]], list[SharedMemory]]:
     """
     Allocate one or more blocks of shared memory and populate them with numpy arrays.
 
@@ -128,8 +129,8 @@ def allocate_shared_memory(
         A sequence of SharedMemory objects (returned to allow easy access to the
         :code:`unlink` method).
     """
-    memory_metadata = {}
-    memory_handles = []
+    memory_metadata: dict[str, tuple[tuple[int, ...], np.dtype[np.generic]]] = {}
+    memory_handles: list[SharedMemory] = []
     for memory_key, to_share in zip(keys, data):
         memory_metadata[memory_key] = (to_share.shape, to_share.dtype)
         flattened_array = to_share.flatten()
@@ -137,7 +138,7 @@ def allocate_shared_memory(
         shared_memory = SharedMemory(
             name=memory_key, create=True, size=flattened_array.nbytes
         )
-        buffered_array = np.ndarray(
+        buffered_array: NDArray[np.generic] = np.ndarray(
             flattened_array.shape, dtype=flattened_array.dtype, buffer=shared_memory.buf
         )
         buffered_array[:] = flattened_array[:]
