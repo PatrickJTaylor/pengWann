@@ -32,7 +32,7 @@ from typing import NamedTuple
 
 import numpy as np
 from numpy.typing import NDArray
-from typing_extensions import override
+from typing_extensions import Self, override
 
 from pengwann.utils import integrate_descriptor
 
@@ -158,7 +158,7 @@ class AtomicInteractionContainer:
         mu: float,
         resolve_orbitals: bool = False,
         valence_counts: dict[str, int] | None = None,
-    ) -> AtomicInteractionContainer:
+    ) -> Self:
         """
         Return an updated container with integrated descriptors for all interactions.
 
@@ -376,7 +376,7 @@ class AtomicInteraction:
         """
         return f"{self.symbol_i}{self.i} <=> {self.symbol_j}{self.j}"
 
-    def with_summed_descriptors(self) -> AtomicInteraction:
+    def with_summed_descriptors(self) -> Self:
         """
         Return a new AtomicInteraction object with summed DOS matrices, WOHPs and WOBIs.
 
@@ -428,7 +428,7 @@ class AtomicInteraction:
         mu: float,
         resolve_orbitals: bool = False,
         valence_count: int | None = None,
-    ) -> AtomicInteraction:
+    ) -> Self:
         """
         Return a new AtomicInteraction object with integrated descriptors.
 
@@ -634,9 +634,7 @@ class WannierInteraction(NamedTuple):
 
         return self.p_ij * self.dos_matrix
 
-    def with_integrals(
-        self, energies: NDArray[np.float64], mu: float
-    ) -> WannierInteraction:
+    def with_integrals(self, energies: NDArray[np.float64], mu: float) -> Self:
         """
         Return a new WannierInteraction object with integrated descriptors.
 

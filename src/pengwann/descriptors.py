@@ -34,7 +34,7 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 from tqdm.auto import tqdm
-from typing_extensions import final
+from typing_extensions import Self, final
 
 from pengwann.interactions import (
     AtomicInteraction,
@@ -105,7 +105,7 @@ class DescriptorCalculator:
         h: dict[tuple[int, int, int], NDArray[np.complex128]] | None = None,
         occupation_matrix: NDArray[np.float64] | None = None,
         energies: NDArray[np.float64] | None = None,
-    ):
+    ) -> None:
         self._dos_array = dos_array
         self._num_wann = num_wann
         self._nspin = nspin
@@ -149,7 +149,7 @@ class DescriptorCalculator:
         u: NDArray[np.complex128],
         h: dict[tuple[int, int, int], NDArray[np.complex128]] | None = None,
         occupation_matrix: NDArray[np.float64] | None = None,
-    ) -> DescriptorCalculator:
+    ) -> Self:
         """
         Initialise a DescriptorCalculator object from a set of Kohn-Sham eigenvalues.
 
