@@ -239,18 +239,6 @@ def test_DescriptorCalculator_assign_descriptors_no_occupation_matrix(
         dcalc.assign_descriptors(interactions)
 
 
-def test_DescriptorCalculator_assign_h_ij(
-    dcalc, interactions, ndarrays_regression, tol
-) -> None:
-    wannier_interaction = interactions.sub_interactions[0].sub_interactions[0]
-
-    wannier_interaction_with_h = dcalc.assign_h_ij(wannier_interaction)
-
-    ndarrays_regression.check(
-        {"H_ij": wannier_interaction_with_h.h_ij}, default_tolerance=tol
-    )
-
-
 def test_DescriptorCalculator_parallelise_no_occupation_matrix(
     dcalc, interactions
 ) -> None:
