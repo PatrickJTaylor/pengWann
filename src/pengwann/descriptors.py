@@ -695,8 +695,12 @@ class DescriptorCalculator:
                 )
             )
 
-        max_proc = cpu_count()
-        processes = min(max_proc, num_proc)
+        try:
+            max_proc = cpu_count()
+            processes = min(max_proc, num_proc)
+
+        except NotImplementedError:
+            processes = num_proc
 
         with Pool(processes=processes) as pool:
             if show_progress:
