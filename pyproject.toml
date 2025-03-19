@@ -56,6 +56,7 @@ module-name = 'pengwann._geometry'
 extend-exclude = ['*.ipynb']
 
 [tool.basedpyright]
+pythonVersion = '3.10'
 include = ['src']
 allowedUntypedLibraries = ['pymatgen']
 reportAny = false
