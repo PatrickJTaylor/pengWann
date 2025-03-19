@@ -521,7 +521,7 @@ class DescriptorCalculator:
         for interaction in interactions:
             for w_interaction in interaction:
                 if calc_wohp:
-                    w_interaction_with_h = self.assign_h_ij(w_interaction)
+                    w_interaction_with_h = self._assign_h_ij(w_interaction)
 
                     wannier_interactions.append(w_interaction_with_h)
 
@@ -536,7 +536,7 @@ class DescriptorCalculator:
             interactions, processed_wannier_interactions
         )
 
-    def assign_h_ij(self, interaction: WannierInteraction) -> WannierInteraction:
+    def _assign_h_ij(self, interaction: WannierInteraction) -> WannierInteraction:
         """
         Assign the relevant element of the Hamiltonian to a WannierInteraction object.
 
@@ -559,7 +559,13 @@ class DescriptorCalculator:
         assert self._h is not None
         assert len(bl_vector) == 3
 
-        h_ij = self._h[bl_vector][interaction.i, interaction.j].real
+        if bl_vector in self._h:
+            h_ij = self._h[bl_vector][interaction.i, interaction.j].real
+
+        else:
+            raise KeyError(f"""Matrix elements for Bravais lattice vector {bl_vector}
+            are required to compute the WOHP for interaction {interaction.tag} but were
+            not found in the Wannier Hamiltonian provided.""")
 
         return interaction._replace(h_ij=h_ij)
 
