@@ -179,7 +179,7 @@ class Geometry:
         distance_matrix : ndarray of float
             The distance matrix.
 
-        image_matrix : ndarray of np.int_
+        image_matrix : ndarray of np.int32
             The image matrix.
 
         Notes
