@@ -67,7 +67,7 @@ More generally, even in systems where pre-defined atomic or pseudo-atomic orbita
 
 The LOBSTER code [@lobster_2016;@lobster_2020] implements much of the same functionality as `pengwann` using basis sets of pre-defined atomic and pseudo-atomic orbitals. LOBSTER offers additional features not directly supported by `pengwann`, such as generating fatband plots and obtaining localised molecular orbitals via transformation of the projected atomic orbital basis [@lobster_fragment]. We anticipate that most potential users of `pengwann` will already be familiar with LOBSTER, warranting a brief discussion of the relative advantages and disadvantages of each code.
 
-`pengwann` achieves lower spilling factors than LOBSTER and readily handles systems when non-atom-centered basis functions are preferable.
+`pengwann` achieves lower spilling factors than LOBSTER[^1] and readily handles systems when non-atom-centered basis functions are preferable.
 Moreover, since Wannier functions serve many purposes in addition to the calculation of bonding descriptors, they may already have been calculated for systems of interest, making the use of `pengwann` particularly efficient in these cases. Conversely, LOBSTER's main advantage lies in its pre-defined atomic and pseudo-atomic basis sets, which can be applied to any system with minimal user input, while obtaining high-quality Wannier functions can be complex due to their strong non-uniqueness [@wannier_review]. However, recent advances have significantly simplified the computation of well-localised Wannier functions with appropriate symmetry for chemical bonding analysis, lowering the barrier to their use [@ht_scdm;@pwdf].
 
 The WOBSTER code [@wobster] implements a subset of the features found in `pengwann`, allowing users to compute the Wannier-projected density of states and the Wannier orbital Hamilton population. `pengwann` provides a broader set of features than WOBSTER and is more performant: `pengwann` leverages `numpy` [@numpy] and the built-in `multiprocessing` library to vectorise and parallelise most operations, whereas WOBSTER's loop-based approach is considerably slower.
@@ -77,5 +77,7 @@ The WOBSTER code [@wobster] implements a subset of the features found in `pengwa
 The authors thank the Faraday Institution CATMAT project (EP/S003053/1, FIRG016) for financial support and the Michael High-Performance Computing (HPC) facility (FIRG030).
 P.J.T would like to acknowledge Chengcheng Xiao (author of the WOBSTER code) for inspiring the development of `pengwann` and thanks the University of Bath (indirectly via the EPSRC) for PhD funding.
 B.J.M. thanks the Royal Society for a fellowship (URF/R/191006).
+
+[^1]: For example, even for relatively simple systems such as diamond and rutile, we find that (when using the recommended default inputs) LOBSTER still yields non-zero spilling factors of $0.98\,\%$ and $0.95\,\%$ respectively. For the same set of Bloch states, `pengwann` is able to reduce the spilling factor to $< 1.0 \times 10^{-11}\,\%$ in both cases.
 
 # References
