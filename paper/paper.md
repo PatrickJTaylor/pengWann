@@ -78,6 +78,6 @@ The authors thank the Faraday Institution CATMAT project (EP/S003053/1, FIRG016)
 P.J.T would like to acknowledge Chengcheng Xiao (author of the WOBSTER code) for inspiring the development of `pengwann` and thanks the University of Bath (indirectly via the EPSRC) for PhD funding.
 B.J.M. thanks the Royal Society for a fellowship (URF/R/191006).
 
-[^1]: For example, even for relatively simple systems such as diamond and rutile, we find that (when using the recommended default inputs) LOBSTER still yields non-zero spilling factors of $0.98\,\%$ and $0.95\,\%$ respectively. For the same set of Bloch states, `pengwann` is able to reduce the spilling factor to $< 1.0 \times 10^{-11}\,\%$ in both cases.
+[^1]: For example, even for relatively simple systems such as diamond and rutile, we find that (when using the recommended basis functions) LOBSTER still yields non-zero spilling factors of $0.98\,\%$ and $0.95\,\%$ respectively. For the same set of Bloch states, `pengwann` is able to reduce the spilling factor to $< 1.0 \times 10^{-11}\,\%$ in both cases.
 
 # References
