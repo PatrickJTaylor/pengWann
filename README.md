@@ -68,6 +68,8 @@ For more details regarding installation and platform support, see the full [inst
 
 For a quick run through of the basics, see the first example in the docs on [computing bonding descriptors in diamond](https://pengwann.readthedocs.io/en/latest/examples/diamond/basics.html).
 
+All of the [examples](https://pengwann.readthedocs.io/en/latest/examples.html) discussed in the documentation are also available for local execution if desired under [docs/examples](docs/examples).
+
 ## Support 🤝
 
 ### Getting help 👋
