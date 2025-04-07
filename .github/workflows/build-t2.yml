@@ -30,7 +30,7 @@ jobs:
           python-version: 3.x
 
       - name: Build wheels
-        uses: PyO3/maturin-action@v1.48.0
+        uses: PyO3/maturin-action@v1.47.3
         with:
           target: ${{ matrix.platform.target }}
           args: --release --out dist --find-interpreter
@@ -68,7 +68,7 @@ jobs:
           python-version: 3.x
 
       - name: Build wheels
-        uses: PyO3/maturin-action@v1.48.0
+        uses: PyO3/maturin-action@v1.47.3
         with:
           target: ${{ matrix.platform.target }}
           args: --release --out dist --find-interpreter
