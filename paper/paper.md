@@ -63,6 +63,8 @@ More generally, even in systems where pre-defined atomic or pseudo-atomic orbita
   - Löwdin-style populations and charges
   - Measures of bond strength and bond order
 
+A full API reference is available as part of the official `pengwann` documentation at [pengwann.readthedocs.io](https://pengwann.readthedocs.io), which also includes further details with regards to the mathematical formalism of Wannier-derived bonding descriptors and a series of tutorial-style examples.
+
 # Related software
 
 The LOBSTER code [@lobster_2016;@lobster_2020] implements much of the same functionality as `pengwann` using basis sets of pre-defined atomic and pseudo-atomic orbitals. LOBSTER offers additional features not directly supported by `pengwann`, such as generating fatband plots and obtaining localised molecular orbitals via transformation of the projected atomic orbital basis [@lobster_fragment]. We anticipate that most potential users of `pengwann` will already be familiar with LOBSTER, warranting a brief discussion of the relative advantages and disadvantages of each code.
