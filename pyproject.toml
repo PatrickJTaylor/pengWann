@@ -51,6 +51,7 @@ homepage = 'https://github.com/PatrickJTaylor/pengWann'
 [tool.maturin]
 features = ['pyo3/extension-module']
 module-name = 'pengwann._geometry'
+include = [{ path = "LICENSE", format = "sdist"}]
 
 [tool.ruff]
 extend-exclude = ['*.ipynb']
