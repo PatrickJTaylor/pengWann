@@ -7,6 +7,7 @@
 [![Requires Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white&logoSize=auto)](https://python.org/downloads)
 [![Requires Rust 1.82.0+](https://img.shields.io/badge/Rust-1.82.0%2B-blue?logo=rust&logoColor=white&logoSize=auto)](https://rustup.rs/)
 [![PyPI version](https://img.shields.io/pypi/v/pengWann?label=PyPI)](https://pypi.org/project/pengwann/)
+[![Conda version](https://img.shields.io/conda/vn/conda-forge/pengwann?logo=anaconda&logoColor=white&logoSize=auto)](https://anaconda.org/conda-forge/pengwann)
 
 `pengwann` is a lightweight Python package for calculating descriptors of chemical bonding and local electronic structure from Wannier functions (as obtained from [Wannier90](https://wannier.org/)).
 
