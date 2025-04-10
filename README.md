@@ -56,6 +56,12 @@ The latest tagged release of `pengwann` is `pip`-installable as:
 pip install pengwann
 ```
 
+Similarly, if you are using a `conda` environment, the latest tagged release is `conda`-installable as:
+
+```shell
+conda install -c conda-forge pengwann
+```
+
 Alternatively, to install the current development build, you can build from source with:
 
 ```shell

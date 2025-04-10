@@ -1,9 +1,15 @@
 # Installation
 
-To install the most recent tagged release of `pengwann`, use `pip`:
+To install the most recent tagged release of `pengwann`, use `pip` or `conda`:
 
 ```shell
 pip install pengwann
+```
+
+or
+
+```shell
+conda install -c conda-forge pengwann
 ```
 
 Alternatively, if you would like to install the bleeding-edge latest version of the code (i.e. the current Git commit), you can build from source with:
