@@ -21,16 +21,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Install uv and Python
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5
         with:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
 
       - name: Download wheels
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
         with:
           name: wheels-${{ runner.os }}-${{ matrix.platform.target }}
           path: dist
@@ -47,6 +47,6 @@ jobs:
 
       - name: Publish test coverage
         if: ${{ (github.event_name == 'push') && (runner.os == 'Linux') && (matrix.python-version == 3.12) }}
-        uses: paambaati/codeclimate-action@v9.0.0
+        uses: paambaati/codeclimate-action@f429536ee076d758a24705203199548125a28ca7 # v9.0.0
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CODECLIMATE_REPO_TOKEN }}
