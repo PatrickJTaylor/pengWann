@@ -33,7 +33,7 @@ The package provides a simple interface to the popular Wannier90 code [@wannier9
 
 The technique of deriving bonding descriptors from the projection of Bloch states onto a local basis is widespread in materials modelling [@cohp_1;@cohp_2;@cohp_3;@cohp_4;@cohp_5;@cohp_6;@ColesEtAl_JMaterChemA2023;@LegeinEtAl_JAmChemSoc2024].
 Key to the success of this method is the choice of local basis functions, which should be able to effectively reproduce the canonical Bloch states when appropriately combined.
-The ability of a given basis set to accurately represent the original Bloch states is quantified by the spilling factor [@spilling_factor]
+The ability of a given basis set to accurately represent the original Bloch states is quantified by the spilling factor [@spilling_factor]:
 
 $$S = \frac{1}{N_{b}}\frac{1}{N_{k}}\sum_{nk}1 - \sum_{\alpha}|\langle\psi_{nk}|\phi_{\alpha}\rangle|^{2},$$
 
