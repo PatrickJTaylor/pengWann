@@ -249,10 +249,10 @@ class Geometry:
             calculation.
         path : str
             Filepath to the directory containing seedname_centres.xyz and (optionally)
-            seedname.win. Defaults to '.' i.e. the current working directory.
+            seedname.wout. Defaults to '.' i.e. the current working directory.
         cell : array_like or None, optional
             The cell vectors associated with the structure. Defaults to None, in which
-            case the cell vectors will automatically be extracted from a seedname.win
+            case the cell vectors will automatically be extracted from a seedname.wout
             file in the same directory as the xyz file.
 
         Returns
@@ -274,7 +274,7 @@ class Geometry:
         symbols, cart_coords = read_xyz(f"{path}/{seedname}_centres.xyz")
 
         if cell is None:
-            cell = read_cell(f"{path}/{seedname}.win")
+            cell = read_cell(f"{path}/{seedname}.wout")
 
         else:
             cell = np.asarray(cell)
