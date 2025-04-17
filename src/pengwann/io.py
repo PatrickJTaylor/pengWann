@@ -28,7 +28,6 @@ import os
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy.constants import physical_constants
 
 
 def read(
