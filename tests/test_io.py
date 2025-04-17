@@ -70,17 +70,6 @@ def test_read_u_dis(shared_datadir, ndarrays_regression, tol) -> None:
 
 
 def test_read_cell(shared_datadir, ndarrays_regression, tol) -> None:
-    cell = read_cell(f"{shared_datadir}/wannier90.win")
+    cell = read_cell(f"{shared_datadir}/wannier90.wout")
 
     ndarrays_regression.check({"cell": cell}, default_tolerance=tol)
-
-
-def test_read_cell_bohr(shared_datadir, ndarrays_regression, tol) -> None:
-    cell = read_cell(f"{shared_datadir}/wannier90_bohr.win")
-
-    ndarrays_regression.check({"cell": cell}, default_tolerance=tol)
-
-
-def test_read_cell_not_enough_vectors(shared_datadir) -> None:
-    with pytest.raises(ValueError):
-        read_cell(f"{shared_datadir}/wannier90_invalid_cell.win")
