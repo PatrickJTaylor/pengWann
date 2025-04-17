@@ -22,7 +22,7 @@ bibliography: paper.bib
 
 # Summary
 
-First-principles quantum chemistry calculations of periodic systems typically represent electronic structures through sets of eigenvectors and their corresponding eigenvalues, obtained by diagonalising some Hamiltonian.
+First-principles calculations of periodic systems typically represent electronic structures through sets of eigenvectors and their corresponding eigenvalues, obtained by diagonalising some Hamiltonian.
 These eigenvectors, known as Bloch states, molecular orbitals, or crystal orbitals, are generally delocalised across the entire structure, making them difficult to interpret in terms of chemically intuitive concepts such as bonds.
 To address this, it is common practice to project these extended Bloch states onto a localised basis, enabling the calculation of various local descriptors of chemical bonding or electronic structure.
 `pengwann` is a Python package for calculating some of these descriptors by projecting Bloch states onto Wannier functions [@wannier_population_analysis].
