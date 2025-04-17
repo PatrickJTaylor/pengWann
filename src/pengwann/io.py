@@ -251,12 +251,12 @@ def read_xyz(path: str) -> tuple[list[str], NDArray[np.float64]]:
 
 def read_cell(path: str) -> NDArray[np.float64]:
     """
-    Parse a Wannier90 seedname.win file to extract the cell vectors.
+    Parse a Wannier90 seedname.wout file to extract the cell vectors.
 
     Parameters
     ----------
     path : str
-        The filepath to seedname.win
+        The filepath to seedname.wout.
 
     Returns
     -------
@@ -266,38 +266,16 @@ def read_cell(path: str) -> NDArray[np.float64]:
     with open(path, "r") as stream:
         lines = stream.readlines()
 
-    bohr = False
     cell_list: list[list[float]] = []
     for idx, line in enumerate(lines):
-        if "begin unit" in line:
-            for cell_line in lines[idx + 1 :]:
-                if "end unit" in cell_line:
-                    break
+        if "Lattice Vectors (Ang)" in line:
+            for cell_line in lines[idx + 1 : idx + 4]:
+                cell_vector = [float(component) for component in cell_line.split()[1:]]
 
-                data = cell_line.split()
-                len_data = len(data)
-                if len_data == 3:
-                    cell_list.append([float(component) for component in data])
-
-                elif len_data == 1:
-                    unit = data[0].lower()
-                    if "b" in unit:
-                        bohr = True
+                cell_list.append(cell_vector)
 
             break
 
-    num_vectors = len(cell_list)
-
-    if num_vectors != 3:
-        raise ValueError(
-            f"""Expected to find 3 lattice vectors (one for each cartesian basis
-            vector), but found {num_vectors} instead: {cell_list}"""
-        )
-
     cell = np.array(cell_list, dtype=np.float64)
-
-    if bohr:
-        radius = physical_constants["Bohr radius"][0] * 1.0e10
-        cell *= radius
 
     return cell
