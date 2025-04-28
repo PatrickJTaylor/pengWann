@@ -1,17 +1,34 @@
-abstract: "A lightweight Python package for computing descriptors of chemical bonding and local electronic structure from Wannier functions."
+cff-version: "1.2.0"
 authors:
-  - family-names: "Taylor"
-    given-names: "Patrick J."
+- family-names: Taylor
+  given-names: Patrick J.
+  orcid: "https://orcid.org/0009-0003-6511-6442"
+- family-names: Morgan
+  given-names: Benjamin J.
+  orcid: "https://orcid.org/0000-0002-3056-8233"
+doi: 10.5281/zenodo.15238442
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Taylor
+    given-names: Patrick J.
     orcid: "https://orcid.org/0009-0003-6511-6442"
-cff-version: 1.2.0
-date-released: 2025-02-14
-keywords:
-  - "Python"
-  - "chemical bonding"
-  - "wannier functions"
-license: GPL-3.0
-message: "If you use this software, please cite it as below."
-repository-code: "https://github.com/PatrickJTaylor/pengWann"
-title: "pengWann"
-version: 0.5.2
-url: "https://pengwann.readthedocs.io"
+  - family-names: Morgan
+    given-names: Benjamin J.
+    orcid: "https://orcid.org/0000-0002-3056-8233"
+  date-published: 2025-04-28
+  doi: 10.21105/joss.07890
+  issn: 2475-9066
+  issue: 108
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 7890
+  title: "pengWann: Descriptors of chemical bonding from Wannier
+    functions"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.07890"
+  volume: 10
+title: "pengWann: Descriptors of chemical bonding from Wannier
+  functions"
