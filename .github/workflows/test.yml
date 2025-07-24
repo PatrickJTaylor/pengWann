@@ -47,6 +47,8 @@ jobs:
 
       - name: Publish test coverage
         if: ${{ (github.event_name == 'push') && (runner.os == 'Linux') && (matrix.python-version == 3.12) }}
-        uses: paambaati/codeclimate-action@f429536ee076d758a24705203199548125a28ca7 # v9.0.0
+        uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5
         env:
-          CC_TEST_REPORTER_ID: ${{ secrets.CODECLIMATE_REPO_TOKEN }}
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          fail_ci_if_error: true
