@@ -12,4 +12,4 @@ itertools = "0.14.0"
 ndarray = "0.16.1"
 ndarray-stats = "0.6.0"
 numpy = "0.25.0"
-pyo3 = { version = "0.25.0", features = ["extension-module"] }
+pyo3 = { version = "0.26.0", features = ["extension-module"] }
