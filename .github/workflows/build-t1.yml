@@ -53,6 +53,7 @@ jobs:
             3.11
             3.12
             3.13
+            3.14
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -91,6 +92,7 @@ jobs:
             3.11
             3.12
             3.13
+            3.14
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
