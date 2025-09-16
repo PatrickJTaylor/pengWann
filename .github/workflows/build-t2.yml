@@ -117,7 +117,7 @@ jobs:
             3.11
             3.12
             3.13
-            3.14
+            3.14-dev
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
