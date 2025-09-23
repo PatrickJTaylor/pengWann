@@ -32,7 +32,6 @@ dependencies = [
   'numpy>=2',
   'scipy',
   'tqdm',
-  "typing-extensions>=4.12,<5.0",
 ]
 
 [project.optional-dependencies]

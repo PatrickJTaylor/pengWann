@@ -29,7 +29,6 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
-from typing_extensions import Self, override
 
 from pengwann._geometry import (
     _build_distance_and_image_matrices,  # pyright:ignore[reportPrivateUsage]
@@ -99,7 +98,6 @@ class Geometry:
     def __len__(self) -> int:
         return len(self.sites)
 
-    @override
     def __str__(self) -> str:
         to_print = [
             "Geometry",
@@ -238,7 +236,7 @@ class Geometry:
     @classmethod
     def from_xyz(
         cls, seedname: str, path: str = ".", cell: ArrayLike | None = None
-    ) -> Self:
+    ) -> Geometry:
         """
         Initialise a Geometry object from a seedname_centres.xyz file.
 

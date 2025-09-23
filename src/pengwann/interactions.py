@@ -32,7 +32,6 @@ from typing import NamedTuple
 
 import numpy as np
 from numpy.typing import NDArray
-from typing_extensions import Self, override
 
 from pengwann.utils import integrate_descriptor
 
@@ -99,7 +98,6 @@ class AtomicInteractionContainer:
     def __len__(self) -> int:
         return len(self.sub_interactions)
 
-    @override
     def __str__(self) -> str:
         to_print = ["Atomic interactions"]
 
@@ -158,7 +156,7 @@ class AtomicInteractionContainer:
         mu: float,
         resolve_orbitals: bool = False,
         valence_counts: dict[str, int] | None = None,
-    ) -> Self:
+    ) -> AtomicInteractionContainer:
         """
         Return an updated container with integrated descriptors for all interactions.
 
@@ -321,7 +319,6 @@ class AtomicInteraction:
     def __len__(self) -> int:
         return len(self.sub_interactions)
 
-    @override
     def __str__(self) -> str:
         to_print = [f"Atomic interaction {self.tag}"]
 
@@ -376,7 +373,7 @@ class AtomicInteraction:
         """
         return f"{self.symbol_i}{self.i} <=> {self.symbol_j}{self.j}"
 
-    def with_summed_descriptors(self) -> Self:
+    def with_summed_descriptors(self) -> AtomicInteraction:
         """
         Return a new AtomicInteraction object with summed DOS matrices, WOHPs and WOBIs.
 
@@ -428,7 +425,7 @@ class AtomicInteraction:
         mu: float,
         resolve_orbitals: bool = False,
         valence_count: int | None = None,
-    ) -> Self:
+    ) -> AtomicInteraction:
         """
         Return a new AtomicInteraction object with integrated descriptors.
 
@@ -541,7 +538,6 @@ class WannierInteraction(NamedTuple):
     iwobi: np.float64 | NDArray[np.float64] | None = None
     population: np.float64 | NDArray[np.float64] | None = None
 
-    @override
     def __str__(self) -> str:
         to_print = [f"Wannier interaction {self.tag}"]
 
@@ -634,7 +630,9 @@ class WannierInteraction(NamedTuple):
 
         return self.p_ij * self.dos_matrix
 
-    def with_integrals(self, energies: NDArray[np.float64], mu: float) -> Self:
+    def with_integrals(
+        self, energies: NDArray[np.float64], mu: float
+    ) -> WannierInteraction:
         """
         Return a new WannierInteraction object with integrated descriptors.
 

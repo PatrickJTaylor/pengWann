@@ -34,7 +34,6 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 from tqdm.auto import tqdm
-from typing_extensions import Self, final
 
 from pengwann.interactions import (
     AtomicInteraction,
@@ -44,7 +43,6 @@ from pengwann.interactions import (
 from pengwann.utils import allocate_shared_memory, get_spilling_factor
 
 
-@final
 class DescriptorCalculator:
     r"""
     Compute descriptors of chemical bonding and local electronic structure.
@@ -149,7 +147,7 @@ class DescriptorCalculator:
         u: NDArray[np.complex128],
         h: dict[tuple[int, int, int], NDArray[np.complex128]] | None = None,
         occupation_matrix: NDArray[np.float64] | None = None,
-    ) -> Self:
+    ) -> DescriptorCalculator:
         """
         Initialise a DescriptorCalculator object from a set of Kohn-Sham eigenvalues.
 
