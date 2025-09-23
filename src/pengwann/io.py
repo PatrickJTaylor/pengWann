@@ -208,7 +208,7 @@ def read_hamiltonian(path: str) -> dict[tuple[int, int, int], NDArray[np.complex
     return h
 
 
-def read_xyz(path: str) -> tuple[list[str], NDArray[np.float64]]:
+def read_xyz(path: str) -> tuple[tuple[str, ...], NDArray[np.float64]]:
     """
     Parse the symbols and coordinates from a Wannier90 seedname_centres.xyz file.
 
@@ -219,10 +219,10 @@ def read_xyz(path: str) -> tuple[list[str], NDArray[np.float64]]:
 
     Returns
     -------
-    symbols : list of str
+    symbols : tuple of str
         The elemental symbol for each Wannier centre or atom in the xyz file.
 
-    coords : list of tuple of float
+    coords : ndarray of float
         The cartesian coordinates for each Wannier centre or atom in the xyz file.
     """
     with open(path, "r") as stream:
@@ -230,7 +230,7 @@ def read_xyz(path: str) -> tuple[list[str], NDArray[np.float64]]:
 
     start_idx = 2
 
-    symbols: list[str] = []
+    symbols_list: list[str] = []
     coords_list: list[tuple[float, float, float]] = []
     for line in lines[start_idx:]:
         data = line.split()
@@ -240,9 +240,10 @@ def read_xyz(path: str) -> tuple[list[str], NDArray[np.float64]]:
 
         assert len(coords) == 3
 
-        symbols.append(symbol)
+        symbols_list.append(symbol)
         coords_list.append(coords)
 
+    symbols = tuple(symbols_list)
     coords = np.array(coords_list, dtype=np.float64).T
 
     return symbols, coords
