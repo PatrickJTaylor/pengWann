@@ -34,6 +34,18 @@ from pengwann.electronic_structure import Basis
 from pengwann.geometry import Geometry
 
 
+def read_wannier90_outputs(
+    seedname: str, path: str = "."
+) -> tuple[Geometry, Basis, NDArray[np.float64]]:
+    geometry = read_geometry(seedname, path)
+    basis = read_basis(seedname, path)
+
+    num_kpoints, num_bands = basis.u.shape[:-1]
+    eigenvalues = read_eigenvalues(f"{path}/{seedname}.eig", num_bands, num_kpoints)
+
+    return geometry, basis, eigenvalues
+
+
 def read_geometry(seedname: str, path: str = ".") -> Geometry:
     symbols, cart_coords = read_xyz(f"{path}/{seedname}_centres.xyz")
     cell = read_cell(f"{path}/{seedname}.wout")
