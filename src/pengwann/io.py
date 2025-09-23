@@ -121,7 +121,9 @@ def read_eigenvalues(
     return eigenvalues
 
 
-def read_u(path: str) -> tuple[NDArray[np.complex128], NDArray[np.float64]]:
+def read_unitary_matrices(
+    path: str,
+) -> tuple[NDArray[np.complex128], NDArray[np.float64]]:
     """
     Parse the unitary matrices U^k from a Wannier90 _u.mat file.
 
