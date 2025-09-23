@@ -30,6 +30,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from pengwann._geometry import _build_distance_and_image_matrices
+from pengwann.electronic_structure import Basis
 from pengwann.geometry import Geometry
 
 
@@ -80,6 +81,15 @@ def read_geometry(seedname: str, path: str = ".") -> Geometry:
         image_matrix,
         wannier_assignments,
     )
+
+
+def read_basis(seedname: str, path: str = ".") -> Basis:
+    u, kpoints = read_unitary_matrices(f"{path}/{seedname}_u.mat")
+    if os.path.isfile(f"{path}/{seedname}_u_dis.mat"):
+        u_dis, _ = read_unitary_matrices(f"{path}/{seedname}_u_dis.mat")
+        u = u_dis @ u
+
+    return Basis(u, kpoints)
 
 
 def read_eigenvalues(
