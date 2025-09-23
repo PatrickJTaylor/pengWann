@@ -29,61 +29,57 @@ import os
 import numpy as np
 from numpy.typing import NDArray
 
+from pengwann._geometry import _build_distance_and_image_matrices
+from pengwann.geometry import Geometry
 
-def read(
-    seedname: str, path: str = "."
-) -> tuple[
-    NDArray[np.float64],
-    NDArray[np.float64],
-    NDArray[np.complex128],
-    dict[tuple[int, int, int], NDArray[np.complex128]],
-]:
-    """
-    Wrapper function for parsing various Wannier90 output files.
 
-    In total, this function will parse:
+def read_geometry(seedname: str, path: str = ".") -> Geometry:
+    symbols, cart_coords = read_xyz(f"{path}/{seedname}_centres.xyz")
+    cell = read_cell(f"{path}/{seedname}.wout")
 
-    - seedname.eig
-    - seedname_u.mat
-    - seedname_u_dis.mat (if disentanglement was used)
-    - seedname_hr.dat
+    if "X" not in symbols:
+        raise ValueError(
+            f"""No Wannier centres (\"X\" atoms) found in
+            {path}/{seedname}_centres.xyz."""
+        )
 
-    Parameters
-    ----------
-    seedname : str
-        The seedname (prefix for all output files) chosen in the prior Wannier90
-        calculation.
-    path : str, optional
-        Filepath to the Wannier90 output files. Defaults to '.' i.e. the current
-        working directory.
+    frac_coords = (np.linalg.inv(cell) @ cart_coords).T
 
-    Returns
-    -------
-    kpoints : ndarray of float
-        The k-point mesh used in the ab-initio calculation.
-    eigenvalues : ndarray of float
-        The Kohn-Sham eigenvalues.
-    u : ndarray of complex
-        The unitary matrices U^k that define the Wannier functions in terms of the
-        canonical Bloch states.
-    h : dict of {3-length tuple of int : ndarray of complex} pairs.
-        The Hamiltonian in the Wannier basis.
+    distance_matrix, image_matrix = _build_distance_and_image_matrices(
+        frac_coords, cell
+    )
 
-    See Also
-    --------
-    read_eigenvalues
-    read_u
-    read_hamiltonian
-    """
-    u, kpoints = read_u(f"{path}/{seedname}_u.mat")
-    if os.path.isfile(f"{path}/{seedname}_u_dis.mat"):
-        u_dis, _ = read_u(f"{path}/{seedname}_u_dis.mat")
-        u = u_dis @ u
+    def assign_wannier_indices(
+        symbols: tuple[str, ...], distance_matrix: NDArray[np.float64]
+    ) -> tuple[tuple[int, ...]]:
+        wannier_indices, atom_indices = [], []
+        for idx, symbol in enumerate(symbols):
+            if symbol == "X":
+                wannier_indices.append(idx)
 
-    h = read_hamiltonian(f"{path}/{seedname}_hr.dat")
-    eigenvalues = read_eigenvalues(f"{path}/{seedname}.eig", u.shape[1], u.shape[0])
+            else:
+                atom_indices.append(idx)
 
-    return kpoints, eigenvalues, u, h
+        num_wann = len(wannier_indices)
+        wannier_assignments = [[] for _ in symbols]
+        for i in wannier_indices:
+            distances = distance_matrix[i, num_wann:]
+            min_idx = distances.argmin() + num_wann
+
+            wannier_assignments[min_idx].append(i)
+
+        return tuple(tuple(indices) for indices in wannier_assignments)
+
+    wannier_assignments = assign_wannier_indices(symbols, distance_matrix)
+
+    return Geometry(
+        symbols,
+        frac_coords,
+        cell,
+        distance_matrix,
+        image_matrix,
+        wannier_assignments,
+    )
 
 
 def read_eigenvalues(
@@ -208,6 +204,38 @@ def read_hamiltonian(path: str) -> dict[tuple[int, int, int], NDArray[np.complex
     return h
 
 
+def read_cell(path: str) -> NDArray[np.float64]:
+    """
+    Parse a Wannier90 seedname.wout file to extract the cell vectors.
+
+    Parameters
+    ----------
+    path : str
+        The filepath to seedname.wout.
+
+    Returns
+    -------
+    cell : ndarray of float
+        The cell vectors.
+    """
+    with open(path, "r") as stream:
+        lines = stream.readlines()
+
+    cell_list: list[list[float]] = []
+    for idx, line in enumerate(lines):
+        if "Lattice Vectors (Ang)" in line:
+            for cell_line in lines[idx + 1 : idx + 4]:
+                cell_vector = [float(component) for component in cell_line.split()[1:]]
+
+                cell_list.append(cell_vector)
+
+            break
+
+    cell = np.array(cell_list, dtype=np.float64)
+
+    return cell
+
+
 def read_xyz(path: str) -> tuple[tuple[str, ...], NDArray[np.float64]]:
     """
     Parse the symbols and coordinates from a Wannier90 seedname_centres.xyz file.
@@ -247,35 +275,3 @@ def read_xyz(path: str) -> tuple[tuple[str, ...], NDArray[np.float64]]:
     coords = np.array(coords_list, dtype=np.float64).T
 
     return symbols, coords
-
-
-def read_cell(path: str) -> NDArray[np.float64]:
-    """
-    Parse a Wannier90 seedname.wout file to extract the cell vectors.
-
-    Parameters
-    ----------
-    path : str
-        The filepath to seedname.wout.
-
-    Returns
-    -------
-    cell : ndarray of float
-        The cell vectors.
-    """
-    with open(path, "r") as stream:
-        lines = stream.readlines()
-
-    cell_list: list[list[float]] = []
-    for idx, line in enumerate(lines):
-        if "Lattice Vectors (Ang)" in line:
-            for cell_line in lines[idx + 1 : idx + 4]:
-                cell_vector = [float(component) for component in cell_line.split()[1:]]
-
-                cell_list.append(cell_vector)
-
-            break
-
-    cell = np.array(cell_list, dtype=np.float64)
-
-    return cell

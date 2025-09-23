@@ -41,6 +41,22 @@ wheels = [
 ]
 
 [[package]]
+name = "ase"
+version = "3.26.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "matplotlib" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "numpy", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "scipy", version = "1.16.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/30/33/2ffa44950267450f6a5cdb711c68e12d0d72d626e246e5897e3bada7bac6/ase-3.26.0.tar.gz", hash = "sha256:a071a355775b0a8062d23e9266e9d811b19d9f6d9ec5215e8032f7d93dc65075", size = 2405567, upload-time = "2025-08-12T13:06:55.589Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dd/f0/6e52d797bee63530f4b778cb4cbb3a01970f104197c364a8ff51bc9f5a21/ase-3.26.0-py3-none-any.whl", hash = "sha256:77fd0e609bd3868006d4bb3bb95cdc4081d9e292ac84f6c9fb564b5751d2689e", size = 2946787, upload-time = "2025-08-12T13:06:53.316Z" },
+]
+
+[[package]]
 name = "asttokens"
 version = "3.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1853,6 +1869,7 @@ docs = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "ase" },
     { name = "basedpyright" },
     { name = "maturin" },
     { name = "pymatgen" },
@@ -1883,6 +1900,7 @@ provides-extras = ["docs"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "ase", specifier = ">=3.26.0" },
     { name = "basedpyright", specifier = ">=1.28.1" },
     { name = "maturin", specifier = ">=1.8.2" },
     { name = "pymatgen", specifier = ">=2025.1.24" },
