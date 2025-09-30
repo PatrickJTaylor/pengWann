@@ -15,13 +15,14 @@
 
 from __future__ import annotations
 
-from typing import NamedTuple
+from dataclasses import dataclass
 
 import numpy as np
 from numpy.typing import NDArray
 
 
-class Basis(NamedTuple):
+@dataclass(frozen=True, slots=True)
+class Basis:
     u: NDArray[np.complex128]
     kpoints: NDArray[np.float64]
 
