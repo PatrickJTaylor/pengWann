@@ -26,18 +26,20 @@ set by functions and methods in the :py:mod:`~pengwann.descriptors` module.
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import NamedTuple
+from dataclasses import dataclass, replace
 
 import numpy as np
 from numpy.typing import NDArray
 from scipy.integrate import trapezoid
 
 
-class AtomicInteractions(NamedTuple):
+@dataclass(frozen=True, slots=True)
+class AtomicInteractions:
     atomic_interactions: Sequence[AtomicInteraction]
 
 
-class AtomicInteraction(NamedTuple):
+@dataclass(frozen=True, slots=True)
+class AtomicInteraction:
     i: int
     j: int
     symbol_i: str
@@ -87,7 +89,8 @@ class AtomicInteraction(NamedTuple):
         return sum(interaction.iwobi for interaction in self.wannier_interactions)
 
 
-class WannierInteraction(NamedTuple):
+@dataclass(frozen=True, slots=True)
+class WannierInteraction:
     i: int
     j: int
     bl_i: NDArray[np.int_]
@@ -150,10 +153,10 @@ class WannierInteraction(NamedTuple):
 
         coefficients = (c_star * c).real
 
-        return self._replace(coefficients=coefficients)
+        return replace(self, coefficients=coefficients)
 
     def without_coefficients(self) -> WannierInteraction:
-        return self._replace(coefficients=None)
+        return replace(self, coefficients=None)
 
     def with_pdos(
         self, total_dos: NDArray[np.float64], resolve_k: bool = False
@@ -169,7 +172,7 @@ class WannierInteraction(NamedTuple):
         else:
             pdos = np.sum(pdos_nk, axis=(1, 2))
 
-        return self._replace(pdos=pdos)
+        return replace(self, pdos=pdos)
 
     def with_h_ij(
         self, hamiltonian: dict[tuple[int, int, int], NDArray[np.complex128]]
@@ -186,7 +189,7 @@ class WannierInteraction(NamedTuple):
                 provided."""
             )
 
-        return self._replace(h_ij=h_ij)
+        return replace(self, h_ij=h_ij)
 
     def with_p_ij(self, occupation_matrix: NDArray[np.float64]) -> WannierInteraction:
         if self.coefficients is None:
@@ -196,7 +199,7 @@ class WannierInteraction(NamedTuple):
 
         p_ij = np.sum(p_nk, axis=(0, 1)) / p_nk.shape[0]
 
-        return self._replace(p_ij=p_ij)
+        return replace(self, p_ij=p_ij)
 
     def with_integrals(
         self, energies: NDArray[np.float64], mu: float
@@ -209,7 +212,7 @@ class WannierInteraction(NamedTuple):
 
         ipdos = trapezoid(pdos_to_mu, energies_to_mu, axis=0)
 
-        return self._replace(ipdos=ipdos)
+        return replace(self, ipdos=ipdos)
 
 
 class NotComputedError(Exception):
@@ -221,7 +224,7 @@ class NotComputedError(Exception):
         "WOHP": "Wannier orbital Hamilton ipdos",
         "WOBI": "Wannier orbital bond index",
         "IPDOS": "integrated projected density of states",
-        "IWOHP": "integrated Wannier orbital Hamilton ipdos",
+        "IWOHP": "integrated Wannier orbital Hamilton population",
         "IWOBI": "integrated Wannier orbital bond index",
     }
 
@@ -237,4 +240,4 @@ class NotComputedError(Exception):
         message = f"""The {dep} must be computed for interaction {tag} before
         the {tbc} can be calculated."""
 
-        super.__init__(message)
+        super().__init__(message)
