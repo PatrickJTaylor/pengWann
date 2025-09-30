@@ -23,7 +23,8 @@ which to compute descriptors of bonding and local electronic structure.
 
 from __future__ import annotations
 
-from typing import NamedTuple, TYPE_CHECKING
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy.typing import NDArray
@@ -39,7 +40,8 @@ if TYPE_CHECKING:
     from pymatgen.core import Structure
 
 
-class Geometry(NamedTuple):
+@dataclass(frozen=True, slots=True)
+class Geometry:
     symbols: tuple[str, ...]
     coords: NDArray[np.float64]
     cell: NDArray[np.float64]
