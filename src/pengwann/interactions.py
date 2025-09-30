@@ -93,8 +93,8 @@ class AtomicInteraction:
 class WannierInteraction:
     i: int
     j: int
-    bl_i: NDArray[np.int_]
-    bl_j: NDArray[np.int_]
+    bl_i: NDArray[np.int32]
+    bl_j: NDArray[np.int32]
 
     pdos: NDArray[np.float64] | None = None
     h_ij: np.float64 | None = None

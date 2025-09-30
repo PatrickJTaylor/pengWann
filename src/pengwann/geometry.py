@@ -78,7 +78,7 @@ class Geometry:
         return "\n".join(to_print) + "\n"
 
     def find_onsite_interactions(self, symbols: tuple[str, ...]) -> AtomicInteractions:
-        zero_vector = np.array([0, 0, 0])
+        zero_vector = np.array([0, 0, 0], dtype=np.int32)
 
         interactions = []
         for idx, symbol in enumerate(self.symbols):
