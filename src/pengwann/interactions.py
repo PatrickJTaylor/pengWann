@@ -32,6 +32,8 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.integrate import trapezoid
 
+from pengwann.electronic_structure import Basis
+
 
 @dataclass(frozen=True, slots=True)
 class AtomicInteractions:
@@ -52,41 +54,40 @@ class AtomicInteraction:
         return f"{self.symbol_i}{self.i} <=> {self.symbol_j}{self.j}"
 
     @property
-    def pdos(self) -> NDArray[np.float64]:
-        for interaction in self.wannier_interactions:
-            if interaction.pdos is None:
-                tbc = f"projected density of states for atomic interaction {self.tag}"
-
-                raise NotComputedError(interaction.tag, tbc, "PDOS")
-
-        return sum(interaction.pdos for interaction in self.wannier_interactions)
+    def pdos(self) -> NDArray[np.float64] | None:
+        return _sum_or_none(
+            [interaction.pdos for interaction in self.wannier_interactions]
+        )
 
     @property
-    def wohp(self) -> NDArray[np.float64]:
-        return sum(interaction.wohp for interaction in self.wannier_interactions)
+    def wohp(self) -> NDArray[np.float64] | None:
+        return _sum_or_none(
+            [interaction.wohp for interaction in self.wannier_interactions]
+        )
 
     @property
-    def wobi(self) -> NDArray[np.float64]:
-        return sum(interaction.wobi for interaction in self.wannier_interactions)
+    def wobi(self) -> NDArray[np.float64] | None:
+        return _sum_or_none(
+            [interaction.wobi for interaction in self.wannier_interactions]
+        )
 
     @property
-    def ipdos(self) -> NDArray[np.float64]:
-        for interaction in self.wannier_interactions:
-            if interaction.ipdos is None:
-                tbc = f"""integrated projected density of states for atomic interaction
-                {self.tag}"""
-
-                raise NotComputedError(interaction.tag, tbc, "IPDOS")
-
-        return sum(interaction.ipdos for interaction in self.wannier_interactions)
+    def ipdos(self) -> np.float64 | NDArray[np.float64] | None:
+        return _sum_or_none(
+            [interaction.ipdos for interaction in self.wannier_interactions]
+        )
 
     @property
-    def iwohp(self) -> NDArray[np.float64]:
-        return sum(interaction.iwohp for interaction in self.wannier_interactions)
+    def iwohp(self) -> np.float64 | NDArray[np.float64] | None:
+        return _sum_or_none(
+            [interaction.iwohp for interaction in self.wannier_interactions]
+        )
 
     @property
-    def iwobi(self) -> NDArray[np.float64]:
-        return sum(interaction.iwobi for interaction in self.wannier_interactions)
+    def iwobi(self) -> np.float64 | NDArray[np.float64] | None:
+        return _sum_or_none(
+            [interaction.iwobi for interaction in self.wannier_interactions]
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -108,38 +109,30 @@ class WannierInteraction:
         return f"{self.i}{self.bl_i.tolist()} <=> {self.j}{self.bl_j.tolist()}"
 
     @property
-    def wohp(self) -> NDArray[np.float64]:
+    def wohp(self) -> NDArray[np.float64] | None:
         if self.h_ij is None or self.pdos is None:
-            dep = "H_ij" if self.h_ij is None else "PDOS"
-
-            raise NotComputedError(self.tag, "WOHP", dep)
+            return None
 
         return -self.h_ij * self.pdos
 
     @property
-    def wobi(self) -> NDArray[np.float64]:
+    def wobi(self) -> NDArray[np.float64] | None:
         if self.p_ij is None or self.pdos is None:
-            dep = "P_ij" if self.p_ij is None else "PDOS"
-
-            raise NotComputedError(self.tag, "WOBI", dep)
+            return None
 
         return self.p_ij * self.pdos
 
     @property
-    def iwohp(self) -> np.float64 | NDArray[np.float64]:
+    def iwohp(self) -> np.float64 | NDArray[np.float64] | None:
         if self.h_ij is None or self.ipdos is None:
-            dep = "H_ij" if self.h_ij is None else "IPDOS"
-
-            raise NotComputedError(self.tag, "IWOHP", dep)
+            return None
 
         return -self.h_ij * self.ipdos
 
     @property
-    def iwobi(self) -> np.float64 | NDArray[np.float64]:
+    def iwobi(self) -> np.float64 | NDArray[np.float64] | None:
         if self.p_ij is None or self.ipdos is None:
-            dep = "P_ij" if self.p_ij is None else "IPDOS"
-
-            raise NotComputedError(self.tag, "IWOBI", dep)
+            return None
 
         return self.p_ij * self.ipdos
 
@@ -213,6 +206,15 @@ class WannierInteraction:
         ipdos = trapezoid(pdos_to_mu, energies_to_mu, axis=0)
 
         return replace(self, ipdos=ipdos)
+
+
+def _sum_or_none(
+    descriptors: Sequence[np.float64 | NDArray[np.float64] | None],
+) -> np.float64 | NDArray[np.float64] | None:
+    if any(descriptor is None for descriptor in descriptors):
+        return None
+
+    return sum(descriptors)
 
 
 class NotComputedError(Exception):
