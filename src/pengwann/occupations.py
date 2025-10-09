@@ -32,6 +32,8 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.special import erf
 
+from pengwann.electronic_structure import _validate_sigma_nspin
+
 
 def fixed(
     eigenvalues: NDArray[np.float64], mu: float, nspin: int
@@ -96,8 +98,7 @@ def fermi_dirac(
         f_{nk} = \left(\exp\left[\frac{\epsilon_{nk} - \mu}{\sigma}\right] + 1\right)
         ^{-1}.
     """
-    if sigma <= 0:
-        raise ValueError("The smearing width must > 0, {sigma} is <= 0")
+    _validate_sigma_nspin(sigma, nspin)
 
     x = (eigenvalues - mu) / sigma
     occupation_matrix = 1 / (np.exp(x) + 1)
@@ -136,8 +137,7 @@ def gaussian(
         f_{nk} = \frac{1}{2}\left[1 - \mathrm{erf}\left(\frac{\epsilon_{nk} -
         \mu}{\sigma}\right)\right]
     """
-    if sigma <= 0:
-        raise ValueError("The smearing width must > 0, {sigma} is <= 0")
+    _validate_sigma_nspin(sigma, nspin)
 
     x = (eigenvalues - mu) / sigma
 
@@ -181,8 +181,7 @@ def cold(
     ----------
     .. footbibliography::
     """
-    if sigma <= 0:
-        raise ValueError("The smearing width must > 0, {sigma} is <= 0")
+    _validate_sigma_nspin(sigma, nspin)
 
     x = (eigenvalues - mu) / sigma
 

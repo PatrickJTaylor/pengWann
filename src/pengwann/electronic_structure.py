@@ -55,6 +55,8 @@ def compute_total_density_of_states(
     sigma: float,
     nspin: int,
 ) -> NDArray[np.float64]:
+    _validate_sigma_nspin(sigma, nspin)
+
     x_mu = energies[:, np.newaxis, np.newaxis] - eigenvalues
     dos = 1 / np.sqrt(np.pi * sigma) * np.exp(-(x_mu**2) / sigma) / eigenvalues.shape[1]
 
@@ -72,3 +74,13 @@ def compute_spilling_factor(u: NDArray[np.complex128]) -> np.float64:
     spilling_factor = 1 - np.sum(overlaps) / num_kpoints / num_wann
 
     return spilling_factor
+
+
+def _validate_sigma_nspin(sigma: float, nspin: int) -> None:
+    if sigma <= 0:
+        raise ValueError(f"The smearing width must be > 0, {sigma} is <= 0.")
+
+    if nspin not in (1, 2):
+        raise ValueError(
+            f"nspin can only be 1 (spin-polarised) or 2 (non-spin-polarised), not {nspin}"
+        )
