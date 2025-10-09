@@ -32,6 +32,7 @@ from numpy.typing import NDArray
 from pengwann._geometry import _build_distance_and_image_matrices
 from pengwann.electronic_structure import Basis
 from pengwann.geometry import Geometry
+from pengwann.type_aliases import Hamiltonian
 
 
 def read_wannier90_outputs(
@@ -52,11 +53,10 @@ def read_geometry(seedname: str, path: str = ".") -> Geometry:
 
     if "X" not in symbols:
         raise ValueError(
-            f"""No Wannier centres (\"X\" atoms) found in
-            {path}/{seedname}_centres.xyz."""
+            f'No Wannier centres ("X" atoms) found in {path}/{seedname}_centres.xyz.'
         )
 
-    frac_coords = (np.linalg.inv(cell) @ cart_coords).T
+    frac_coords = np.transpose(np.linalg.inv(cell) @ cart_coords)
 
     distance_matrix, image_matrix = _build_distance_and_image_matrices(
         frac_coords, cell
@@ -64,8 +64,9 @@ def read_geometry(seedname: str, path: str = ".") -> Geometry:
 
     def assign_wannier_indices(
         symbols: tuple[str, ...], distance_matrix: NDArray[np.float64]
-    ) -> tuple[tuple[int, ...]]:
-        wannier_indices, atom_indices = [], []
+    ) -> tuple[tuple[int, ...], ...]:
+        wannier_indices: list[int] = []
+        atom_indices: list[int] = []
         for idx, symbol in enumerate(symbols):
             if symbol == "X":
                 wannier_indices.append(idx)
@@ -74,7 +75,7 @@ def read_geometry(seedname: str, path: str = ".") -> Geometry:
                 atom_indices.append(idx)
 
         num_wann = len(wannier_indices)
-        wannier_assignments = [[] for _ in symbols]
+        wannier_assignments: list[list[int]] = [[] for _ in symbols]
         for i in wannier_indices:
             distances = distance_matrix[i, num_wann:]
             min_idx = distances.argmin() + num_wann
@@ -187,7 +188,7 @@ def read_unitary_matrices(
     return u, kpoints
 
 
-def read_hamiltonian(path: str) -> dict[tuple[int, int, int], NDArray[np.complex128]]:
+def read_hamiltonian(path: str) -> Hamiltonian:
     """
     Parse the Wannier Hamiltonian from a Wannier90 seedname_hr.dat file.
 
@@ -209,7 +210,7 @@ def read_hamiltonian(path: str) -> dict[tuple[int, int, int], NDArray[np.complex
 
     start_idx = int(np.ceil(num_rpoints / 15)) + 3
 
-    h = {}
+    h: Hamiltonian = {}
 
     for line in lines[start_idx:]:
         data = line.split()
@@ -245,17 +246,17 @@ def read_cell(path: str) -> NDArray[np.float64]:
     with open(path, "r") as stream:
         lines = stream.readlines()
 
-    cell = []
+    cell_list: list[list[float]] = []
     for idx, line in enumerate(lines):
         if "Lattice Vectors (Ang)" in line:
             for cell_line in lines[idx + 1 : idx + 4]:
                 cell_vector = [float(component) for component in cell_line.split()[1:]]
 
-                cell.append(cell_vector)
+                cell_list.append(cell_vector)
 
             break
 
-    cell = np.array(cell, dtype=np.float64)
+    cell = np.array(cell_list)
 
     return cell
 
@@ -282,18 +283,18 @@ def read_xyz(path: str) -> tuple[tuple[str, ...], NDArray[np.float64]]:
 
     start_idx = 2
 
-    symbols = []
-    coords = []
+    symbols_list: list[str] = []
+    coords_list: list[list[float]] = []
     for line in lines[start_idx:]:
         data = line.split()
 
         symbol = str(data[0]).capitalize()
-        site_coords = tuple(float(coord) for coord in data[1:])
+        site_coords = [float(coord) for coord in data[1:]]
 
-        symbols.append(symbol)
-        coords.append(site_coords)
+        symbols_list.append(symbol)
+        coords_list.append(site_coords)
 
-    symbols = tuple(symbols)
-    coords = np.array(coords).T
+    symbols = tuple(symbols_list)
+    coords = np.transpose(coords_list)
 
     return symbols, coords

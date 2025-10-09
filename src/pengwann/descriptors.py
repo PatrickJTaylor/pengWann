@@ -38,9 +38,9 @@ from pengwann.electronic_structure import Basis
 from pengwann.interactions import (
     AtomicInteraction,
     AtomicInteractions,
-    Interactions,
     WannierInteraction,
 )
+from pengwann.type_aliases import Hamiltonian, Interactions
 
 
 @dataclass(frozen=True, slots=True)
@@ -132,9 +132,7 @@ class DescriptorPipeline:
 
         return replace(self, _pipeline=pipeline)
 
-    def with_h_ij(
-        self, hamiltonian: dict[tuple[int, int, int], NDArray[np.complex128]]
-    ) -> DescriptorProcessor:
+    def with_h_ij(self, hamiltonian: Hamiltonian) -> DescriptorProcessor:
         def process(interaction: WannierInteraction) -> WannierInteraction:
             h_ij = get_h_ij(
                 interaction.i,
@@ -209,7 +207,7 @@ def get_h_ij(
     j: int,
     bl_i: NDArray[np.int32],
     bl_j: NDArray[np.int32],
-    hamiltonian: dict[tuple[int, int, int], NDArray[np.complex128]],
+    hamiltonian: Hamiltonian,
 ) -> np.float64:
     bl_vector = tuple(int(component) for component in bl_j - bl_i)
 

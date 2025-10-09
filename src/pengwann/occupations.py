@@ -25,9 +25,6 @@ occupation matrix needed to calculated WOBIs with the
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import Any
-
 import numpy as np
 from numpy.typing import NDArray
 from scipy.special import erf
