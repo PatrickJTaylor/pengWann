@@ -195,7 +195,7 @@ def compute_pdos(
     pdos_nk = coefficients[np.newaxis, :, :] * total_dos
 
     if resolve_k:
-        pdos = np.sum(pdos_nk, axis=2)
+        pdos = np.sum(pdos_nk, axis=1)
 
     else:
         pdos = np.sum(pdos_nk, axis=(1, 2))
