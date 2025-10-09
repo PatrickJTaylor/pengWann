@@ -25,29 +25,137 @@ set by functions and methods in the :py:mod:`~pengwann.descriptors` module.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, replace
+from functools import cached_property
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy.integrate import trapezoid
 
 from pengwann.electronic_structure import Basis
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class AtomicInteractions:
-    atomic_interactions: Sequence[AtomicInteraction]
+    atomic_interactions: tuple[AtomicInteraction, ...]
+
+    def __iter__(self) -> Iterator[AtomicInteraction]:
+        return iter(self.atomic_interactions)
+
+    def __getitem__(
+        self, key: int | tuple[int, int]
+    ) -> AtomicInteraction | tuple[AtomicInteraction, ...]:
+        indices = _slice_index_matrix(key, self._index_matrix)
+        interactions = tuple(self.atomic_interactions[idx] for idx in indices)
+
+        if isinstance(key, int):
+            return interactions
+
+        else:
+            return interactions[0]
+
+    def __len__(self) -> int:
+        return len(self.atomic_interactions)
+
+    def __str__(self) -> str:
+        to_print = ["Atomic interactions"]
+
+        underline = ["=" for _ in to_print[-1]]
+        to_print.append("".join(underline))
+
+        for interaction in self:
+            to_print.append(interaction.tag)
+
+        return "\n".join(to_print) + "\n"
+
+    @cached_property
+    def _index_matrix(self) -> list[list[list[int]]]:
+        return _build_index_matrix(self.atomic_interactions)
+
+    def filter_by_species(
+        self, symbols: Sequence[str]
+    ) -> tuple[AtomicInteraction, ...]:
+        symbol_set = set(symbols)
+        interactions = tuple(
+            interaction
+            for interaction in self
+            if set((interaction.symbol_i, interaction.symbol_j)) <= symbol_set
+        )
+
+        if not interactions:
+            raise ValueError
+
+        return interactions
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class AtomicInteraction:
     i: int
     j: int
     symbol_i: str
     symbol_j: str
 
-    wannier_interactions: Sequence[WannierInteraction]
+    wannier_interactions: tuple[WannierInteraction, ...]
+
+    def __iter__(self) -> Iterator[WannierInteraction]:
+        return iter(self.wannier_interactions)
+
+    def __getitem__(
+        self, key: int | tuple[int, int]
+    ) -> WannierInteraction | tuple[WannierInteraction, ...]:
+        indices = _slice_index_matrix(key, self._index_matrix)
+        interactions = tuple(self.wannier_interactions[idx] for idx in indices)
+
+        if isinstance(key, int):
+            return interactions
+
+        else:
+            return interactions[0]
+
+    def __len__(self) -> int:
+        return len(self.wannier_interactions)
+
+    def __str__(self) -> str:
+        to_print = [f"Atomic Interaction {self.tag}"]
+
+        underline = ["=" for _ in to_print[-1]]
+        to_print.append("".join(underline))
+
+        print_names = (
+            ("pdos", "PDOS"),
+            ("wohp", "WOHP"),
+            ("wobi", "WOBI"),
+            ("ipdos", "IPDOS"),
+            ("iwohp", "IWOHP"),
+            ("iwobi", "IWOBI"),
+        )
+        for attribute_name, print_name in print_names:
+            value = getattr(self, attribute_name)
+
+            if isinstance(value, np.ndarray):
+                print_value = value if value is None else "Computed"
+
+            else:
+                print_value = value
+
+            line = f"{print_name} => {print_value}"
+
+            to_print.append(line)
+
+        to_print.append("\n")
+
+        subtitle = "Associated Wannier interactions"
+        subtitle_underline = ["-" for _ in subtitle]
+        to_print.extend((subtitle, "".join(subtitle_underline)))
+
+        for interaction in self:
+            to_print.append(interaction.tag)
+
+        return "\n".join(to_print) + "\n"
+
+    @cached_property
+    def _index_matrix(self) -> list[list[list[int]]]:
+        return _build_index_matrix(self.wannier_interactions)
 
     @property
     def tag(self) -> str:
@@ -104,6 +212,35 @@ class WannierInteraction:
 
     coefficients: NDArray[np.float64] | None = None
 
+    def __str__(self) -> str:
+        to_print = [f"Wannier Interaction {self.tag}"]
+
+        underline = ["=" for _ in to_print[-1]]
+        to_print.append("".join(underline))
+
+        print_names = (
+            ("pdos", "PDOS"),
+            ("h_ij", "H_ij"),
+            ("p_ij", "P_ij"),
+            ("ipdos", "IPDOS"),
+            ("iwohp", "IWOHP"),
+            ("iwobi", "IWOBI"),
+        )
+        for attribute_name, print_name in print_names:
+            value = getattr(self, attribute_name)
+
+            if isinstance(value, np.ndarray):
+                print_value = value if value is None else "Computed"
+
+            else:
+                print_value = value
+
+            line = f"{print_name} => {print_value}"
+
+            to_print.append(line)
+
+        return "\n".join(to_print) + "\n"
+
     @property
     def tag(self) -> str:
         return f"{self.i}{self.bl_i.tolist()} <=> {self.j}{self.bl_j.tolist()}"
@@ -136,80 +273,9 @@ class WannierInteraction:
 
         return self.p_ij * self.ipdos
 
-    def with_coefficients(self, basis: Basis) -> WannierInteraction:
-        c_star = (np.exp(-1j * 2 * np.pi * basis.kpoints @ self.bl_i))[
-            :, np.newaxis
-        ] * basis.u[:, :, self.i]
-        c = (np.exp(1j * 2 * np.pi * basis.kpoints @ self.bl_j))[
-            :, np.newaxis
-        ] * np.conj(basis.u[:, :, self.j])
-
-        coefficients = (c_star * c).real
-
-        return replace(self, coefficients=coefficients)
-
-    def without_coefficients(self) -> WannierInteraction:
-        return replace(self, coefficients=None)
-
-    def with_pdos(
-        self, total_dos: NDArray[np.float64], resolve_k: bool = False
-    ) -> WannierInteraction:
-        if self.coefficients is None:
-            raise NotComputedError(self.tag, "PDOS", "C")
-
-        pdos_nk = self.coefficients[np.newaxis, :, :] * total_dos
-
-        if resolve_k:
-            pdos = np.sum(pdos_nk, axis=2)
-
-        else:
-            pdos = np.sum(pdos_nk, axis=(1, 2))
-
-        return replace(self, pdos=pdos)
-
-    def with_h_ij(
-        self, hamiltonian: dict[tuple[int, int, int], NDArray[np.complex128]]
-    ) -> WannierInteraction:
-        bl_vector = tuple(int(component) for component in self.bl_j - self.bl_i)
-
-        if bl_vector in hamiltonian:
-            h_ij = hamiltonian[bl_vector][self.i, self.j].real
-
-        else:
-            raise KeyError(
-                f"""Matrix elements for Bravais lattice vector {bl_vector} are required
-                for interaction {self.tag} but were not found in the Wannier Hamiltonian
-                provided."""
-            )
-
-        return replace(self, h_ij=h_ij)
-
-    def with_p_ij(self, occupation_matrix: NDArray[np.float64]) -> WannierInteraction:
-        if self.coefficients is None:
-            raise NotComputedError(self.tag, "P_ij", "C")
-
-        p_nk = occupation_matrix * self.coefficients
-
-        p_ij = np.sum(p_nk, axis=(0, 1)) / p_nk.shape[0]
-
-        return replace(self, p_ij=p_ij)
-
-    def with_integrals(
-        self, energies: NDArray[np.float64], mu: float
-    ) -> WannierInteraction:
-        if self.pdos is None:
-            raise NotComputedError(self.tag, "IPDOS", "PDOS")
-
-        energies_to_mu = energies[energies <= mu]
-        pdos_to_mu = self.pdos[: len(energies_to_mu)]
-
-        ipdos = trapezoid(pdos_to_mu, energies_to_mu, axis=0)
-
-        return replace(self, ipdos=ipdos)
-
 
 def _sum_or_none(
-    descriptors: Sequence[np.float64 | NDArray[np.float64] | None],
+    descriptors: list[np.float64 | NDArray[np.float64] | None],
 ) -> np.float64 | NDArray[np.float64] | None:
     if any(descriptor is None for descriptor in descriptors):
         return None
@@ -217,29 +283,36 @@ def _sum_or_none(
     return sum(descriptors)
 
 
-class NotComputedError(Exception):
-    abbreviations = {
-        "C": "coefficient matrices",
-        "PDOS": "projected density of states",
-        "H_ij": "element of the Hamiltonian",
-        "P_ij": "element of the density matrix",
-        "WOHP": "Wannier orbital Hamilton ipdos",
-        "WOBI": "Wannier orbital bond index",
-        "IPDOS": "integrated projected density of states",
-        "IWOHP": "integrated Wannier orbital Hamilton population",
-        "IWOBI": "integrated Wannier orbital bond index",
-    }
+def _slice_index_matrix(
+    key: int | tuple[int, int], index_matrix: list[list[list[int]]]
+) -> list[int]:
+    match key:
+        case (i, j):
+            indices = index_matrix[i][j]
 
-    def __init__(self, tag: str, to_be_computed: str, dependency: str) -> None:
-        if to_be_computed in self.abbreviations:
-            tbc = self.abbreviations[to_be_computed]
+        case i:
+            indices = [idx for col_indices in index_matrix[i] for idx in col_indices]
 
-        else:
-            tbc = to_be_computed
+    if not indices:
+        raise IndexError
 
-        dep = self.abbreviations[dependency]
+    return indices
 
-        message = f"""The {dep} must be computed for interaction {tag} before
-        the {tbc} can be calculated."""
 
-        super().__init__(message)
+def _build_index_matrix(
+    interactions: tuple[AtomicInteraction, ...] | tuple[WannierInteraction, ...],
+) -> list[list[list[int]]]:
+    max_idx = max(max(interaction.i, interaction.j) for interaction in interactions)
+    index_matrix = [[[] for _ in range(max_idx + 1)] for _ in range(max_idx + 1)]
+    for idx, interaction in enumerate(interactions):
+        i, j = interaction.i, interaction.j
+
+        index_matrix[i][j].append(idx)
+
+        if i != j:
+            index_matrix[j][i].append(idx)
+
+    return index_matrix
+
+
+Interactions = AtomicInteractions | AtomicInteraction | WannierInteraction
