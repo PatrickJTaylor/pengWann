@@ -118,6 +118,8 @@ class Geometry:
 def find_onsite_interactions(
     geometry: Geometry, symbols: tuple[str, ...]
 ) -> AtomicInteractions:
+    _validate_symbols(geometry, symbols)
+
     zero_vector = np.array([0, 0, 0], dtype=np.int32)
 
     interactions = []
@@ -134,9 +136,6 @@ def find_onsite_interactions(
             )
             interactions.append(interaction)
 
-    if not interactions:
-        raise ValueError(f"No atoms matching symbols in {symbols} found.")
-
     return AtomicInteractions(tuple(interactions))
 
 
@@ -145,6 +144,8 @@ def find_interatomic_interactions(
     radial_cutoffs: dict[tuple[str, str], float],
 ) -> AtomicInteractions:
     symbols = tuple({symbol for pair in radial_cutoffs for symbol in pair})
+    _validate_symbols(geometry, symbols)
+
     atom_indices = _label_atom_indices(geometry, symbols)
 
     interactions = []
@@ -188,3 +189,9 @@ def _label_atom_indices(
             atom_indices[symbol].append(idx)
 
     return atom_indices
+
+
+def _validate_symbols(geometry: Geometry, symbols: tuple[str, ...]) -> None:
+    for symbol in symbols:
+        if symbol not in geometry.symbols:
+            raise ValueError(f"No atoms with label {symbol} found in input geometry.")

@@ -83,7 +83,7 @@ class AtomicInteractions:
         )
 
         if not interactions:
-            raise ValueError
+            raise ValueError(f"No interactions involving {symbols} found.")
 
         return interactions
 
@@ -294,7 +294,7 @@ def _slice_index_matrix(
             indices = [idx for col_indices in index_matrix[i] for idx in col_indices]
 
     if not indices:
-        raise IndexError
+        raise IndexError(f"No interactions found for provided indices: {key}")
 
     return indices
 

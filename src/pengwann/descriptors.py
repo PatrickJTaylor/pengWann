@@ -27,6 +27,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from functools import reduce, singledispatchmethod
+from textwrap import dedent
 
 import numpy as np
 from numpy.typing import NDArray
@@ -212,8 +213,17 @@ def get_h_ij(
 ) -> np.float64:
     bl_vector = tuple(int(component) for component in bl_j - bl_i)
 
-    # Error handling?
-    h_ij = hamiltonian[bl_vector][i, j].real
+    if bl_vector in hamiltonian:
+        h_ij = hamiltonian[bl_vector][i, j].real
+
+    else:
+        raise KeyError(
+            dedent(f"""
+        Matrix elements for Bravais lattice vector {bl_vector} are required for the
+        interaction between Wannier functions {i} and {j}, but were not found in the
+        Wannier Hamiltonian provided.
+        """)
+        )
 
     return h_ij
 
