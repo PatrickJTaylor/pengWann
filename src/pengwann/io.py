@@ -209,7 +209,7 @@ def read_hamiltonian(path: str) -> dict[tuple[int, int, int], NDArray[np.complex
 
     start_idx = int(np.ceil(num_rpoints / 15)) + 3
 
-    h: dict[tuple[int, int, int], NDArray[np.complex128]] = {}
+    h = {}
 
     for line in lines[start_idx:]:
         data = line.split()
@@ -245,17 +245,17 @@ def read_cell(path: str) -> NDArray[np.float64]:
     with open(path, "r") as stream:
         lines = stream.readlines()
 
-    cell_list: list[list[float]] = []
+    cell = []
     for idx, line in enumerate(lines):
         if "Lattice Vectors (Ang)" in line:
             for cell_line in lines[idx + 1 : idx + 4]:
                 cell_vector = [float(component) for component in cell_line.split()[1:]]
 
-                cell_list.append(cell_vector)
+                cell.append(cell_vector)
 
             break
 
-    cell = np.array(cell_list, dtype=np.float64)
+    cell = np.array(cell, dtype=np.float64)
 
     return cell
 
@@ -282,20 +282,18 @@ def read_xyz(path: str) -> tuple[tuple[str, ...], NDArray[np.float64]]:
 
     start_idx = 2
 
-    symbols_list: list[str] = []
-    coords_list: list[tuple[float, float, float]] = []
+    symbols = []
+    coords = []
     for line in lines[start_idx:]:
         data = line.split()
 
         symbol = str(data[0]).capitalize()
-        coords = tuple(float(coord) for coord in data[1:])
+        site_coords = tuple(float(coord) for coord in data[1:])
 
-        assert len(coords) == 3
+        symbols.append(symbol)
+        coords.append(site_coords)
 
-        symbols_list.append(symbol)
-        coords_list.append(coords)
-
-    symbols = tuple(symbols_list)
-    coords = np.array(coords_list, dtype=np.float64).T
+    symbols = tuple(symbols)
+    coords = np.array(coords).T
 
     return symbols, coords
