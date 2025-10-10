@@ -49,12 +49,13 @@ def read_wannier90_outputs(
 
 def read_geometry(seedname: str, path: str = ".") -> Geometry:
     symbols, cart_coords = read_xyz(f"{path}/{seedname}_centres.xyz")
-    cell = read_cell(f"{path}/{seedname}.wout")
 
     if "X" not in symbols:
         raise ValueError(
             f'No Wannier centres ("X" atoms) found in {path}/{seedname}_centres.xyz.'
         )
+
+    cell = read_cell(f"{path}/{seedname}.wout")
 
     frac_coords = np.transpose(np.linalg.inv(cell) @ cart_coords)
 
@@ -103,6 +104,47 @@ def read_basis(seedname: str, path: str = ".") -> Basis:
         u = u_dis @ u
 
     return Basis(u, kpoints)
+
+
+def read_hamiltonian(seedname: str, path: str = ".") -> Hamiltonian:
+    """
+    Parse the Wannier Hamiltonian from a Wannier90 seedname_hr.dat file.
+
+    Parameters
+    ----------
+    path : str
+        The filepath to seedname_hr.dat.
+
+    Returns
+    -------
+    h : dict of {3-length tuple of int : ndarray of complex} pairs.
+        The Wannier Hamiltonian.
+    """
+    with open(f"{path}/{seedname}_hr.dat", "r") as stream:
+        lines = stream.readlines()
+
+    num_wann = int(lines[1])
+    num_rpoints = int(lines[2])
+
+    start_idx = int(np.ceil(num_rpoints / 15)) + 3
+
+    h: Hamiltonian = {}
+
+    for line in lines[start_idx:]:
+        data = line.split()
+        bl = tuple([int(string) for string in data[:3]])
+
+        assert len(bl) == 3
+
+        if bl not in h.keys():
+            h[bl] = np.zeros((num_wann, num_wann), dtype=np.complex128)
+
+        m, n = [int(string) - 1 for string in data[3:5]]
+        real, imaginary = [float(string) for string in data[5:]]
+
+        h[bl][m, n] = complex(real, imaginary)
+
+    return h
 
 
 def read_eigenvalues(
@@ -186,47 +228,6 @@ def read_unitary_matrices(
                 u[k, n, w] = complex(real, imaginary)
 
     return u, kpoints
-
-
-def read_hamiltonian(path: str) -> Hamiltonian:
-    """
-    Parse the Wannier Hamiltonian from a Wannier90 seedname_hr.dat file.
-
-    Parameters
-    ----------
-    path : str
-        The filepath to seedname_hr.dat.
-
-    Returns
-    -------
-    h : dict of {3-length tuple of int : ndarray of complex} pairs.
-        The Wannier Hamiltonian.
-    """
-    with open(path, "r") as stream:
-        lines = stream.readlines()
-
-    num_wann = int(lines[1])
-    num_rpoints = int(lines[2])
-
-    start_idx = int(np.ceil(num_rpoints / 15)) + 3
-
-    h: Hamiltonian = {}
-
-    for line in lines[start_idx:]:
-        data = line.split()
-        bl = tuple([int(string) for string in data[:3]])
-
-        assert len(bl) == 3
-
-        if bl not in h.keys():
-            h[bl] = np.zeros((num_wann, num_wann), dtype=np.complex128)
-
-        m, n = [int(string) - 1 for string in data[3:5]]
-        real, imaginary = [float(string) for string in data[5:]]
-
-        h[bl][m, n] = complex(real, imaginary)
-
-    return h
 
 
 def read_cell(path: str) -> NDArray[np.float64]:
