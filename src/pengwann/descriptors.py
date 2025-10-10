@@ -41,12 +41,12 @@ from pengwann.interactions import (
     AtomicInteractions,
     WannierInteraction,
 )
-from pengwann.type_aliases import Hamiltonian, Interactions, Process
+from pengwann.type_aliases import Hamiltonian, Interactions, WannierTransform
 
 
 @dataclass(frozen=True, slots=True)
 class DescriptorPipeline:
-    _pipeline: tuple[Process, ...] = ()
+    _pipeline: tuple[WannierTransform, ...] = ()
 
     @singledispatchmethod
     def pipe(

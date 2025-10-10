@@ -11,4 +11,4 @@ from pengwann.interactions import (
 
 Hamiltonian = dict[tuple[int, int, int], NDArray[np.complex128]]
 Interactions = AtomicInteractions | AtomicInteraction | Sequence[WannierInteraction]
-Process = Callable[[WannierInteraction], WannierInteraction]
+WannierTransform = Callable[[WannierInteraction], WannierInteraction]
