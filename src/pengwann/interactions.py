@@ -26,13 +26,12 @@ set by functions and methods in the :py:mod:`~pengwann.descriptors` module.
 from __future__ import annotations
 
 from collections.abc import Iterator, Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from functools import cached_property
+from typing import cast, TypeVar
 
 import numpy as np
 from numpy.typing import NDArray
-
-from pengwann.electronic_structure import Basis
 
 
 @dataclass(frozen=True)
@@ -133,7 +132,7 @@ class AtomicInteraction:
             value = getattr(self, attribute_name)
 
             if isinstance(value, np.ndarray):
-                print_value = value if value is None else "Computed"
+                print_value = "Computed"
 
             else:
                 print_value = value
@@ -230,7 +229,7 @@ class WannierInteraction:
             value = getattr(self, attribute_name)
 
             if isinstance(value, np.ndarray):
-                print_value = value if value is None else "Computed"
+                print_value = "Computed"
 
             else:
                 print_value = value
@@ -250,7 +249,7 @@ class WannierInteraction:
         if self.h_ij is None or self.pdos is None:
             return None
 
-        return -self.h_ij * self.pdos
+        return -1 * self.h_ij * self.pdos
 
     @property
     def wobi(self) -> NDArray[np.float64] | None:
@@ -264,7 +263,7 @@ class WannierInteraction:
         if self.h_ij is None or self.ipdos is None:
             return None
 
-        return -self.h_ij * self.ipdos
+        return -1 * self.h_ij * self.ipdos
 
     @property
     def iwobi(self) -> np.float64 | NDArray[np.float64] | None:
@@ -274,13 +273,16 @@ class WannierInteraction:
         return self.p_ij * self.ipdos
 
 
+T = TypeVar("T")
+
+
 def _sum_or_none(
-    descriptors: list[np.float64 | NDArray[np.float64] | None],
-) -> np.float64 | NDArray[np.float64] | None:
+    descriptors: list[T | None],
+) -> T | None:
     if any(descriptor is None for descriptor in descriptors):
         return None
 
-    return sum(descriptors)
+    return cast(T, np.sum(descriptors, axis=0))  # pyright: ignore[reportArgumentType, reportCallIssue]
 
 
 def _slice_index_matrix(
@@ -303,7 +305,9 @@ def _build_index_matrix(
     interactions: tuple[AtomicInteraction, ...] | tuple[WannierInteraction, ...],
 ) -> list[list[list[int]]]:
     max_idx = max(max(interaction.i, interaction.j) for interaction in interactions)
-    index_matrix = [[[] for _ in range(max_idx + 1)] for _ in range(max_idx + 1)]
+    index_matrix: list[list[list[int]]] = [
+        [[] for _ in range(max_idx + 1)] for _ in range(max_idx + 1)
+    ]
     for idx, interaction in enumerate(interactions):
         i, j = interaction.i, interaction.j
 
@@ -313,6 +317,3 @@ def _build_index_matrix(
             index_matrix[j][i].append(idx)
 
     return index_matrix
-
-
-Interactions = AtomicInteractions | AtomicInteraction | WannierInteraction

@@ -61,7 +61,8 @@ class Geometry:
             "-------------------",
         ]
 
-        assignment_lines, site_lines = [], []
+        assignment_lines: list[str] = []
+        site_lines: list[str] = []
         for idx in range(len(self.symbols)):
             symbol = self.symbols[idx]
             coords = self.coords[idx]
@@ -122,10 +123,10 @@ def find_onsite_interactions(
 
     zero_vector = np.array([0, 0, 0], dtype=np.int32)
 
-    interactions = []
+    interactions: list[AtomicInteraction] = []
     for idx, symbol in enumerate(geometry.symbols):
         if symbol in symbols:
-            wannier_interactions = []
+            wannier_interactions: list[WannierInteraction] = []
             for i in geometry.wannier_assignments[idx]:
                 wannier_interaction = WannierInteraction(i, i, zero_vector, zero_vector)
 
@@ -148,7 +149,7 @@ def find_interatomic_interactions(
 
     atom_indices = _label_atom_indices(geometry, symbols)
 
-    interactions = []
+    interactions: list[AtomicInteraction] = []
     for pair, cutoff in radial_cutoffs.items():
         symbol_i, symbol_j = pair
 
@@ -159,7 +160,7 @@ def find_interatomic_interactions(
                 distance = geometry.distance_matrix[i, j]
 
                 if distance < cutoff:
-                    wannier_interactions = []
+                    wannier_interactions: list[WannierInteraction] = []
                     for m in geometry.wannier_assignments[i]:
                         for n in geometry.wannier_assignments[j]:
                             bl_i = geometry.image_matrix[i, m]
@@ -168,9 +169,8 @@ def find_interatomic_interactions(
                             wannier_interaction = WannierInteraction(m, n, bl_i, bl_j)
                             wannier_interactions.append(wannier_interaction)
 
-                    wannier_interactions = tuple(wannier_interactions)
                     interaction = AtomicInteraction(
-                        i, j, symbol_i, symbol_j, wannier_interactions
+                        i, j, symbol_i, symbol_j, tuple(wannier_interactions)
                     )
                     interactions.append(interaction)
 
@@ -180,7 +180,7 @@ def find_interatomic_interactions(
 def _label_atom_indices(
     geometry: Geometry, symbols: tuple[str, ...]
 ) -> dict[str, list[int]]:
-    atom_indices = {}
+    atom_indices: dict[str, list[int]] = {}
     for symbol in symbols:
         atom_indices[symbol] = []
 

@@ -29,7 +29,7 @@ class Basis:
     kpoints: NDArray[np.float64]
 
     def __post_init__(self) -> None:
-        spilling_factor = compute_spilling_factor(self.u)
+        spilling_factor = float(compute_spilling_factor(self.u))
         rounded_spilling_factor = abs(round(spilling_factor, ndigits=8))
 
         if rounded_spilling_factor > 0:

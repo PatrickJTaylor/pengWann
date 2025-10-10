@@ -28,6 +28,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from functools import reduce, singledispatchmethod
 from textwrap import dedent
+from typing import cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -40,18 +41,22 @@ from pengwann.interactions import (
     AtomicInteractions,
     WannierInteraction,
 )
-from pengwann.type_aliases import Hamiltonian, Interactions
+from pengwann.type_aliases import Hamiltonian, Interactions, Process
 
 
 @dataclass(frozen=True, slots=True)
 class DescriptorPipeline:
-    _pipeline: tuple = ()
+    _pipeline: tuple[Process, ...] = ()
 
     @singledispatchmethod
     def pipe(
-        self, interactions: Interactions, show_progress: bool = True
+        self,
+        interactions: Interactions,
+        show_progress: bool = True,  # pyright: ignore[reportUnusedParameter]
     ) -> Interactions:
-        raise NotImplementedError
+        raise NotImplementedError(
+            f"The pipe method is not implemented for type {type(interactions)}."
+        )
 
     @pipe.register
     def _(
@@ -82,13 +87,8 @@ class DescriptorPipeline:
 
     @pipe.register
     def _(
-        self, interactions: Sequence, show_progress: bool = True
-    ) -> WannierInteraction:
-        if not all(
-            isinstance(interaction, WannierInteraction) for interaction in interactions
-        ):
-            raise TypeError
-
+        self, interactions: Sequence[WannierInteraction], show_progress: bool = True
+    ) -> tuple[WannierInteraction, ...]:
         preprocessed_interactions = (
             tqdm(interactions) if show_progress else interactions
         )
@@ -100,7 +100,7 @@ class DescriptorPipeline:
 
         return processed_interactions
 
-    def with_coefficients(self, basis: Basis) -> DescriptorProcessor:
+    def with_coefficients(self, basis: Basis) -> DescriptorPipeline:
         def process(interaction: WannierInteraction) -> WannierInteraction:
             coefficients = compute_coefficients(
                 interaction.i, interaction.j, interaction.bl_i, interaction.bl_j, basis
@@ -112,7 +112,7 @@ class DescriptorPipeline:
 
         return replace(self, _pipeline=pipeline)
 
-    def without_coefficients(self) -> DescriptorProcessor:
+    def without_coefficients(self) -> DescriptorPipeline:
         def process(interaction: WannierInteraction) -> WannierInteraction:
             return replace(interaction, coefficients=None)
 
@@ -122,9 +122,19 @@ class DescriptorPipeline:
 
     def with_pdos(
         self, total_dos: NDArray[np.float64], resolve_k: bool = False
-    ) -> DescriptorProcessor:
+    ) -> DescriptorPipeline:
         def process(interaction: WannierInteraction) -> WannierInteraction:
-            pdos = compute_pdos(interaction.coefficients, total_dos, resolve_k)
+            coefficients = interaction.coefficients
+            if coefficients is None:
+                raise ValueError(
+                    dedent(f"""
+                The coefficient matrices for Wannier interaction {interaction.tag} are
+                required to compute the projected density of states. The
+                with_coefficients method must be called before the with_pdos method.
+                """)
+                )
+
+            pdos = compute_pdos(coefficients, total_dos, resolve_k)
 
             return replace(interaction, pdos=pdos)
 
@@ -132,7 +142,7 @@ class DescriptorPipeline:
 
         return replace(self, _pipeline=pipeline)
 
-    def with_h_ij(self, hamiltonian: Hamiltonian) -> DescriptorProcessor:
+    def with_h_ij(self, hamiltonian: Hamiltonian) -> DescriptorPipeline:
         def process(interaction: WannierInteraction) -> WannierInteraction:
             h_ij = get_h_ij(
                 interaction.i,
@@ -148,9 +158,19 @@ class DescriptorPipeline:
 
         return replace(self, _pipeline=pipeline)
 
-    def with_p_ij(self, occupation_matrix: NDArray[np.float64]) -> DescriptorProcessor:
+    def with_p_ij(self, occupation_matrix: NDArray[np.float64]) -> DescriptorPipeline:
         def process(interaction: WannierInteraction) -> WannierInteraction:
-            p_ij = compute_p_ij(interaction.coefficients, occupation_matrix)
+            coefficients = interaction.coefficients
+            if coefficients is None:
+                raise ValueError(
+                    dedent(f"""
+                The coefficient matrices for Wannier interaction {interaction.tag} are
+                required to compute the relevant element of the density matrix. The
+                with_coefficients method must be called before the with_p_ij method.
+                """)
+                )
+
+            p_ij = compute_p_ij(coefficients, occupation_matrix)
 
             return replace(interaction, p_ij=p_ij)
 
@@ -160,9 +180,19 @@ class DescriptorPipeline:
 
     def with_integrals(
         self, energies: NDArray[np.float64], mu: float
-    ) -> DescriptorProcessor:
+    ) -> DescriptorPipeline:
         def process(interaction: WannierInteraction) -> WannierInteraction:
-            ipdos = compute_ipdos(interaction.pdos, energies, mu)
+            pdos = interaction.pdos
+            if pdos is None:
+                raise ValueError(
+                    dedent(f"""
+                The projected density of states for Wannier interaction
+                {interaction.tag} must be computed before it can be intgrated. The
+                with_pdos method must be called before the with_integrals method.
+                """)
+                )
+
+            ipdos = compute_ipdos(pdos, energies, mu)
 
             return replace(interaction, ipdos=ipdos)
 
@@ -181,7 +211,7 @@ def compute_coefficients(
         basis.u[:, :, j]
     )
 
-    coefficients = (c_star * c).real.T
+    coefficients = np.transpose((c_star * c).real)
 
     return coefficients
 
@@ -210,6 +240,8 @@ def get_h_ij(
     hamiltonian: Hamiltonian,
 ) -> np.float64:
     bl_vector = tuple(int(component) for component in bl_j - bl_i)
+
+    assert len(bl_vector) == 3
 
     if bl_vector in hamiltonian:
         h_ij = hamiltonian[bl_vector][i, j].real
@@ -245,4 +277,4 @@ def compute_ipdos(
 
     ipdos = trapezoid(pdos_to_mu, energies_to_mu, axis=0)
 
-    return ipdos
+    return cast(np.float64 | NDArray[np.float64], ipdos)
