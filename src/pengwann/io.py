@@ -29,7 +29,7 @@ import os
 import numpy as np
 from numpy.typing import NDArray
 
-from pengwann._geometry import _build_distance_and_image_matrices
+from pengwann._geometry import _build_distance_and_image_matrices  # pyright: ignore[reportPrivateUsage]
 from pengwann.electronic_structure import Basis
 from pengwann.geometry import Geometry
 from pengwann.type_aliases import Hamiltonian

@@ -29,7 +29,7 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.special import erf
 
-from pengwann.electronic_structure import _validate_sigma_nspin
+from pengwann.electronic_structure import _validate_sigma_nspin  # pyright: ignore[reportPrivateUsage]
 
 
 def fixed(

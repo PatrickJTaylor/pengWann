@@ -62,7 +62,6 @@ allowedUntypedLibraries = ['pymatgen']
 reportAny = false
 reportExplicitAny = false
 reportImplicitOverride = false
-reportPrivateUsage = false
 
 [tool.coverage.report]
 omit = ['src/pengwann/__init__.py']
