@@ -28,7 +28,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from functools import reduce, singledispatchmethod
 from textwrap import dedent
-from typing import cast
+from typing import Any, cast, TypeGuard
 
 import numpy as np
 from numpy.typing import NDArray
@@ -51,9 +51,9 @@ class DescriptorPipeline:
     @singledispatchmethod
     def pipe(
         self,
-        interactions: Interactions,
+        interactions: Any,
         show_progress: bool = True,  # pyright: ignore[reportUnusedParameter]
-    ) -> Interactions:
+    ) -> Interactions | None:
         raise NotImplementedError(
             f"The pipe method is not implemented for type {type(interactions)}."
         )
@@ -87,8 +87,15 @@ class DescriptorPipeline:
 
     @pipe.register
     def _(
-        self, interactions: Sequence[WannierInteraction], show_progress: bool = True
+        self,
+        interactions: Sequence,  # pyright: ignore[reportMissingTypeArgument, reportUnknownParameterType]
+        show_progress: bool = True,
     ) -> tuple[WannierInteraction, ...]:
+        if not _validate_wannier_sequence(interactions):  # pyright: ignore[reportUnknownArgumentType]
+            raise NotImplementedError(
+                f"The pipe method is not implemented for type {type(interactions)}."
+            )
+
         preprocessed_interactions = (
             tqdm(interactions) if show_progress else interactions
         )
@@ -278,3 +285,9 @@ def compute_ipdos(
     ipdos = trapezoid(pdos_to_mu, energies_to_mu, axis=0)
 
     return cast(np.float64 | NDArray[np.float64], ipdos)
+
+
+def _validate_wannier_sequence(
+    sequence: Sequence[Any],
+) -> TypeGuard[Sequence[WannierInteraction]]:
+    return all(isinstance(element, WannierInteraction) for element in sequence)
