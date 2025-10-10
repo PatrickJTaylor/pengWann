@@ -32,7 +32,7 @@ from scipy.special import erf
 from pengwann.electronic_structure import _validate_sigma_nspin  # pyright: ignore[reportPrivateUsage]
 
 
-def fixed(
+def compute_fixed_occupations(
     eigenvalues: NDArray[np.float64], mu: float, nspin: int
 ) -> NDArray[np.float64]:
     r"""
@@ -66,7 +66,7 @@ def fixed(
     return occupation_matrix
 
 
-def fermi_dirac(
+def compute_fermi_dirac_occupations(
     eigenvalues: NDArray[np.float64], mu: float, sigma: float, nspin: int
 ) -> NDArray[np.float64]:
     r"""
@@ -105,7 +105,7 @@ def fermi_dirac(
     return occupation_matrix
 
 
-def gaussian(
+def compute_gaussian_occupations(
     eigenvalues: NDArray[np.float64], mu: float, sigma: float, nspin: int
 ) -> NDArray[np.float64]:
     r"""
@@ -143,7 +143,7 @@ def gaussian(
     return occupation_matrix
 
 
-def cold(
+def compute_cold_occupations(
     eigenvalues: NDArray[np.float64], mu: float, sigma: float, nspin: int
 ) -> NDArray[np.float64]:
     r"""
