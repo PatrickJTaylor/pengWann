@@ -28,7 +28,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from functools import reduce, singledispatchmethod
 from textwrap import dedent
-from typing import Any, cast, TypeGuard
+from typing import cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -51,12 +51,19 @@ class DescriptorPipeline:
     @singledispatchmethod
     def pipe(
         self,
-        interactions: Any,
-        show_progress: bool = True,  # pyright: ignore[reportUnusedParameter]
-    ) -> Interactions | None:
-        raise NotImplementedError(
-            f"The pipe method is not implemented for type {type(interactions)}."
+        interactions: Sequence[WannierInteraction],
+        show_progress: bool = True,
+    ) -> Interactions:
+        preprocessed_interactions = (
+            tqdm(interactions) if show_progress else interactions
         )
+
+        processed_interactions = tuple(
+            reduce(lambda i, p: p(i), self._pipeline, interaction)
+            for interaction in preprocessed_interactions
+        )
+
+        return processed_interactions
 
     @pipe.register
     def _(
@@ -84,28 +91,6 @@ class DescriptorPipeline:
         )
 
         return replace(interactions, wannier_interactions=processed_interactions)
-
-    @pipe.register
-    def _(
-        self,
-        interactions: Sequence,  # pyright: ignore[reportMissingTypeArgument, reportUnknownParameterType]
-        show_progress: bool = True,
-    ) -> tuple[WannierInteraction, ...]:
-        if not _validate_wannier_sequence(interactions):  # pyright: ignore[reportUnknownArgumentType]
-            raise NotImplementedError(
-                f"The pipe method is not implemented for type {type(interactions)}."
-            )
-
-        preprocessed_interactions = (
-            tqdm(interactions) if show_progress else interactions
-        )
-
-        processed_interactions = tuple(
-            reduce(lambda i, p: p(i), self._pipeline, interaction)
-            for interaction in preprocessed_interactions
-        )
-
-        return processed_interactions
 
     def with_coefficients(self, basis: Basis) -> DescriptorPipeline:
         def process(interaction: WannierInteraction) -> WannierInteraction:
@@ -285,9 +270,3 @@ def compute_ipdos(
     ipdos = trapezoid(pdos_to_mu, energies_to_mu, axis=0)
 
     return cast(np.float64 | NDArray[np.float64], ipdos)
-
-
-def _validate_wannier_sequence(
-    sequence: Sequence[Any],
-) -> TypeGuard[Sequence[WannierInteraction]]:
-    return all(isinstance(element, WannierInteraction) for element in sequence)
