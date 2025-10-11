@@ -72,7 +72,8 @@ def test_read_geometry(
             "cell": geometry.cell,
             "distance_matrix": geometry.distance_matrix,
             "image_matrix": geometry.image_matrix,
-        }
+        },
+        default_tolerance=tol,
     )
 
 
@@ -84,7 +85,9 @@ def test_read_geometry_no_X(shared_datadir) -> None:
 def test_read_basis(shared_datadir, ndarrays_regression, tol) -> None:
     basis = read_basis("wannier90", path=shared_datadir)
 
-    ndarrays_regression.check({"U": basis.u, "kpoints": basis.kpoints})
+    ndarrays_regression.check(
+        {"u": basis.u, "kpoints": basis.kpoints}, default_tolerance=tol
+    )
 
 
 def test_read_hamiltonian(shared_datadir, ndarrays_regression, tol) -> None:
@@ -95,7 +98,7 @@ def test_read_hamiltonian(shared_datadir, ndarrays_regression, tol) -> None:
 
     h_000 = test_h[(0, 0, 0)]
 
-    ndarrays_regression.check({"H_000": h_000}, default_tolerance=tol)
+    ndarrays_regression.check({"h_000": h_000}, default_tolerance=tol)
 
 
 def test_read_eigenvalues(shared_datadir, ndarrays_regression, tol) -> None:
@@ -112,7 +115,7 @@ def test_read_eigenvalues(shared_datadir, ndarrays_regression, tol) -> None:
 def test_read_unitary_matrices(shared_datadir, ndarrays_regression, tol) -> None:
     u, kpoints = read_unitary_matrices(f"{shared_datadir}/wannier90_u.mat")
 
-    ndarrays_regression.check({"U": u, "kpoints": kpoints}, default_tolerance=tol)
+    ndarrays_regression.check({"u": u, "kpoints": kpoints}, default_tolerance=tol)
 
 
 def test_read_cell(shared_datadir, ndarrays_regression, tol) -> None:
