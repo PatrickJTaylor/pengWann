@@ -130,7 +130,7 @@ def test_WannierInteraction_properties(
 ) -> None:
     descriptor = getattr(wannier_interaction, property_name)
 
-    ndarrays_regression.check({property_name: descriptor})
+    ndarrays_regression.check({property_name: descriptor}, default_tolerance=tol)
 
 
 def test_WannierInteraction_wohp_no_pdos(wannier_interaction) -> None:
@@ -197,12 +197,10 @@ def test_AtomicInteraction_properties(
 ) -> None:
     descriptor = getattr(atomic_interaction, property_name)
 
-    ndarrays_regression.check({property_name: descriptor})
+    ndarrays_regression.check({property_name: descriptor}, default_tolerance=tol)
 
 
-def test_AtomicInteraction_pdos_none(
-    atomic_interaction, ndarrays_regression, tol
-) -> None:
+def test_AtomicInteraction_pdos_none(atomic_interaction) -> None:
     new_wann = replace(atomic_interaction.wannier_interactions[0], pdos=None)
     wannier_interactions = (new_wann,) + atomic_interaction.wannier_interactions[1:]
     atomic_interaction = replace(
@@ -212,9 +210,7 @@ def test_AtomicInteraction_pdos_none(
     assert atomic_interaction.pdos is None
 
 
-def test_AtomicInteraction_wohp_none(
-    atomic_interaction, ndarrays_regression, tol
-) -> None:
+def test_AtomicInteraction_wohp_none(atomic_interaction) -> None:
     new_wann = replace(atomic_interaction.wannier_interactions[0], h_ij=None)
     wannier_interactions = (new_wann,) + atomic_interaction.wannier_interactions[1:]
     atomic_interaction = replace(
@@ -224,9 +220,7 @@ def test_AtomicInteraction_wohp_none(
     assert atomic_interaction.wohp is None
 
 
-def test_AtomicInteraction_wobi_none(
-    atomic_interaction, ndarrays_regression, tol
-) -> None:
+def test_AtomicInteraction_wobi_none(atomic_interaction) -> None:
     new_wann = replace(atomic_interaction.wannier_interactions[0], p_ij=None)
     wannier_interactions = (new_wann,) + atomic_interaction.wannier_interactions[1:]
     atomic_interaction = replace(
@@ -236,9 +230,7 @@ def test_AtomicInteraction_wobi_none(
     assert atomic_interaction.wobi is None
 
 
-def test_AtomicInteraction_ipdos_none(
-    atomic_interaction, ndarrays_regression, tol
-) -> None:
+def test_AtomicInteraction_ipdos_none(atomic_interaction) -> None:
     new_wann = replace(atomic_interaction.wannier_interactions[0], ipdos=None)
     wannier_interactions = (new_wann,) + atomic_interaction.wannier_interactions[1:]
     atomic_interaction = replace(
@@ -248,9 +240,7 @@ def test_AtomicInteraction_ipdos_none(
     assert atomic_interaction.ipdos is None
 
 
-def test_AtomicInteraction_iwohp_none(
-    atomic_interaction, ndarrays_regression, tol
-) -> None:
+def test_AtomicInteraction_iwohp_none(atomic_interaction) -> None:
     new_wann = replace(atomic_interaction.wannier_interactions[0], h_ij=None)
     wannier_interactions = (new_wann,) + atomic_interaction.wannier_interactions[1:]
     atomic_interaction = replace(
@@ -260,9 +250,7 @@ def test_AtomicInteraction_iwohp_none(
     assert atomic_interaction.iwohp is None
 
 
-def test_AtomicInteraction_iwobi_none(
-    atomic_interaction, ndarrays_regression, tol
-) -> None:
+def test_AtomicInteraction_iwobi_none(atomic_interaction) -> None:
     new_wann = replace(atomic_interaction.wannier_interactions[0], p_ij=None)
     wannier_interactions = (new_wann,) + atomic_interaction.wannier_interactions[1:]
     atomic_interaction = replace(
