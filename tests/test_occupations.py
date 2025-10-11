@@ -93,7 +93,7 @@ class TestOccupationFunctions:
     def test_occupation_function_invalid_nspin(
         self, occupation_function, eigenvalues, mu, sigma
     ) -> None:
-        nspin = 0.5
+        nspin = 3
 
         with pytest.raises(ValueError):
             occupation_function(eigenvalues, mu, sigma, nspin)
