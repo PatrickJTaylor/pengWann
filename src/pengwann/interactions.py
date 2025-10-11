@@ -28,7 +28,7 @@ from __future__ import annotations
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 from functools import cached_property
-from typing import cast, TypeVar
+from typing import TypeGuard, TypeVar
 
 import numpy as np
 from numpy.typing import NDArray
@@ -273,18 +273,6 @@ class WannierInteraction:
         return self.p_ij * self.ipdos
 
 
-T = TypeVar("T")
-
-
-def _sum_or_none(
-    descriptors: list[T | None],
-) -> T | None:
-    if any(descriptor is None for descriptor in descriptors):
-        return None
-
-    return cast(T, np.sum(descriptors, axis=0))  # pyright: ignore[reportArgumentType, reportCallIssue]
-
-
 def _slice_index_matrix(
     key: int | tuple[int, int], index_matrix: list[list[list[int]]]
 ) -> list[int]:
@@ -317,3 +305,22 @@ def _build_index_matrix(
             index_matrix[j][i].append(idx)
 
     return index_matrix
+
+
+T = TypeVar("T", np.float64 | NDArray[np.float64], NDArray[np.float64])
+
+
+def _sum_or_none(
+    descriptors: list[T | None],
+) -> T | None:
+    if not _has_no_none(descriptors):
+        return None
+
+    return np.sum(descriptors, axis=0)
+
+
+def _has_no_none(descriptors: list[T | None]) -> TypeGuard[list[T]]:
+    if any(descriptor is None for descriptor in descriptors):
+        return False
+
+    return True
