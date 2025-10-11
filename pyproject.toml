@@ -64,7 +64,7 @@ reportExplicitAny = false
 reportImplicitOverride = false
 
 [tool.coverage.report]
-omit = ['src/pengwann/__init__.py']
+omit = ['src/pengwann/__init__.py', 'src/pengwann/type_aliases.py']
 
 [tool.pytest.ini_options]
 addopts = '--random-order --cov-report xml --cov=pengwann'
