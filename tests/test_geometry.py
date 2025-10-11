@@ -17,16 +17,17 @@ import json
 
 import numpy as np
 import pytest
+from ase.io.jsonio import decode
+from ase.utils.structure_comparator import SymmetryEquivalenceCheck
 from pymatgen.analysis.structure_matcher import StructureMatcher
 from pymatgen.core import Structure
 
 from pengwann.geometry import (
     Geometry,
-    Site,
-    identify_interatomic_interactions,
-    identify_onsite_interactions,
+    find_interatomic_interactions,
+    find_onsite_interactions,
 )
-from pengwann.interactions import AtomicInteraction
+from pengwann.interactions import AtomicInteractions
 
 
 def build_geometry(symbols: list[str]) -> Geometry:
@@ -35,22 +36,38 @@ def build_geometry(symbols: list[str]) -> Geometry:
     coords = np.array(
         [[0.1, 0.1, 0.1], [0.6, 0.6, 0.6], [0.25, 0.25, 0.25], [0.75, 0.75, 0.75]]
     )
-    sites = tuple(
-        Site(symbol, idx, coords)
-        for idx, (symbol, coords) in enumerate(zip(symbols, coords))
+    distance_matrix = np.array(
+        [
+            [0.0, 4.33012702, 1.29903811, 3.03108891],
+            [4.33012702, 0.0, 3.03108891, 1.29903811],
+            [1.29903811, 3.03108891, 0.0, 4.33012702],
+            [3.03108891, 1.29903811, 4.33012702, 0.0],
+        ]
     )
+    image_matrix = np.array(
+        [
+            [[0, 0, 0], [-1, -1, -1], [0, 0, 0], [-1, -1, -1]],
+            [[1, 1, 1], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
+            [[0, 0, 0], [0, 0, 0], [0, 0, 0], [-1, -1, -1]],
+            [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]],
+        ],
+        dtype=np.int32,
+    )
+    wannier_assignments = ((), (), (0,), (1,))
 
-    return Geometry(sites, cell)
+    return Geometry(
+        symbols, coords, cell, distance_matrix, image_matrix, wannier_assignments
+    )
 
 
 def serialise_interactions(
-    interactions: tuple[AtomicInteraction, ...],
+    interactions: AtomicInteractions,
 ) -> dict[str, int | tuple[str, str] | list[int]]:
     serialised_interactions = {"tags": [], "i": [], "j": [], "bl_i": [], "bl_j": []}
     for interaction in interactions:
         serialised_interactions["tags"].append(interaction.tag)
 
-        for w_interaction in interaction.sub_interactions:
+        for w_interaction in interaction.wannier_interactions:
             serialised_interactions["i"].append(w_interaction.i)
             serialised_interactions["j"].append(w_interaction.j)
 
@@ -65,73 +82,22 @@ def serialise_interactions(
 
 @pytest.fixture
 def geometry() -> Geometry:
-    symbols = ["X", "X", "C", "O"]
+    symbols = ("X", "X", "C", "O")
 
     return build_geometry(symbols)
 
 
 @pytest.fixture
 def geometry_elemental() -> Geometry:
-    symbols = ["X", "X", "C", "C"]
+    symbols = ("X", "X", "C", "C")
 
     return build_geometry(symbols)
 
 
-@pytest.fixture
-def geometry_no_x() -> Geometry:
-    symbols = ["C", "C", "C", "O"]
-
-    return build_geometry(symbols)
-
-
-def test_Geometry_from_xyz(
-    shared_datadir, data_regression, ndarrays_regression, tol
-) -> None:
-    geometry = Geometry.from_xyz("wannier90", f"{shared_datadir}")
-
-    symbols, indices, coords_list = [], [], []
-    for site in geometry:
-        symbols.append(site.symbol)
-        indices.append(site.index)
-        coords_list.append(site.coords)
-
-    coords = np.vstack(coords_list)
-
-    data_regression.check({"symbols": symbols, "indices": indices})
-    ndarrays_regression.check(
-        {"cell": geometry.cell, "coords": coords}, default_tolerance=tol
-    )
-
-
-def test_Geometry_from_xyz_with_cell(
-    shared_datadir, data_regression, ndarrays_regression, tol
-) -> None:
-    cell = (
-        (-1.7803725545451619, -1.7803725545451616, 0.0000000000000000),
-        (-1.7803725545451616, 0.0000000000000000, -1.7803725545451616),
-        (-0.0000000000000003, -1.7803725545451616, -1.7803725545451616),
-    )
-    geometry = Geometry.from_xyz("wannier90", f"{shared_datadir}", cell)
-
-    symbols, indices, coords_list = [], [], []
-    for site in geometry:
-        symbols.append(site.symbol)
-        indices.append(site.index)
-        coords_list.append(site.coords)
-
-    coords = np.vstack(coords_list)
-
-    data_regression.check({"symbols": symbols, "indices": indices})
-    ndarrays_regression.check(
-        {"cell": geometry.cell, "coords": coords}, default_tolerance=tol
-    )
-
-
-def test_Geometry_as_structure(shared_datadir) -> None:
-    geometry = Geometry.from_xyz("wannier90", f"{shared_datadir}")
+def test_Geometry_as_structure(shared_datadir, geometry) -> None:
     structure = geometry.as_structure()
 
-    with open(f"{shared_datadir}/geometry.json", "r") as stream:
+    with open(f"{shared_datadir}/pmg_geometry.json", "r") as stream:
         serial = json.load(stream)
 
     ref_structure = Structure.from_dict(serial)
@@ -141,8 +107,17 @@ def test_Geometry_as_structure(shared_datadir) -> None:
     assert sm.fit(structure, ref_structure)
 
 
-def test_Geometry_length(geometry) -> None:
-    assert len(geometry) == 4
+def test_Geometry_as_atoms(shared_datadir, geometry) -> None:
+    atoms = geometry.as_atoms()
+
+    with open(f"{shared_datadir}/ase_geometry.json", "r") as stream:
+        serial = json.load(stream)
+
+    ref_atoms = decode(serial)
+
+    sym = SymmetryEquivalenceCheck()
+
+    assert sym.compare(atoms, ref_atoms)
 
 
 def test_Geometry_str(geometry, data_regression) -> None:
@@ -151,71 +126,47 @@ def test_Geometry_str(geometry, data_regression) -> None:
     data_regression.check({"str": geometry_str})
 
 
-def test_Geometry_slice(geometry, ndarrays_regression, tol) -> None:
-    site = geometry[0]
-
-    assert site.symbol == "X"
-    assert site.index == 0
-
-    ndarrays_regression.check({"coords": site.coords}, default_tolerance=tol)
-
-
-def test_Geometry_distance_and_image_matrices(
-    geometry, ndarrays_regression, tol
-) -> None:
-    distance_matrix, image_matrix = geometry.distance_and_image_matrices
-
-    ndarrays_regression.check(
-        {"distance_matrix": distance_matrix, "image_matrix": image_matrix},
-        default_tolerance=tol,
-    )
-
-
-def test_Geometry_wannier_assignments(geometry, data_regression) -> None:
-    assignments = geometry.wannier_assignments
-
-    data_regression.check({"wannier_assignments": assignments})
-
-
-def test_Geometry_wannier_assignments_no_wann(geometry_no_x) -> None:
-    with pytest.raises(ValueError):
-        geometry_no_x.wannier_assignments
-
-
-def test_identify_interatomic_interactions_elemental(
+def test_find_interatomic_interactions_elemental(
     geometry_elemental, data_regression
 ) -> None:
     cutoffs = {("C", "C"): 4.5}
 
-    interactions = identify_interatomic_interactions(geometry_elemental, cutoffs)
+    interactions = find_interatomic_interactions(geometry_elemental, cutoffs)
 
     serialised_interactions = serialise_interactions(interactions)
 
     data_regression.check(serialised_interactions)
 
 
-def test_identify_interatomic_interactions_binary(geometry, data_regression) -> None:
+def test_find_interatomic_interactions_binary(geometry, data_regression) -> None:
     cutoffs = {("C", "O"): 4.5}
 
-    interactions = identify_interatomic_interactions(geometry, cutoffs)
+    interactions = find_interatomic_interactions(geometry, cutoffs)
 
     serialised_interactions = serialise_interactions(interactions)
 
     data_regression.check(serialised_interactions)
 
 
-def test_identify_onsite_interactions(geometry, data_regression) -> None:
+def test_find_interatomic_interactions_no_symbols(geometry) -> None:
+    cutoffs = {("B", "N"): 2.0}
+
+    with pytest.raises(ValueError):
+        find_interatomic_interactions(geometry, cutoffs)
+
+
+def test_find_onsite_interactions(geometry, data_regression) -> None:
     symbols = ("C", "O")
 
-    interactions = identify_onsite_interactions(geometry, symbols)
+    interactions = find_onsite_interactions(geometry, symbols)
 
     serialised_interactions = serialise_interactions(interactions)
 
     data_regression.check(serialised_interactions)
 
 
-def test_identify_onsite_interactions_no_symbols(geometry) -> None:
+def test_find_onsite_interactions_no_symbols(geometry) -> None:
     symbols = ("B", "N")
 
     with pytest.raises(ValueError):
-        identify_onsite_interactions(geometry, symbols)
+        find_onsite_interactions(geometry, symbols)
