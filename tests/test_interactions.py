@@ -14,7 +14,6 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import replace
-from typing import Any
 
 import numpy as np
 import pytest
