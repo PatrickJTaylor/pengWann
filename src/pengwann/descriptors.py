@@ -179,7 +179,7 @@ class DescriptorPipeline:
                 raise ValueError(
                     dedent(f"""
                 The projected density of states for Wannier interaction
-                {interaction.tag} must be computed before it can be intgrated. The
+                {interaction.tag} must be computed before it can be integrated. The
                 with_pdos method must be called before the with_integrals method.
                 """)
                 )
