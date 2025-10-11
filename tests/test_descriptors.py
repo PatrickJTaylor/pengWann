@@ -13,240 +13,262 @@
 # You should have received a copy of the GNU General Public License along with pengWann.
 # If not, see <https://www.gnu.org/licenses/>.
 
-from multiprocessing import set_start_method
-from typing import Any
+from dataclasses import replace
 
-import numpy as np
 import pytest
+import numpy as np
+from numpy.typing import NDArray
 
-from pengwann.descriptors import DescriptorCalculator
-from pengwann.interactions import (
-    AtomicInteraction,
-    AtomicInteractionContainer,
-    WannierInteraction,
+from pengwann.descriptors import (
+    compute_coefficients,
+    compute_ipdos,
+    compute_p_ij,
+    compute_pdos,
+    DescriptorPipeline,
+    get_h_ij,
 )
-
-# TODO: Figure out why multithreaded fork() occurs only when pytest is run.
-set_start_method("spawn", force=True)
-
-
-def none_to_nan(data: Any) -> Any:
-    if data is None:
-        return np.nan
-
-    else:
-        return data
+from pengwann.electronic_structure import Basis
+from pengwann.interactions import WannierInteraction
+from pengwann.type_aliases import Hamiltonian
 
 
 @pytest.fixture
-def dcalc(shared_datadir) -> DescriptorCalculator:
-    dos_array = np.load(f"{shared_datadir}/dos_array.npy")
-    kpoints = np.load(f"{shared_datadir}/kpoints.npy")
-    u = np.load(f"{shared_datadir}/U.npy")
-    occupation_matrix = np.load(f"{shared_datadir}/occupation_matrix.npy")
+def dpl() -> DescriptorPipeline:
+    return DescriptorPipeline()
 
+
+@pytest.fixture
+def wannier_interaction() -> WannierInteraction:
+    i, j = 1, 0
+    bl_i = np.array([0, 1, 0])
+    bl_j = np.array([0, 0, 0])
+
+    return WannierInteraction(i, j, bl_i, bl_j)
+
+
+@pytest.fixture
+def basis(shared_datadir) -> Basis:
+    u = np.load(f"{shared_datadir}/U.npy")
+    kpoints = np.load(f"{shared_datadir}/kpoints.npy")
+
+    return Basis(u, kpoints)
+
+
+@pytest.fixture
+def coefficients(shared_datadir) -> NDArray[np.float64]:
+    return np.load(f"{shared_datadir}/coefficients.npy")
+
+
+@pytest.fixture
+def total_dos(shared_datadir) -> NDArray[np.float64]:
+    return np.load(f"{shared_datadir}/total_dos.npy")
+
+
+@pytest.fixture
+def occupation_matrix(shared_datadir) -> NDArray[np.float64]:
+    return np.load(f"{shared_datadir}/occupation_matrix.npy")
+
+
+@pytest.fixture
+def hamiltonian(shared_datadir) -> Hamiltonian:
     h_1 = np.load(f"{shared_datadir}/h_1.npy")
     h_2 = np.load(f"{shared_datadir}/h_2.npy")
 
     h = {(0, -1, 0): h_1, (0, -1, -1): h_2}
 
-    energies = np.arange(-15, 25 + 0.1, 0.1)
-    num_wann = 8
-    nspin = 2
-
-    dcalc = DescriptorCalculator(
-        dos_array, num_wann, nspin, kpoints, u, h, occupation_matrix, energies
-    )
-
-    return dcalc
+    return h
 
 
 @pytest.fixture
-def interactions() -> AtomicInteractionContainer:
-    w_interaction_1 = WannierInteraction(
-        i=1, j=0, bl_i=np.array([0, 1, 0]), bl_j=np.array([0, 0, 0])
-    )
-    w_interaction_2 = WannierInteraction(
-        i=5, j=6, bl_i=np.array([0, 1, 1]), bl_j=np.array([0, 0, 0])
-    )
-    interactions = (
-        AtomicInteraction(
-            i=1,
-            j=2,
-            symbol_i="C",
-            symbol_j="C",
-            sub_interactions=(w_interaction_1, w_interaction_2),
-        ),
-    )
-
-    return AtomicInteractionContainer(sub_interactions=interactions)
+def pdos(shared_datadir) -> NDArray[np.float64]:
+    return np.load(f"{shared_datadir}/pdos.npy")
 
 
-@pytest.mark.filterwarnings("ignore::UserWarning")
-def test_DescriptorCalculator_from_eigenvalues(ndarrays_regression, tol) -> None:
-    eigenvalues = np.array(
-        [
-            [-1.00, -0.75, -0.50, -0.25, 0.25, 0.50, 0.75, 1.00],
-            [-1.20, -0.66, -0.47, -0.30, 0.34, 0.44, 0.67, 0.98],
-        ]
-    )
-    num_wann = 10
-    nspin = 2
-    energy_range = (-5, 5)
-    resolution = 0.01
-    sigma = 0.05
-    kpoints = np.zeros((10, 3))
-    u = np.zeros((10, 10, 10))
+def test_compute_coefficients(basis, ndarrays_regression, tol) -> None:
+    i, j = 1, 0
+    bl_i = np.array([0, 0, 0])
+    bl_j = np.array([-1, 1, 0])
 
-    dcalc = DescriptorCalculator.from_eigenvalues(
-        eigenvalues, num_wann, nspin, energy_range, resolution, sigma, kpoints, u
-    )
+    coefficients = compute_coefficients(i, j, bl_i, bl_j, basis)
 
-    ndarrays_regression.check({"dos_array": dcalc._dos_array}, default_tolerance=tol)
-
-
-def test_DescriptorCalculator_energies(dcalc, ndarrays_regression, tol) -> None:
-    ndarrays_regression.check({"energies": dcalc.energies}, default_tolerance=tol)
+    ndarrays_regression.check({"coefficients": coefficients}, default_tolerance=tol)
 
 
 @pytest.mark.parametrize("resolve_k", (False, True), ids=("sum_k", "resolve_k"))
-class TestkResolvedMethods:
-    def test_DescriptorCalculator_get_dos_matrix(
-        self, dcalc, resolve_k, ndarrays_regression, tol
-    ) -> None:
-        i, j = 1, 0
-        bl_i = np.array([0, 0, 0])
-        bl_j = np.array([-1, 1, 0])
+def test_compute_pdos(
+    coefficients, total_dos, resolve_k, ndarrays_regression, tol
+) -> None:
+    pdos = compute_pdos(coefficients, total_dos, resolve_k)
 
-        c_star = np.conj(dcalc.get_coefficient_matrix(i, bl_i))
-        c = dcalc.get_coefficient_matrix(j, bl_j)
+    ndarrays_regression.check({"pdos": pdos}, default_tolerance=tol)
 
-        dos_matrix = dcalc.get_dos_matrix(c_star, c, resolve_k=resolve_k)
 
-        ndarrays_regression.check({"dos_matrix": dos_matrix}, default_tolerance=tol)
+def test_compute_p_ij(
+    coefficients, occupation_matrix, ndarrays_regression, tol
+) -> None:
+    p_ij = compute_p_ij(coefficients, occupation_matrix)
 
-    @pytest.mark.parametrize(
-        "calc_wohp, calc_wobi",
-        ((False, False), (True, False), (False, True), (True, True)),
-        ids=(
-            "no_wohp, no_wobi",
-            "calc_wohp, no_wobi",
-            "no_wohp, calc_wobi",
-            "calc_wohp, calc_wobi",
-        ),
+    ndarrays_regression.check({"p_ij": p_ij}, default_tolerance=tol)
+
+
+def test_compute_ipdos_sum_k(pdos, ndarrays_regression, tol) -> None:
+    energies = np.arange(-20, 10, 100)
+    mu = 0
+
+    pdos = pdos.sum(axis=1)
+
+    ipdos = compute_ipdos(pdos, energies, mu)
+
+    ndarrays_regression.check({"ipdos": ipdos}, default_tolerance=tol)
+
+
+def test_compute_ipdos_resolve_k(pdos, ndarrays_regression, tol) -> None:
+    energies = np.arange(-20, 10, 100)
+    mu = 0
+
+    ipdos = compute_ipdos(pdos, energies, mu)
+
+    ndarrays_regression.check({"ipdos": ipdos}, default_tolerance=tol)
+
+
+def test_get_h_ij(hamiltonian, ndarrays_regression, tol) -> None:
+    i, j = 5, 6
+    bl_i = np.array([0, 1, 1])
+    bl_j = np.array([0, 0, 0])
+
+    h_ij = get_h_ij(i, j, bl_i, bl_j, hamiltonian)
+
+    ndarrays_regression.check({"h_ij": h_ij}, default_tolerance=tol)
+
+
+def test_get_h_ij_missing_bl_vector(hamiltonian) -> None:
+    i, j = 3, 2
+    bl_i = np.array([1, 0, 0])
+    bl_j = np.array([0, 0, 0])
+
+    with pytest.raises(KeyError):
+        get_h_ij(i, j, bl_i, bl_j, hamiltonian)
+
+
+def test_DescriptorPipeline_with_coefficients(
+    dpl, wannier_interaction, basis, ndarrays_regression, tol
+) -> None:
+    dpl = dpl.with_coefficients(basis)
+
+    processed_interaction = dpl._pipeline[0](wannier_interaction)
+
+    ndarrays_regression.check(
+        {"coefficients": processed_interaction.coefficients}, default_tolerance=tol
     )
-    def test_DescriptorCalculator_assign_descriptors(
+
+
+def test_DescriptorPipeline_without_coefficients(dpl, wannier_interaction) -> None:
+    wannier_interaction = replace(
+        wannier_interaction, coefficients=np.array([0.2, 0.7])
+    )
+    dpl = dpl.without_coefficients()
+
+    processed_interaction = dpl._pipeline[0](wannier_interaction)
+
+    assert processed_interaction.coefficients is None
+
+
+@pytest.mark.parametrize(
+    "with_dependency", (True, False), ids=("with_dependency", "without_dependency")
+)
+class TestOrderDependentProcesses:
+    @pytest.mark.parametrize("resolve_k", (False, True), ids=("sum_k", "resolve_k"))
+    def test_DescriptorPipeline_with_pdos(
         self,
-        dcalc,
-        interactions,
-        calc_wohp,
-        calc_wobi,
+        dpl,
+        wannier_interaction,
+        coefficients,
+        total_dos,
         resolve_k,
+        with_dependency,
         ndarrays_regression,
         tol,
     ) -> None:
-        processed_interactions = dcalc.assign_descriptors(
-            interactions, calc_wohp=calc_wohp, calc_wobi=calc_wobi, resolve_k=resolve_k
-        )
-        descriptors = {}
-        for interaction in processed_interactions:
-            tag = interaction.tag
+        dpl = dpl.with_pdos(total_dos, resolve_k)
 
-            descriptors[tag + "_dos_matrix"] = interaction.dos_matrix
-            descriptors[tag + "_WOHP"] = none_to_nan(interaction.wohp)
-            descriptors[tag + "_WOBI"] = none_to_nan(interaction.wobi)
+        if with_dependency:
+            wannier_interaction = replace(
+                wannier_interaction, coefficients=coefficients
+            )
+            processed_interaction = dpl._pipeline[0](wannier_interaction)
 
-            for w_interaction in interaction.sub_interactions:
-                w_tag = w_interaction.tag
+            ndarrays_regression.check(
+                {"pdos": processed_interaction.pdos}, default_tolerance=tol
+            )
 
-                descriptors[w_tag + "_dos_matrix"] = w_interaction.dos_matrix
-                descriptors[w_tag + "_WOHP"] = none_to_nan(w_interaction.wohp)
-                descriptors[w_tag + "_WOBI"] = none_to_nan(w_interaction.wobi)
+        else:
+            with pytest.raises(ValueError):
+                dpl._pipeline[0](wannier_interaction)
 
-        ndarrays_regression.check(descriptors, default_tolerance=tol)
-
-    @pytest.mark.parametrize("calc_p_ij", (False, True), ids=("no_p_ij", "calc_p_ij"))
-    def test_DescriptorCalculator_parallelise(
-        self, dcalc, interactions, resolve_k, calc_p_ij, ndarrays_regression, tol
+    def test_DescriptorPipeline_with_p_ij(
+        self,
+        dpl,
+        wannier_interaction,
+        coefficients,
+        occupation_matrix,
+        with_dependency,
+        ndarrays_regression,
+        tol,
     ) -> None:
-        wannier_interactions = interactions[1, 2].sub_interactions
+        dpl = dpl.with_p_ij(occupation_matrix)
 
-        processed_wannier_interactions = dcalc.parallelise(
-            wannier_interactions, calc_p_ij=calc_p_ij, resolve_k=resolve_k, num_proc=4
-        )
+        if with_dependency:
+            wannier_interaction = replace(
+                wannier_interaction, coefficients=coefficients
+            )
+            processed_interaction = dpl._pipeline[0](wannier_interaction)
 
-        descriptors = {}
-        for w_interaction in processed_wannier_interactions:
-            tag = w_interaction.tag
+            ndarrays_regression.check(
+                {"p_ij": processed_interaction.p_ij}, default_tolerance=tol
+            )
 
-            descriptors[tag + "_dos_matrix"] = w_interaction.dos_matrix
-            descriptors[tag + "_p_ij"] = none_to_nan(w_interaction.p_ij)
+        else:
+            with pytest.raises(ValueError):
+                dpl._pipeline[0](wannier_interaction)
 
-        ndarrays_regression.check(descriptors, default_tolerance=tol)
+    @pytest.mark.parametrize("resolve_k", (False, True), ids=("sum_k", "resolve_k"))
+    def test_DescriptorPipeline_with_integrals(
+        self,
+        dpl,
+        wannier_interaction,
+        pdos,
+        resolve_k,
+        with_dependency,
+        ndarrays_regression,
+        tol,
+    ) -> None:
+        energies = np.arange(-20, 10, 100)
+        mu = 0
+        dpl = dpl.with_integrals(energies, mu)
+
+        if not resolve_k:
+            pdos = pdos.sum(axis=1)
+
+        if with_dependency:
+            wannier_interaction = replace(wannier_interaction, pdos=pdos)
+            processed_interaction = dpl._pipeline[0](wannier_interaction)
+
+            ndarrays_regression.check(
+                {"ipdos": processed_interaction.ipdos}, default_tolerance=tol
+            )
+
+        else:
+            with pytest.raises(ValueError):
+                dpl._pipeline[0](wannier_interaction)
 
 
-def test_DescriptorCalculator_get_coefficient_matrix(
-    dcalc, ndarrays_regression, tol
+def test_DescriptorPipeline_with_h_ij(
+    dpl, wannier_interaction, hamiltonian, ndarrays_regression, tol
 ) -> None:
-    i = 0
-    bl_vector = np.array([0, 0, 0])
+    dpl = dpl.with_h_ij(hamiltonian)
 
-    c = dcalc.get_coefficient_matrix(i, bl_vector)
+    processed_interaction = dpl._pipeline[0](wannier_interaction)
 
-    ndarrays_regression.check({"C_iR": c}, default_tolerance=tol)
-
-
-def test_DescriptorCalculator_get_density_matrix_element(
-    dcalc, ndarrays_regression, tol
-) -> None:
-    i, j = 1, 4
-    bl_i = np.array([0, 0, 0])
-    bl_j = np.array([-1, 0, 0])
-
-    c_star = np.conj(dcalc.get_coefficient_matrix(i, bl_i))
-    c = dcalc.get_coefficient_matrix(j, bl_j)
-
-    p_ij = dcalc.get_density_matrix_element(c_star, c)
-
-    ndarrays_regression.check({"P_ij": p_ij}, default_tolerance=tol)
-
-
-def test_DescriptorCalculator_get_density_matrix_element_no_occupation_matrix(
-    dcalc,
-) -> None:
-    dcalc._occupation_matrix = None
-
-    c_star = np.ones_like((10, 10))
-    c = c_star
-
-    with pytest.raises(TypeError):
-        dcalc.get_density_matrix_element(c_star, c)
-
-
-def test_DescriptorCalculator_assign_descriptors_no_h(dcalc, interactions) -> None:
-    dcalc._h = None
-
-    with pytest.raises(TypeError):
-        dcalc.assign_descriptors(interactions)
-
-
-def test_DescriptorCalculator_assign_descriptors_no_occupation_matrix(
-    dcalc, interactions
-) -> None:
-    dcalc._occupation_matrix = None
-
-    with pytest.raises(TypeError):
-        dcalc.assign_descriptors(interactions)
-
-
-def test_DescriptorCalculator_parallelise_no_occupation_matrix(
-    dcalc, interactions
-) -> None:
-    dcalc._occupation_matrix = None
-    wannier_interactions = interactions.sub_interactions[0].sub_interactions
-
-    calc_p_ij = True
-    resolve_k = False
-
-    with pytest.raises(TypeError):
-        dcalc.parallelise(wannier_interactions, calc_p_ij, resolve_k)
+    ndarrays_regression.check(
+        {"h_ij": processed_interaction.h_ij}, default_tolerance=tol
+    )
