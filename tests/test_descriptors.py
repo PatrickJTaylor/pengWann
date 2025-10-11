@@ -28,13 +28,38 @@ from pengwann.descriptors import (
     get_h_ij,
 )
 from pengwann.electronic_structure import Basis
-from pengwann.interactions import WannierInteraction
+from pengwann.interactions import (
+    AtomicInteractions,
+    AtomicInteraction,
+    WannierInteraction,
+)
 from pengwann.type_aliases import Hamiltonian
 
 
 @pytest.fixture
 def dpl() -> DescriptorPipeline:
     return DescriptorPipeline()
+
+
+@pytest.fixture
+def interactions() -> AtomicInteractions:
+    w_interaction_1 = WannierInteraction(
+        i=1, j=0, bl_i=np.array([0, 1, 0]), bl_j=np.array([0, 0, 0])
+    )
+    w_interaction_2 = WannierInteraction(
+        i=5, j=6, bl_i=np.array([0, 1, 1]), bl_j=np.array([0, 0, 0])
+    )
+    interactions = (
+        AtomicInteraction(
+            i=1,
+            j=2,
+            symbol_i="C",
+            symbol_j="C",
+            wannier_interactions=(w_interaction_1, w_interaction_2),
+        ),
+    )
+
+    return AtomicInteractions(atomic_interactions=interactions)
 
 
 @pytest.fixture
@@ -272,3 +297,52 @@ def test_DescriptorPipeline_with_h_ij(
     ndarrays_regression.check(
         {"h_ij": processed_interaction.h_ij}, default_tolerance=tol
     )
+
+
+def test_DescriptorPipeline_pipe(
+    dpl,
+    interactions,
+    basis,
+    total_dos,
+    hamiltonian,
+    occupation_matrix,
+    ndarrays_regression,
+    tol,
+) -> None:
+    energies = np.arange(-20, 10, 100)
+    mu = 0
+
+    processed_interactions = (
+        dpl.with_coefficients(basis)
+        .with_pdos(total_dos)
+        .with_p_ij(occupation_matrix)
+        .without_coefficients()
+        .with_h_ij(hamiltonian)
+        .with_integrals(energies, mu)
+        .pipe(interactions)
+    )
+
+    descriptors = {}
+    for interaction in processed_interactions:
+        tag = interaction.tag
+
+        descriptors[tag + "_pdos"] = interaction.pdos
+        descriptors[tag + "_wohp"] = interaction.wohp
+        descriptors[tag + "_wobi"] = interaction.wobi
+        descriptors[tag + "_ipdos"] = interaction.ipdos
+        descriptors[tag + "_iwohp"] = interaction.iwohp
+        descriptors[tag + "_iwobi"] = interaction.iwobi
+
+        for w_interaction in interaction.wannier_interactions:
+            w_tag = w_interaction.tag
+
+            assert w_interaction.coefficients is None
+
+            descriptors[w_tag + "_pdos"] = w_interaction.pdos
+            descriptors[w_tag + "_wohp"] = w_interaction.wohp
+            descriptors[w_tag + "_wobi"] = w_interaction.wobi
+            descriptors[w_tag + "_ipdos"] = w_interaction.ipdos
+            descriptors[w_tag + "_iwohp"] = w_interaction.iwohp
+            descriptors[w_tag + "_iwobi"] = w_interaction.iwobi
+
+    ndarrays_regression.check(descriptors, default_tolerance=tol)
