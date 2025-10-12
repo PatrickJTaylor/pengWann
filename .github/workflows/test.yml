@@ -41,6 +41,7 @@ jobs:
           uv pip install pengwann --find-links dist
           uv pip install pytest pytest-cov pytest-regressions pytest-random-order
           uv pip install pymatgen
+          uv pip install ase
 
       - name: Run test suite
         run: uv run --no-sync pytest
