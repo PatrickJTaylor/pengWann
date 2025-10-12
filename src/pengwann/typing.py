@@ -11,5 +11,7 @@ from pengwann.interactions import (
 )
 
 Hamiltonian: TypeAlias = dict[tuple[int, int, int], NDArray[np.complex128]]
-Interactions: TypeAlias = AtomicInteractions | AtomicInteraction | Sequence[WannierInteraction]
+Interactions: TypeAlias = (
+    AtomicInteractions | AtomicInteraction | Sequence[WannierInteraction]
+)
 WannierTransform: TypeAlias = Callable[[WannierInteraction], WannierInteraction]
