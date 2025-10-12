@@ -42,7 +42,7 @@ from pengwann.interactions import (
     AtomicInteractions,
     WannierInteraction,
 )
-from pengwann.type_aliases import Hamiltonian, Interactions, WannierTransform
+from pengwann.typing import Hamiltonian, Interactions, WannierTransform
 
 
 @dataclass(frozen=True, slots=True)

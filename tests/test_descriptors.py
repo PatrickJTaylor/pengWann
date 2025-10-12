@@ -33,7 +33,7 @@ from pengwann.interactions import (
     AtomicInteraction,
     WannierInteraction,
 )
-from pengwann.type_aliases import Hamiltonian
+from pengwann.typing import Hamiltonian
 
 
 @pytest.fixture
