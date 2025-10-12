@@ -1,17 +1,17 @@
-str: 'Wannier interaction 0[0, 0, 0] <=> 1[0, 0, 0]
+str: 'Wannier Interaction 0[0, 0, 0] <=> 1[0, 0, 0]
 
   =============================================
 
-  DOS matrix => Calculated
+  PDOS => Computed
 
-  H_ij => 2
+  H_ij => 2.0
 
   P_ij => 0.5
 
-  IWOHP => Not calculated
+  IPDOS => 3.8
 
-  IWOBI => Not calculated
+  IWOHP => -7.6
 
-  Population => Not calculated
+  IWOBI => 1.9
 
   '

@@ -1,20 +1,18 @@
-str: 'Atomic interaction Ga1 <=> As2
+str: 'Atomic Interaction Ga1 <=> As2
 
   ==============================
 
-  DOS matrix => Not calculated
+  PDOS => Computed
 
-  WOHP => Not calculated
+  WOHP => Computed
 
-  WOBI => Not calculated
+  WOBI => Computed
 
-  IWOHP => Not calculated
+  IPDOS => 4.9
 
-  IWOBI => Not calculated
+  IWOHP => -10.35
 
-  Population => Not calculated
-
-  Charge => Not calculated
+  IWOBI => 2.67
 
 
 

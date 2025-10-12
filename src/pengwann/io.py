@@ -29,61 +29,122 @@ import os
 import numpy as np
 from numpy.typing import NDArray
 
+from pengwann._geometry import _build_distance_and_image_matrices  # pyright: ignore[reportPrivateUsage]
+from pengwann.electronic_structure import Basis
+from pengwann.geometry import Geometry
+from pengwann.typing import Hamiltonian
 
-def read(
+
+def read_wannier90_outputs(
     seedname: str, path: str = "."
-) -> tuple[
-    NDArray[np.float64],
-    NDArray[np.float64],
-    NDArray[np.complex128],
-    dict[tuple[int, int, int], NDArray[np.complex128]],
-]:
+) -> tuple[Geometry, Basis, NDArray[np.float64]]:
+    geometry = read_geometry(seedname, path)
+    basis = read_basis(seedname, path)
+
+    num_kpoints, num_bands = basis.u.shape[:-1]
+    eigenvalues = read_eigenvalues(f"{path}/{seedname}.eig", num_bands, num_kpoints)
+
+    return geometry, basis, eigenvalues
+
+
+def read_geometry(seedname: str, path: str = ".") -> Geometry:
+    symbols, cart_coords = read_xyz(f"{path}/{seedname}_centres.xyz")
+
+    if "X" not in symbols:
+        raise ValueError(
+            f'No Wannier centres ("X" atoms) found in {path}/{seedname}_centres.xyz.'
+        )
+
+    cell = read_cell(f"{path}/{seedname}.wout")
+
+    frac_coords = np.transpose(np.linalg.inv(cell) @ cart_coords)
+
+    distance_matrix, image_matrix = _build_distance_and_image_matrices(
+        frac_coords, cell
+    )
+
+    def assign_wannier_indices(
+        symbols: tuple[str, ...], distance_matrix: NDArray[np.float64]
+    ) -> tuple[tuple[int, ...], ...]:
+        wannier_indices: list[int] = []
+        atom_indices: list[int] = []
+        for idx, symbol in enumerate(symbols):
+            if symbol == "X":
+                wannier_indices.append(idx)
+
+            else:
+                atom_indices.append(idx)
+
+        num_wann = len(wannier_indices)
+        wannier_assignments: list[list[int]] = [[] for _ in symbols]
+        for i in wannier_indices:
+            distances = distance_matrix[i, num_wann:]
+            min_idx = distances.argmin() + num_wann
+
+            wannier_assignments[min_idx].append(i)
+
+        return tuple(tuple(indices) for indices in wannier_assignments)
+
+    wannier_assignments = assign_wannier_indices(symbols, distance_matrix)
+
+    return Geometry(
+        symbols,
+        frac_coords,
+        cell,
+        distance_matrix,
+        image_matrix,
+        wannier_assignments,
+    )
+
+
+def read_basis(seedname: str, path: str = ".") -> Basis:
+    u, kpoints = read_unitary_matrices(f"{path}/{seedname}_u.mat")
+    if os.path.isfile(f"{path}/{seedname}_u_dis.mat"):
+        u_dis, _ = read_unitary_matrices(f"{path}/{seedname}_u_dis.mat")
+        u = u_dis @ u
+
+    return Basis(u, kpoints)
+
+
+def read_hamiltonian(seedname: str, path: str = ".") -> Hamiltonian:
     """
-    Wrapper function for parsing various Wannier90 output files.
-
-    In total, this function will parse:
-
-    - seedname.eig
-    - seedname_u.mat
-    - seedname_u_dis.mat (if disentanglement was used)
-    - seedname_hr.dat
+    Parse the Wannier Hamiltonian from a Wannier90 seedname_hr.dat file.
 
     Parameters
     ----------
-    seedname : str
-        The seedname (prefix for all output files) chosen in the prior Wannier90
-        calculation.
-    path : str, optional
-        Filepath to the Wannier90 output files. Defaults to '.' i.e. the current
-        working directory.
+    path : str
+        The filepath to seedname_hr.dat.
 
     Returns
     -------
-    kpoints : ndarray of float
-        The k-point mesh used in the ab-initio calculation.
-    eigenvalues : ndarray of float
-        The Kohn-Sham eigenvalues.
-    u : ndarray of complex
-        The unitary matrices U^k that define the Wannier functions in terms of the
-        canonical Bloch states.
     h : dict of {3-length tuple of int : ndarray of complex} pairs.
-        The Hamiltonian in the Wannier basis.
-
-    See Also
-    --------
-    read_eigenvalues
-    read_u
-    read_hamiltonian
+        The Wannier Hamiltonian.
     """
-    u, kpoints = read_u(f"{path}/{seedname}_u.mat")
-    if os.path.isfile(f"{path}/{seedname}_u_dis.mat"):
-        u_dis, _ = read_u(f"{path}/{seedname}_u_dis.mat")
-        u = u_dis @ u
+    with open(f"{path}/{seedname}_hr.dat", "r") as stream:
+        lines = stream.readlines()
 
-    h = read_hamiltonian(f"{path}/{seedname}_hr.dat")
-    eigenvalues = read_eigenvalues(f"{path}/{seedname}.eig", u.shape[1], u.shape[0])
+    num_wann = int(lines[1])
+    num_rpoints = int(lines[2])
 
-    return kpoints, eigenvalues, u, h
+    start_idx = int(np.ceil(num_rpoints / 15)) + 3
+
+    h: Hamiltonian = {}
+
+    for line in lines[start_idx:]:
+        data = line.split()
+        bl = tuple([int(string) for string in data[:3]])
+
+        assert len(bl) == 3
+
+        if bl not in h.keys():
+            h[bl] = np.zeros((num_wann, num_wann), dtype=np.complex128)
+
+        m, n = [int(string) - 1 for string in data[3:5]]
+        real, imaginary = [float(string) for string in data[5:]]
+
+        h[bl][m, n] = complex(real, imaginary)
+
+    return h
 
 
 def read_eigenvalues(
@@ -125,7 +186,9 @@ def read_eigenvalues(
     return eigenvalues
 
 
-def read_u(path: str) -> tuple[NDArray[np.complex128], NDArray[np.float64]]:
+def read_unitary_matrices(
+    path: str,
+) -> tuple[NDArray[np.complex128], NDArray[np.float64]]:
     """
     Parse the unitary matrices U^k from a Wannier90 _u.mat file.
 
@@ -167,87 +230,6 @@ def read_u(path: str) -> tuple[NDArray[np.complex128], NDArray[np.float64]]:
     return u, kpoints
 
 
-def read_hamiltonian(path: str) -> dict[tuple[int, int, int], NDArray[np.complex128]]:
-    """
-    Parse the Wannier Hamiltonian from a Wannier90 seedname_hr.dat file.
-
-    Parameters
-    ----------
-    path : str
-        The filepath to seedname_hr.dat.
-
-    Returns
-    -------
-    h : dict of {3-length tuple of int : ndarray of complex} pairs.
-        The Wannier Hamiltonian.
-    """
-    with open(path, "r") as stream:
-        lines = stream.readlines()
-
-    num_wann = int(lines[1])
-    num_rpoints = int(lines[2])
-
-    start_idx = int(np.ceil(num_rpoints / 15)) + 3
-
-    h: dict[tuple[int, int, int], NDArray[np.complex128]] = {}
-
-    for line in lines[start_idx:]:
-        data = line.split()
-        bl = tuple([int(string) for string in data[:3]])
-
-        assert len(bl) == 3
-
-        if bl not in h.keys():
-            h[bl] = np.zeros((num_wann, num_wann), dtype=np.complex128)
-
-        m, n = [int(string) - 1 for string in data[3:5]]
-        real, imaginary = [float(string) for string in data[5:]]
-
-        h[bl][m, n] = complex(real, imaginary)
-
-    return h
-
-
-def read_xyz(path: str) -> tuple[list[str], NDArray[np.float64]]:
-    """
-    Parse the symbols and coordinates from a Wannier90 seedname_centres.xyz file.
-
-    Parameters
-    ----------
-    path : str
-        The filepath to seedname_centres.xyz
-
-    Returns
-    -------
-    symbols : list of str
-        The elemental symbol for each Wannier centre or atom in the xyz file.
-
-    coords : list of tuple of float
-        The cartesian coordinates for each Wannier centre or atom in the xyz file.
-    """
-    with open(path, "r") as stream:
-        lines = stream.readlines()
-
-    start_idx = 2
-
-    symbols: list[str] = []
-    coords_list: list[tuple[float, float, float]] = []
-    for line in lines[start_idx:]:
-        data = line.split()
-
-        symbol = str(data[0]).capitalize()
-        coords = tuple(float(coord) for coord in data[1:])
-
-        assert len(coords) == 3
-
-        symbols.append(symbol)
-        coords_list.append(coords)
-
-    coords = np.array(coords_list, dtype=np.float64).T
-
-    return symbols, coords
-
-
 def read_cell(path: str) -> NDArray[np.float64]:
     """
     Parse a Wannier90 seedname.wout file to extract the cell vectors.
@@ -275,6 +257,45 @@ def read_cell(path: str) -> NDArray[np.float64]:
 
             break
 
-    cell = np.array(cell_list, dtype=np.float64)
+    cell = np.array(cell_list)
 
     return cell
+
+
+def read_xyz(path: str) -> tuple[tuple[str, ...], NDArray[np.float64]]:
+    """
+    Parse the symbols and coordinates from a Wannier90 seedname_centres.xyz file.
+
+    Parameters
+    ----------
+    path : str
+        The filepath to seedname_centres.xyz
+
+    Returns
+    -------
+    symbols : tuple of str
+        The elemental symbol for each Wannier centre or atom in the xyz file.
+
+    coords : ndarray of float
+        The cartesian coordinates for each Wannier centre or atom in the xyz file.
+    """
+    with open(path, "r") as stream:
+        lines = stream.readlines()
+
+    start_idx = 2
+
+    symbols_list: list[str] = []
+    coords_list: list[list[float]] = []
+    for line in lines[start_idx:]:
+        data = line.split()
+
+        symbol = str(data[0]).capitalize()
+        site_coords = [float(coord) for coord in data[1:]]
+
+        symbols_list.append(symbol)
+        coords_list.append(site_coords)
+
+    symbols = tuple(symbols_list)
+    coords = np.transpose(coords_list)
+
+    return symbols, coords

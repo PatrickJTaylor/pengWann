@@ -25,15 +25,16 @@ occupation matrix needed to calculated WOBIs with the
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import Any
-
 import numpy as np
 from numpy.typing import NDArray
 from scipy.special import erf
 
+from pengwann.electronic_structure import _validate_sigma_nspin  # pyright: ignore[reportPrivateUsage]
 
-def fixed(eigenvalues: NDArray[np.float64], mu: float) -> NDArray[np.float64]:
+
+def compute_fixed_occupations(
+    eigenvalues: NDArray[np.float64], mu: float, nspin: int
+) -> NDArray[np.float64]:
     r"""
     A simple heaviside occupation function.
 
@@ -60,13 +61,13 @@ def fixed(eigenvalues: NDArray[np.float64], mu: float) -> NDArray[np.float64]:
         0\; \mathrm{if}\; \epsilon_{nk} > \mu.
         \end{cases}
     """
-    occupation_matrix = np.heaviside(-1 * (eigenvalues - mu), 1)
+    occupation_matrix = nspin * np.heaviside(-1 * (eigenvalues - mu), 1)
 
     return occupation_matrix
 
 
-def fermi_dirac(
-    eigenvalues: NDArray[np.float64], mu: float, sigma: float
+def compute_fermi_dirac_occupations(
+    eigenvalues: NDArray[np.float64], mu: float, sigma: float, nspin: int
 ) -> NDArray[np.float64]:
     r"""
     The Fermi-Dirac occupation function.
@@ -94,17 +95,18 @@ def fermi_dirac(
         f_{nk} = \left(\exp\left[\frac{\epsilon_{nk} - \mu}{\sigma}\right] + 1\right)
         ^{-1}.
     """
-    if sigma <= 0:
-        raise ValueError("The smearing width must > 0, {sigma} is <= 0")
+    _validate_sigma_nspin(sigma, nspin)
 
     x = (eigenvalues - mu) / sigma
     occupation_matrix = 1 / (np.exp(x) + 1)
 
+    occupation_matrix *= nspin
+
     return occupation_matrix
 
 
-def gaussian(
-    eigenvalues: NDArray[np.float64], mu: float, sigma: float
+def compute_gaussian_occupations(
+    eigenvalues: NDArray[np.float64], mu: float, sigma: float, nspin: int
 ) -> NDArray[np.float64]:
     r"""
     A Gaussian occupation function.
@@ -132,16 +134,17 @@ def gaussian(
         f_{nk} = \frac{1}{2}\left[1 - \mathrm{erf}\left(\frac{\epsilon_{nk} -
         \mu}{\sigma}\right)\right]
     """
-    if sigma <= 0:
-        raise ValueError("The smearing width must > 0, {sigma} is <= 0")
+    _validate_sigma_nspin(sigma, nspin)
 
     x = (eigenvalues - mu) / sigma
 
-    return 0.5 * (1 - erf(x))
+    occupation_matrix = nspin * 0.5 * (1 - erf(x))
+
+    return occupation_matrix
 
 
-def cold(
-    eigenvalues: NDArray[np.float64], mu: float, sigma: float
+def compute_cold_occupations(
+    eigenvalues: NDArray[np.float64], mu: float, sigma: float, nspin: int
 ) -> NDArray[np.float64]:
     r"""
     The Marzari-Vanderbilt (cold) occupation function.
@@ -175,72 +178,14 @@ def cold(
     ----------
     .. footbibliography::
     """
-    if sigma <= 0:
-        raise ValueError("The smearing width must > 0, {sigma} is <= 0")
+    _validate_sigma_nspin(sigma, nspin)
 
     x = (eigenvalues - mu) / sigma
 
-    return 0.5 * (
+    occupation_matrix = 0.5 * (
         np.sqrt(2 / np.pi) * np.exp(-(x**2) - np.sqrt(2) * x - 0.5) + 1 - erf(x + 0.5)
     )
 
-
-def get_occupation_matrix(
-    eigenvalues: NDArray[np.float64],
-    mu: float,
-    nspin: int,
-    occupation_function: Callable[..., NDArray[np.float64]] = fixed,
-    **function_kwargs: Any,
-) -> NDArray[np.float64]:
-    """
-    Reconstruct the occupation matrix from an ab-initio calculation.
-
-    Parameters
-    ----------
-    eigenvalues : ndarray of float
-        The Kohn-Sham eigenvalues.
-    mu : float
-        The Fermi level.
-    nspin : int
-        The number of electrons per fully-occupied Kohn-Sham state. For
-        non-spin-polarised calculations set to 2, for spin-polarised calculations set
-        to 1.
-    occupation_function : callable, optional
-        The occupation function used to calculate the occupation matrix. Defaults to
-        :py:func:`~pengwann.occupations.fixed` (i.e. fixed occupations).
-    **function_kwargs
-        Additional keyword arguments to be passed to `occupation_function`.
-
-    Returns
-    -------
-    occupation_matrix : ndarray of float
-        The occupation matrix.
-
-    See Also
-    --------
-    pengwann.io.read_eigenvalues
-
-    Notes
-    -----
-    Ideally the occupation matrix should be read in directly from the ab initio code
-    (in which case this function is redundant). Failing that, the occupation matrix can
-    be reconstructed so long as the correct occupation function is used.
-
-    Various pre-defined occupation functions (Gaussian, Marzari-Vanderbilt etc) can be
-    found in this module. If none of these match the occupation function used by the ab
-    initio code, a custom occupation function can be defined and passed as
-    `occupation_function` (so long as it takes `eigenvalues` and `mu` as the first two
-    positional arguments).
-    """
-    if nspin not in (1, 2):
-        raise ValueError(
-            f"""nspin can only be 1 (spin-polarised) or 2 (non-spin-polarised), not
-            {nspin}.
-        """
-        )
-
-    occupation_matrix = occupation_function(eigenvalues, mu, **function_kwargs)
-
     occupation_matrix *= nspin
 
-    return occupation_matrix.T
+    return occupation_matrix

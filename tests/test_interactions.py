@@ -14,38 +14,37 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import replace
-from typing import Any
 
 import numpy as np
 import pytest
 
 from pengwann.interactions import (
     AtomicInteraction,
-    AtomicInteractionContainer,
+    AtomicInteractions,
     WannierInteraction,
 )
-
-
-def none_to_nan(data: Any) -> Any:
-    if data is None:
-        return np.nan
-
-    else:
-        return data
 
 
 @pytest.fixture
 def wannier_interaction() -> WannierInteraction:
     i = 0
     j = 1
-    bl_i = np.array([0, 0, 0])
-    bl_j = np.array([0, 0, 0])
-    dos_matrix = np.linspace(0, 50, 100)
-    h_ij = 2
-    p_ij = 0.5
+    bl_i = np.array([0, 0, 0], dtype=np.int32)
+    bl_j = np.array([0, 0, 0], dtype=np.int32)
+    pdos = np.linspace(0, 50, 100)
+    h_ij = np.float64(2)
+    p_ij = np.float64(0.5)
+    ipdos = np.float64(3.8)
 
     return WannierInteraction(
-        i=i, j=j, bl_i=bl_i, bl_j=bl_j, dos_matrix=dos_matrix, h_ij=h_ij, p_ij=p_ij
+        i=i,
+        j=j,
+        bl_i=bl_i,
+        bl_j=bl_j,
+        pdos=pdos,
+        h_ij=h_ij,
+        p_ij=p_ij,
+        ipdos=ipdos,
     )
 
 
@@ -53,20 +52,22 @@ def wannier_interaction() -> WannierInteraction:
 def atomic_interaction(wannier_interaction) -> AtomicInteraction:
     i = 2
     j = 3
-    bl_i = np.array([1, 0, 0])
-    bl_j = np.array([0, 0, 0])
-    dos_matrix = np.linspace(0, 25, 100)
-    h_ij = 2.5
-    p_ij = 0.7
+    bl_i = np.array([1, 0, 0], dtype=np.int32)
+    bl_j = np.array([0, 0, 0], dtype=np.int32)
+    pdos = np.linspace(0, 25, 100)
+    h_ij = np.float64(2.5)
+    p_ij = np.float64(0.7)
+    ipdos = np.float64(1.1)
 
     second_interaction = WannierInteraction(
         i=i,
         j=j,
         bl_i=bl_i,
         bl_j=bl_j,
-        dos_matrix=dos_matrix,
+        pdos=pdos,
         h_ij=h_ij,
         p_ij=p_ij,
+        ipdos=ipdos,
     )
     wannier_interactions = (wannier_interaction, second_interaction)
 
@@ -77,30 +78,30 @@ def atomic_interaction(wannier_interaction) -> AtomicInteraction:
         j=j,
         symbol_i=symbol_i,
         symbol_j=symbol_j,
-        sub_interactions=wannier_interactions,
+        wannier_interactions=wannier_interactions,
     )
 
 
 @pytest.fixture
-def interaction_container(
-    wannier_interaction, atomic_interaction
-) -> AtomicInteractionContainer:
+def atomic_interactions(wannier_interaction, atomic_interaction) -> AtomicInteractions:
     i = 4
     j = 5
-    bl_i = np.array([0, 1, 0])
-    bl_j = np.array([0, 0, 0])
-    dos_matrix = np.linspace(0, 30, 100)
-    h_ij = 1.5
-    p_ij = 0.2
+    bl_i = np.array([0, 1, 0], dtype=np.int32)
+    bl_j = np.array([0, 0, 0], dtype=np.int32)
+    pdos = np.linspace(0, 30, 100)
+    h_ij = np.float64(1.5)
+    p_ij = np.float64(0.2)
+    ipdos = np.float64(2.3)
 
     second_interaction = WannierInteraction(
         i=i,
         j=j,
         bl_i=bl_i,
         bl_j=bl_j,
-        dos_matrix=dos_matrix,
+        pdos=pdos,
         h_ij=h_ij,
         p_ij=p_ij,
+        ipdos=ipdos,
     )
     wannier_interactions = (wannier_interaction, second_interaction)
 
@@ -110,82 +111,72 @@ def interaction_container(
         j=j,
         symbol_i=symbol_i,
         symbol_j=symbol_j,
-        sub_interactions=wannier_interactions,
+        wannier_interactions=wannier_interactions,
     )
 
-    return AtomicInteractionContainer(
-        sub_interactions=(atomic_interaction, second_atomic_interaction)
+    return AtomicInteractions(
+        atomic_interactions=(atomic_interaction, second_atomic_interaction)
     )
 
 
-def test_WannierInteraction_wohp(wannier_interaction, ndarrays_regression, tol) -> None:
-    ndarrays_regression.check({"WOHP": wannier_interaction.wohp}, default_tolerance=tol)
+@pytest.mark.parametrize(
+    "property_name",
+    ("wohp", "wobi", "iwohp", "iwobi"),
+    ids=("wohp", "wobi", "iwohp", "iwobi"),
+)
+def test_WannierInteraction_properties(
+    property_name, wannier_interaction, ndarrays_regression, tol
+) -> None:
+    descriptor = getattr(wannier_interaction, property_name)
+
+    ndarrays_regression.check({property_name: descriptor}, default_tolerance=tol)
 
 
-def test_WannierInteraction_wobi(wannier_interaction, ndarrays_regression, tol) -> None:
-    ndarrays_regression.check({"WOBI": wannier_interaction.wobi}, default_tolerance=tol)
-
-
-def test_WannierInteraction_wohp_no_dos_matrix(wannier_interaction) -> None:
-    wannier_interaction = wannier_interaction._replace(dos_matrix=None)
+def test_WannierInteraction_wohp_no_pdos(wannier_interaction) -> None:
+    wannier_interaction = replace(wannier_interaction, pdos=None)
 
     assert wannier_interaction.wohp is None
 
 
 def test_WannierInteraction_wohp_no_h_ij(wannier_interaction) -> None:
-    wannier_interaction = wannier_interaction._replace(h_ij=None)
+    wannier_interaction = replace(wannier_interaction, h_ij=None)
 
     assert wannier_interaction.wohp is None
 
 
-def test_WannierInteraction_wobi_no_dos_matrix(wannier_interaction) -> None:
-    wannier_interaction = wannier_interaction._replace(dos_matrix=None)
+def test_WannierInteraction_wobi_no_pdos(wannier_interaction) -> None:
+    wannier_interaction = replace(wannier_interaction, pdos=None)
 
     assert wannier_interaction.wobi is None
 
 
 def test_WannierInteraction_wobi_no_p_ij(wannier_interaction) -> None:
-    wannier_interaction = wannier_interaction._replace(p_ij=None)
+    wannier_interaction = replace(wannier_interaction, p_ij=None)
 
     assert wannier_interaction.wobi is None
 
 
-def test_WannierInteraction_with_integrals(
-    wannier_interaction, ndarrays_regression, tol
-) -> None:
-    energies = np.linspace(-20, 10, 100)
-    mu = 0
-
-    wannier_interaction = wannier_interaction.with_integrals(energies, mu)
-
-    ndarrays_regression.check(
-        {
-            "population": wannier_interaction.population,
-            "IWOHP": wannier_interaction.iwohp,
-            "IWOBI": wannier_interaction.iwobi,
-        },
-        default_tolerance=tol,
-    )
-
-
-def test_WannierInteraction_with_integrals_no_dos_matrix(wannier_interaction) -> None:
-    energies = np.linspace(-20, 10, 100)
-    mu = 0
-
-    wannier_interaction = wannier_interaction._replace(dos_matrix=None)
-
-    with pytest.raises(TypeError):
-        wannier_interaction.with_integrals(energies, mu)
-
-
-def test_WannierInteraction_with_integrals_no_elements(wannier_interaction) -> None:
-    energies = np.linspace(-20, 10, 100)
-    mu = 0
-
-    wannier_interaction = wannier_interaction._replace(h_ij=None, p_ij=None)
-    wannier_interaction = wannier_interaction.with_integrals(energies, mu)
+def test_WannierInteraction_iwohp_no_ipdos(wannier_interaction) -> None:
+    wannier_interaction = replace(wannier_interaction, ipdos=None)
 
     assert wannier_interaction.iwohp is None
+
+
+def test_WannierInteraction_iwohp_no_h_ij(wannier_interaction) -> None:
+    wannier_interaction = replace(wannier_interaction, h_ij=None)
+
+    assert wannier_interaction.iwohp is None
+
+
+def test_WannierInteraction_iwobi_no_ipdos(wannier_interaction) -> None:
+    wannier_interaction = replace(wannier_interaction, ipdos=None)
+
+    assert wannier_interaction.iwobi is None
+
+
+def test_WannierInteraction_iwobi_no_p_ij(wannier_interaction) -> None:
+    wannier_interaction = replace(wannier_interaction, p_ij=None)
+
     assert wannier_interaction.iwobi is None
 
 
@@ -193,6 +184,79 @@ def test_WannierInteraction_str(wannier_interaction, data_regression) -> None:
     wannier_interaction_str = str(wannier_interaction)
 
     data_regression.check({"str": wannier_interaction_str})
+
+
+@pytest.mark.parametrize(
+    "property_name",
+    ("pdos", "wohp", "wobi", "ipdos", "iwohp", "iwobi"),
+    ids=("pdos", "wohp", "wobi", "ipdos", "iwohp", "iwobi"),
+)
+def test_AtomicInteraction_properties(
+    property_name, atomic_interaction, ndarrays_regression, tol
+) -> None:
+    descriptor = getattr(atomic_interaction, property_name)
+
+    ndarrays_regression.check({property_name: descriptor}, default_tolerance=tol)
+
+
+def test_AtomicInteraction_pdos_none(atomic_interaction) -> None:
+    new_wann = replace(atomic_interaction.wannier_interactions[0], pdos=None)
+    wannier_interactions = (new_wann,) + atomic_interaction.wannier_interactions[1:]
+    atomic_interaction = replace(
+        atomic_interaction, wannier_interactions=wannier_interactions
+    )
+
+    assert atomic_interaction.pdos is None
+
+
+def test_AtomicInteraction_wohp_none(atomic_interaction) -> None:
+    new_wann = replace(atomic_interaction.wannier_interactions[0], h_ij=None)
+    wannier_interactions = (new_wann,) + atomic_interaction.wannier_interactions[1:]
+    atomic_interaction = replace(
+        atomic_interaction, wannier_interactions=wannier_interactions
+    )
+
+    assert atomic_interaction.wohp is None
+
+
+def test_AtomicInteraction_wobi_none(atomic_interaction) -> None:
+    new_wann = replace(atomic_interaction.wannier_interactions[0], p_ij=None)
+    wannier_interactions = (new_wann,) + atomic_interaction.wannier_interactions[1:]
+    atomic_interaction = replace(
+        atomic_interaction, wannier_interactions=wannier_interactions
+    )
+
+    assert atomic_interaction.wobi is None
+
+
+def test_AtomicInteraction_ipdos_none(atomic_interaction) -> None:
+    new_wann = replace(atomic_interaction.wannier_interactions[0], ipdos=None)
+    wannier_interactions = (new_wann,) + atomic_interaction.wannier_interactions[1:]
+    atomic_interaction = replace(
+        atomic_interaction, wannier_interactions=wannier_interactions
+    )
+
+    assert atomic_interaction.ipdos is None
+
+
+def test_AtomicInteraction_iwohp_none(atomic_interaction) -> None:
+    new_wann = replace(atomic_interaction.wannier_interactions[0], h_ij=None)
+    wannier_interactions = (new_wann,) + atomic_interaction.wannier_interactions[1:]
+    atomic_interaction = replace(
+        atomic_interaction, wannier_interactions=wannier_interactions
+    )
+
+    assert atomic_interaction.iwohp is None
+
+
+def test_AtomicInteraction_iwobi_none(atomic_interaction) -> None:
+    new_wann = replace(atomic_interaction.wannier_interactions[0], p_ij=None)
+    wannier_interactions = (new_wann,) + atomic_interaction.wannier_interactions[1:]
+    atomic_interaction = replace(
+        atomic_interaction, wannier_interactions=wannier_interactions
+    )
+
+    assert atomic_interaction.iwobi is None
 
 
 def test_AtomicInteraction_slice_2_indices(atomic_interaction) -> None:
@@ -209,7 +273,7 @@ def test_AtomicInteraction_slice_no_indices(atomic_interaction) -> None:
     i = 1
     j = 3
 
-    with pytest.raises(ValueError):
+    with pytest.raises(IndexError):
         atomic_interaction[i, j]
 
 
@@ -234,7 +298,7 @@ def test_AtomicInteraction_slice_1_index(wannier_interaction) -> None:
         j=j,
         symbol_i=symbol_i,
         symbol_j=symbol_j,
-        sub_interactions=wannier_interactions,
+        wannier_interactions=wannier_interactions,
     )
 
     i = 0
@@ -255,206 +319,56 @@ def test_AtomicInteraction_str(atomic_interaction, data_regression) -> None:
     data_regression.check({"str": atomic_interaction_str})
 
 
-def test_AtomicInteraction_with_summed_descriptors(
-    atomic_interaction, ndarrays_regression, tol
-) -> None:
-    atomic_interaction = atomic_interaction.with_summed_descriptors()
-
-    ndarrays_regression.check(
-        {
-            "DOS matrix": atomic_interaction.dos_matrix,
-            "WOHP": atomic_interaction.wohp,
-            "WOBI": atomic_interaction.wobi,
-        },
-        default_tolerance=tol,
-    )
-
-
-def test_AtomicInteraction_with_summed_descriptors_no_dos_matrix(
-    atomic_interaction,
-) -> None:
-    base_interaction = atomic_interaction.sub_interactions[0]
-    new_interaction = (base_interaction._replace(dos_matrix=None),)
-    wannier_interactions = atomic_interaction.sub_interactions + new_interaction
-
-    atomic_interaction = replace(
-        atomic_interaction, sub_interactions=wannier_interactions
-    )
-
-    with pytest.raises(TypeError):
-        atomic_interaction.with_summed_descriptors()
-
-
-def test_AtomicInteraction_with_summed_descriptors_no_wohp(atomic_interaction) -> None:
-    base_interaction = atomic_interaction.sub_interactions[0]
-    new_interaction = (base_interaction._replace(h_ij=None),)
-    wannier_interactions = atomic_interaction.sub_interactions + new_interaction
-
-    atomic_interaction = replace(
-        atomic_interaction, sub_interactions=wannier_interactions
-    )
-    atomic_interaction = atomic_interaction.with_summed_descriptors()
-
-    assert atomic_interaction.wohp is None
-
-
-def test_AtomicInteraction_with_summed_descriptors_no_wobi(atomic_interaction) -> None:
-    base_interaction = atomic_interaction.sub_interactions[0]
-    new_interaction = (base_interaction._replace(p_ij=None),)
-    wannier_interactions = atomic_interaction.sub_interactions + new_interaction
-
-    atomic_interaction = replace(
-        atomic_interaction, sub_interactions=wannier_interactions
-    )
-    atomic_interaction = atomic_interaction.with_summed_descriptors()
-
-    assert atomic_interaction.wobi is None
-
-
-@pytest.mark.parametrize("valence_count", (2, None), ids=("calc_charge", "no_charge"))
-def test_AtomicInteraction_with_integrals(
-    atomic_interaction, valence_count, ndarrays_regression, tol
-) -> None:
-    energies = np.linspace(-20, 10, 100)
-    mu = 0
-
-    atomic_interaction = atomic_interaction.with_summed_descriptors()
-    atomic_interaction = atomic_interaction.with_integrals(
-        energies, mu, resolve_orbitals=True, valence_count=valence_count
-    )
-
-    integrals = {
-        "population": atomic_interaction.population,
-        "charge": none_to_nan(atomic_interaction.charge),
-        "IWOHP": atomic_interaction.iwohp,
-        "IWOBI": atomic_interaction.iwobi,
-    }
-    for w_interaction in atomic_interaction:
-        tag = w_interaction.tag
-
-        integrals[tag + "_population"] = w_interaction.population
-        integrals[tag + "_IWOHP"] = w_interaction.iwohp
-        integrals[tag + "_IWOBI"] = w_interaction.iwobi
-
-    ndarrays_regression.check(integrals, default_tolerance=tol)
-
-
-def test_AtomicInteraction_with_integrals_no_descriptors(atomic_interaction) -> None:
-    energies = np.linspace(-20, 10, 100)
-    mu = 0
-
-    atomic_interaction = atomic_interaction.with_integrals(energies, mu)
-
-    assert atomic_interaction.population is None
-    assert atomic_interaction.charge is None
-    assert atomic_interaction.iwohp is None
-    assert atomic_interaction.iwobi is None
-
-
-@pytest.mark.parametrize(
-    "valence_counts", ({("Ga", "As"): 2}, None), ids=("calc_charge", "no_charge")
-)
-def test_AtomicInteractionContainer_with_integrals(
-    interaction_container, valence_counts, ndarrays_regression, tol
-) -> None:
-    energies = np.linspace(-20, 10, 100)
-    mu = 0
-
-    atomic_interactions = []
-    for atomic_interaction in interaction_container:
-        atomic_interactions.append(atomic_interaction.with_summed_descriptors())
-
-    interaction_container = replace(
-        interaction_container, sub_interactions=atomic_interactions
-    )
-    interaction_container = interaction_container.with_integrals(
-        energies, mu, resolve_orbitals=True, valence_counts=valence_counts
-    )
-
-    integrals = {}
-    for interaction in interaction_container:
-        tag = interaction.tag
-
-        integrals[tag + "_population"] = interaction.population
-        integrals[tag + "_charge"] = none_to_nan(interaction.charge)
-        integrals[tag + "_IWOHP"] = interaction.iwohp
-        integrals[tag + "_IWOBI"] = interaction.iwobi
-
-        for w_interaction in interaction:
-            w_tag = w_interaction.tag
-
-            integrals[w_tag + "_population"] = w_interaction.population
-            integrals[w_tag + "_IWOHP"] = w_interaction.iwohp
-            integrals[w_tag + "_IWOBI"] = w_interaction.iwobi
-
-    ndarrays_regression.check(integrals, default_tolerance=tol)
-
-
-def test_AtomicInteractionContainer_with_integrals_no_descriptors(
-    interaction_container,
-) -> None:
-    energies = np.linspace(-20, 10, 100)
-    mu = 0
-
-    interaction_container = interaction_container.with_integrals(energies, mu)
-
-    for interaction in interaction_container:
-        assert interaction.population is None
-        assert interaction.charge is None
-        assert interaction.iwohp is None
-        assert interaction.iwobi is None
-
-
-def test_AtomicInteractionContainer_filter_by_species(interaction_container) -> None:
+def test_AtomicInteractions_filter_by_species(atomic_interactions) -> None:
     symbols = ("Ga", "As")
-    interactions = interaction_container.filter_by_species(symbols)
+    interactions = atomic_interactions.filter_by_species(symbols)
 
     for interaction in interactions:
         assert interaction.symbol_i in symbols
         assert interaction.symbol_j in symbols
 
 
-def test_AtomicInteractionContainer_filter_by_species_no_matching_symbols(
-    interaction_container,
+def test_AtomicInteractions_filter_by_species_no_matching_symbols(
+    atomic_interactions,
 ) -> None:
     symbols = ("C", "O")
 
     with pytest.raises(ValueError):
-        interaction_container.filter_by_species(symbols)
+        atomic_interactions.filter_by_species(symbols)
 
 
-def test_AtomicInteractionContainer_slice_2_indices(interaction_container) -> None:
+def test_AtomicInteractions_slice_2_indices(atomic_interactions) -> None:
     i = 1
     j = 2
 
-    atomic_interaction = interaction_container[i, j]
+    atomic_interaction = atomic_interactions[i, j]
 
     assert atomic_interaction.i == i
     assert atomic_interaction.j == j
 
 
-def test_AtomicInteractionContainer_slice_no_indices(interaction_container) -> None:
+def test_AtomicInteractions_slice_no_indices(atomic_interactions) -> None:
     i = 1
     j = 3
 
-    with pytest.raises(ValueError):
-        interaction_container[i, j]
+    with pytest.raises(IndexError):
+        atomic_interactions[i, j]
 
 
-def test_AtomicInteractionContainer_slice_1_index(interaction_container) -> None:
+def test_AtomicInteractions_slice_1_index(atomic_interactions) -> None:
     i = 1
 
-    atomic_interactions = interaction_container[i]
+    interactions = atomic_interactions[i]
 
-    for interaction in atomic_interactions:
+    for interaction in interactions:
         assert interaction.i == i
 
 
-def test_AtomicInteractionContainer_length(interaction_container) -> None:
-    assert len(interaction_container) == 2
+def test_AtomicInteractions_length(atomic_interactions) -> None:
+    assert len(atomic_interactions) == 2
 
 
-def test_AtomicInteractionContainer_str(interaction_container, data_regression) -> None:
-    interaction_container_str = str(interaction_container)
+def test_AtomicInteractions_str(atomic_interactions, data_regression) -> None:
+    atomic_interactions_str = str(atomic_interactions)
 
-    data_regression.check({"str": interaction_container_str})
+    data_regression.check({"str": atomic_interactions_str})
