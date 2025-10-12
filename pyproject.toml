@@ -32,6 +32,7 @@ dependencies = [
   'numpy>=2',
   'scipy',
   'tqdm',
+  "typing-extensions>=4.5.0,<5.0",
 ]
 
 [project.optional-dependencies]
@@ -59,9 +60,8 @@ extend-exclude = ['*.ipynb']
 pythonVersion = '3.10'
 include = ['src']
 allowedUntypedLibraries = ['pymatgen']
-reportAny = false
-reportExplicitAny = false
-reportImplicitOverride = false
+# reportAny = false
+# reportExplicitAny = false
 
 [tool.coverage.report]
 omit = ['src/pengwann/__init__.py', 'src/pengwann/type_aliases.py']

@@ -32,6 +32,7 @@ from typing import TypeGuard, TypeVar
 
 import numpy as np
 from numpy.typing import NDArray
+from typing_extensions import override
 
 
 @dataclass(frozen=True)
@@ -56,6 +57,7 @@ class AtomicInteractions:
     def __len__(self) -> int:
         return len(self.atomic_interactions)
 
+    @override
     def __str__(self) -> str:
         to_print = ["Atomic interactions"]
 
@@ -114,6 +116,7 @@ class AtomicInteraction:
     def __len__(self) -> int:
         return len(self.wannier_interactions)
 
+    @override
     def __str__(self) -> str:
         to_print = [f"Atomic Interaction {self.tag}"]
 
@@ -211,6 +214,7 @@ class WannierInteraction:
 
     coefficients: NDArray[np.float64] | None = None
 
+    @override
     def __str__(self) -> str:
         to_print = [f"Wannier Interaction {self.tag}"]
 

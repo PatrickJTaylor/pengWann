@@ -34,6 +34,7 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.integrate import trapezoid
 from tqdm.auto import tqdm
+from typing_extensions import Self
 
 from pengwann.electronic_structure import Basis
 from pengwann.interactions import (
@@ -92,7 +93,7 @@ class DescriptorPipeline:
 
         return replace(interactions, wannier_interactions=processed_interactions)
 
-    def with_coefficients(self, basis: Basis) -> DescriptorPipeline:
+    def with_coefficients(self, basis: Basis) -> Self:
         def process(interaction: WannierInteraction) -> WannierInteraction:
             coefficients = compute_coefficients(
                 interaction.i, interaction.j, interaction.bl_i, interaction.bl_j, basis
@@ -104,7 +105,7 @@ class DescriptorPipeline:
 
         return replace(self, _pipeline=pipeline)
 
-    def without_coefficients(self) -> DescriptorPipeline:
+    def without_coefficients(self) -> Self:
         def process(interaction: WannierInteraction) -> WannierInteraction:
             return replace(interaction, coefficients=None)
 
@@ -114,7 +115,7 @@ class DescriptorPipeline:
 
     def with_pdos(
         self, total_dos: NDArray[np.float64], resolve_k: bool = False
-    ) -> DescriptorPipeline:
+    ) -> Self:
         def process(interaction: WannierInteraction) -> WannierInteraction:
             coefficients = interaction.coefficients
             if coefficients is None:
@@ -134,7 +135,7 @@ class DescriptorPipeline:
 
         return replace(self, _pipeline=pipeline)
 
-    def with_h_ij(self, hamiltonian: Hamiltonian) -> DescriptorPipeline:
+    def with_h_ij(self, hamiltonian: Hamiltonian) -> Self:
         def process(interaction: WannierInteraction) -> WannierInteraction:
             h_ij = get_h_ij(
                 interaction.i,
@@ -150,7 +151,7 @@ class DescriptorPipeline:
 
         return replace(self, _pipeline=pipeline)
 
-    def with_p_ij(self, occupation_matrix: NDArray[np.float64]) -> DescriptorPipeline:
+    def with_p_ij(self, occupation_matrix: NDArray[np.float64]) -> Self:
         def process(interaction: WannierInteraction) -> WannierInteraction:
             coefficients = interaction.coefficients
             if coefficients is None:
@@ -170,9 +171,7 @@ class DescriptorPipeline:
 
         return replace(self, _pipeline=pipeline)
 
-    def with_integrals(
-        self, energies: NDArray[np.float64], mu: float
-    ) -> DescriptorPipeline:
+    def with_integrals(self, energies: NDArray[np.float64], mu: float) -> Self:
         def process(interaction: WannierInteraction) -> WannierInteraction:
             pdos = interaction.pdos
             if pdos is None:

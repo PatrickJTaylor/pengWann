@@ -28,6 +28,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy.typing import NDArray
+from typing_extensions import override
 
 from pengwann.interactions import (
     AtomicInteraction,
@@ -49,6 +50,7 @@ class Geometry:
     image_matrix: NDArray[np.int32]
     wannier_assignments: tuple[tuple[int, ...], ...]
 
+    @override
     def __str__(self) -> str:
         to_print = [
             "Geometry",
