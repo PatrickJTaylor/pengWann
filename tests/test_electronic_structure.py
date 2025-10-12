@@ -53,7 +53,7 @@ def test_Basis_spilling_warning(unitary_matrices, kpoints) -> None:
     unitary_matrices *= 10
 
     with pytest.warns(UserWarning):
-        basis = Basis(unitary_matrices, kpoints)
+        Basis(unitary_matrices, kpoints)
 
 
 def test_compute_total_density_of_states(
