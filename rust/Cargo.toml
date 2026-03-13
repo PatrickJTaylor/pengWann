@@ -9,7 +9,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 itertools = "0.14.0"
-ndarray = "0.16.1"
+ndarray = "0.17.0"
 ndarray-stats = "0.6.0"
 numpy = "0.26.0"
 pyo3 = { version = "0.26.0", features = ["extension-module"] }
