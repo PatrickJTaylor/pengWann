@@ -35,7 +35,7 @@ jobs:
 
     steps:
       - name: Check all CI jobs
-        uses: re-actors/alls-green@release/v1
+        uses: re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # release/v1
         if: always()
         with:
           jobs: ${{ toJSON(needs) }}
